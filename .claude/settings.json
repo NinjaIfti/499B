@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:ctan.org)",
+      "WebFetch(domain:mirrors.ctan.org)",
+      "WebFetch(domain:mirrors.in3.sahilister.net)"
+    ]
+  }
+}

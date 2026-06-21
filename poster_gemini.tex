@@ -1,0 +1,335 @@
+% =====================================================================
+%  LectureAssist — Conference Poster  (gemini beamerposter theme)
+%  A0 LANDSCAPE, 3-column academic layout.
+%  >>> Compile with LuaLaTeX or XeLaTeX  (NOT pdfLaTeX — gemini uses
+%      fontspec + the Lato/Raleway fonts).
+%  Upload alongside this file: beamerthemegemini.sty,
+%      beamercolorthemegemini.sty, poster.bib, uni.png
+%      (gemini theme: https://github.com/anishathalye/gemini)
+% =====================================================================
+\documentclass[final]{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{luainputenc}
+\usepackage{lmodern}
+\usepackage[size=a0, orientation=landscape, scale=1.1]{beamerposter}
+\usetheme{gemini}
+\usecolortheme{gemini}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{amsmath, amssymb}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.14}
+\usepackage{anyfontsize}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc, fit, backgrounds}
+
+\newlength{\sepwidth}
+\newlength{\colwidth}
+\setlength{\sepwidth}{0.025\paperwidth}
+\setlength{\colwidth}{0.3\paperwidth}
+
+\newcommand{\separatorcolumn}{\begin{column}{\sepwidth}\end{column}}
+
+% ====================
+% Diagram colours & styles
+% ====================
+\definecolor{LAindigo}{HTML}{6366F1}
+\definecolor{LAviolet}{HTML}{A78BFA}
+\definecolor{LAcyan}{HTML}{38BDF8}
+\definecolor{LAgreen}{HTML}{34D399}
+\definecolor{LAamber}{HTML}{FBBF24}
+\definecolor{LAred}{HTML}{F87171}
+\definecolor{LAink}{HTML}{2B2C45}
+\definecolor{LAmist}{HTML}{EEF0FD}
+
+\tikzset{
+  labox/.style={rectangle, rounded corners=8pt, draw=LAindigo, line width=1.2pt,
+    fill=white, text=LAink, align=center, inner sep=7pt, minimum height=1.5cm,
+    font=\bfseries},
+  lain/.style={labox, draw=LAcyan, fill=LAcyan!10},
+  laproc/.style={labox, draw=LAviolet, fill=LAviolet!8},
+  lallm/.style={labox, draw=LAamber, fill=LAamber!15},
+  laout/.style={labox, draw=LAgreen, fill=LAgreen!12},
+  laval/.style={labox, draw=LAred, fill=LAred!8},
+  laarr/.style={-{Stealth[length=5mm,width=4mm]}, line width=1.6pt, draw=LAindigo},
+  laarrg/.style={-{Stealth[length=5mm,width=4mm]}, line width=1.6pt, draw=LAgreen},
+  laloop/.style={-{Stealth[length=5mm,width=4mm]}, line width=1.4pt, draw=LAred},
+  lalbl/.style={font=\small\itshape, text=LAink, fill=white, inner sep=2pt},
+}
+
+% ====================
+% Title
+% ====================
+
+\title{LectureAssist: An Agentic, Multimodal AI Assistant that Turns Lectures into Adaptive Study Material}
+
+\author{Iftikhar Ahmed \and Salman Shafi \and Jarinah Tasnim}
+
+\institute[NSU]{Dept.\ of Electrical and Computer Engineering, North South University \;\textbullet\; Senior Design Project (499)}
+
+% ====================
+% Footer — removed (no footer bar on this poster)
+% ====================
+% (Leaving \footercontent undefined makes the gemini theme omit the footer.)
+
+% ====================
+% Logo — North South University seal on the LEFT of the header
+% ====================
+% uni.png (transparent background) must sit next to this .tex file.
+\IfFileExists{uni.png}{\logoleft{\includegraphics[height=11cm]{uni.png}}}{}
+
+% ====================
+% Body
+% ====================
+
+\begin{document}
+
+\begin{frame}[t]
+\begin{columns}[t]
+\separatorcolumn
+
+% =====================================================================
+% COLUMN 1 : Motivation, Objectives, Pipeline
+% =====================================================================
+\begin{column}{\colwidth}
+
+  \begin{block}{Motivation \& Problem}
+
+    Students re-watch hours of recorded lectures to find a single concept, and
+    have no fast way to self-test on what the teacher actually emphasised.
+
+    \begin{itemize}
+      \item Lecture knowledge is locked inside \textbf{video, speech and slides}
+        --- rarely available as clean text.
+      \item Generic quiz tools \textbf{hallucinate} off-topic, ungrounded questions.
+      \item One-size-fits-all difficulty ignores \textbf{each student's weak spots}.
+    \end{itemize}
+
+    \textbf{Goal.} An offline-capable system that \emph{reads the board, hears the
+    lecture}, and produces \emph{grounded, validated and adaptive} study tools at
+    \textbf{zero API cost}.
+
+  \end{block}
+
+  \begin{block}{Objectives}
+
+    \begin{enumerate}
+      \item Recover every modality (vision, speech, documents) and time-align it.
+      \item Keep all generated content \textbf{anchored} to the real lecture via RAG.
+      \item Orchestrate cooperating LLM agents that \textbf{plan, generate,
+        validate and refine} each artifact.
+      \item Adapt difficulty to the learner and run entirely on a \textbf{free
+        Colab T4 GPU} with a \textbf{local} model.
+    \end{enumerate}
+
+  \end{block}
+
+  \begin{block}{End-to-End Pipeline}
+
+    A lecture video or document flows left-to-right through extraction, a grounded
+    knowledge base, the agent orchestrator, and finally validated study outputs.
+
+    \begin{figure}
+      \centering
+      \begin{tikzpicture}[node distance=0.65cm]
+        \node[lain,  text width=22cm] (in){Lecture Input \\ {\normalfont\normalsize video \& documents}};
+        \node[laproc, text width=22cm, below=of in] (ex){Multimodal Extraction \\ {\normalfont\normalsize OCR · Whisper · parsers}};
+        \node[laproc, text width=22cm, below=of ex] (kb){Knowledge Base \\ {\normalfont\normalsize summary + FAISS RAG}};
+        \node[lallm, text width=22cm, below=of kb] (ag){Agent Orchestrator \\ {\normalfont\normalsize plan · gen · validate · refine}};
+        \node[laout, text width=22cm, below=of ag] (ou){Study Outputs \\ {\normalfont\normalsize quiz · cards · tutor · hints}};
+        \draw[laarr](in)--(ex); \draw[laarr](ex)--(kb);
+        \draw[laarr](kb)--(ag); \draw[laarrg](ag)--(ou);
+      \end{tikzpicture}
+      \caption{System pipeline: Flask on Colab $\to$ ngrok $\to$ browser UI.}
+    \end{figure}
+
+  \end{block}
+
+  \begin{alertblock}{Key Contributions}
+
+    \begin{itemize}
+      \item \textbf{Validation-gated, one-at-a-time quiz generation} that
+        eliminates hallucinated, off-topic and duplicate questions.
+      \item \textbf{Fully local, \$0-API} multi-agent pipeline on a single free
+        T4 GPU (Ollama + Gemma~3).
+      \item \textbf{Bilingual (EN + BN) multimodal extraction} with per-surface
+        OCR preprocessing for slides, blackboards and whiteboards.
+      \item \textbf{Adaptive + Socratic learning} grounded with clickable lecture
+        \textbf{timestamps} and inline video clips.
+    \end{itemize}
+
+  \end{alertblock}
+
+\end{column}
+
+\separatorcolumn
+
+% =====================================================================
+% COLUMN 2 : Methodology — Extraction, Orchestration
+% =====================================================================
+\begin{column}{\colwidth}
+
+  \begin{block}{Methodology — Multimodal Extraction}
+
+    Every modality is recovered and time-aligned \emph{before} any LLM call.
+
+    \begin{itemize}
+      \item \textbf{Visual / OCR (EasyOCR).} Frames sampled $\sim$5\,s apart,
+        \emph{classified} (slide / blackboard / whiteboard / scene) with per-class
+        preprocessing (CLAHE, sharpening, Otsu, chalk inversion). \textbf{EN + BN}.
+      \item \textbf{Speech (Faster-Whisper).} GPU \texttt{float16} / CPU
+        \texttt{int8} fallback, VAD filtering, per-segment timestamps.
+      \item \textbf{Documents.} PyMuPDF, python-docx, python-pptx (structure kept).
+      \item \textbf{Drive OCR cache} keyed by video hash --- re-uploads skip re-scan.
+    \end{itemize}
+
+  \end{block}
+
+  \begin{block}{Methodology — Multi-Agent Orchestration}
+
+    A central \textbf{Orchestrator} runs specialist agents; independent agents run
+    \textbf{concurrently}. Each follows
+    \texttt{should\_run $\to$ plan $\to$ execute $\to$ validate $\to$ retry}, and
+    any crash is caught and logged so the pipeline \textbf{degrades gracefully}.
+
+    \begin{figure}
+      \centering
+      \begin{tikzpicture}[node distance=1.0cm and 1.4cm]
+        \node[lain, text width=20cm] (s0){\textbf{Upload}\\{\normalfont\small video / document}};
+        \node[laproc, text width=9cm, below left=1.1cm and 0.4cm of s0] (a){Extractor\\{\normalfont\small OCR · frames}};
+        \node[laproc, text width=9cm, below right=1.1cm and 0.4cm of s0] (b){Transcriber\\{\normalfont\small Whisper · VAD}};
+        \node[laproc, text width=20cm, below=3.0cm of s0] (sum){Summarizer\\{\normalfont\small generate · validate · retry}};
+        \node[laproc, text width=9cm, below left=1.1cm and 0.4cm of sum] (rag){RAG Builder\\{\normalfont\small FAISS · embeddings}};
+        \node[laproc, text width=9cm, below right=1.1cm and 0.4cm of sum] (hint){Hints Detector\\{\normalfont\small emphasis · ranking}};
+        \node[lallm, text width=20cm, below=3.0cm of sum] (quiz){\textbf{Quiz} · Flashcard · Short-answer · Suggest};
+        \node[laout, text width=20cm, below=1.0cm of quiz] (done){Validated artifacts $\to$ Google Drive};
+        \draw[laarr](s0)--(a); \draw[laarr](s0)--(b);
+        \draw[laarr](a)--(sum); \draw[laarr](b)--(sum);
+        \draw[laarr](sum)--(rag); \draw[laarr](sum)--(hint);
+        \draw[laarr](rag)--(quiz); \draw[laarr](hint)--(quiz);
+        \draw[laarrg](quiz)--(done);
+      \end{tikzpicture}
+      \caption{Orchestrated specialist agents with concurrent, fault-isolated stages.}
+    \end{figure}
+
+  \end{block}
+
+  \begin{exampleblock}{Grounded Retrieval (RAG)}
+
+    Speech and board/slide text are embedded with \textbf{Sentence-Transformers}
+    (\texttt{MiniLM}) and indexed in \textbf{FAISS} (cosine). Every quiz, summary
+    and chat answer retrieves \textbf{top-$k$} chunks first --- anchored to real
+    content with a clickable timestamp.
+
+    \begin{figure}
+      \centering
+      \begin{tikzpicture}[node distance=0.9cm]
+        \node[lain,  text width=12cm, minimum height=1.6cm] (q){Query};
+        \node[laproc, below=of q,   text width=12cm, minimum height=1.6cm] (emb){Embed (MiniLM)};
+        \node[laproc, below=of emb, text width=12cm, minimum height=1.6cm] (fa){FAISS top-$k$};
+        \node[laout,  below=of fa,  text width=12cm, minimum height=1.6cm] (c){Grounded context + timestamp};
+        \draw[laarr](q)--(emb); \draw[laarr](emb)--(fa); \draw[laarrg](fa)--(c);
+      \end{tikzpicture}
+    \end{figure}
+
+  \end{exampleblock}
+
+\end{column}
+
+\separatorcolumn
+
+% =====================================================================
+% COLUMN 3 : Quiz generation, Results, Conclusion, References
+% =====================================================================
+\begin{column}{\colwidth}
+
+  \begin{block}{Agentic Quiz Generation}
+
+    Questions are built \textbf{one at a time} and must \emph{pass validation}
+    before the next is generated --- eliminating hallucinated, off-topic or
+    duplicate questions. Modes: \emph{Auto} $\cdot$ \emph{Manual} (Easy / Med /
+    Hard) $\cdot$ \emph{Adaptive} (targets weak topics).
+
+    \begin{figure}
+      \centering
+      \begin{tikzpicture}[node distance=1.6cm and 1.6cm]
+        \node[laproc, text width=8cm] (plan){\textbf{Planner}\\{\normalfont\small topics · mix}};
+        \node[lallm, right=of plan, text width=8cm] (gen){\textbf{Generator}\\{\normalfont\small ONE question}};
+        \node[laval, right=of gen, text width=9cm] (val){\textbf{Validator}\\{\normalfont\small grounded · difficulty · unique}};
+        \node[lallm, below=1.9cm of gen, text width=8cm] (refine){\textbf{Refiner}\\{\normalfont\small targeted fix}};
+        \node[laout, below=1.9cm of val, text width=8cm] (pass){\textbf{Accept}\\{\normalfont\small next slot}};
+        \draw[laarr](plan)--(gen);
+        \draw[laarr](gen)--(val);
+        \draw[laarrg](val)--(pass) node[lalbl, midway, right]{PASS};
+        \draw[laloop](val)--(refine) node[lalbl, midway, above]{FAIL};
+        \draw[laloop](refine)--(gen) node[lalbl, midway, left]{retry $\le 3$};
+      \end{tikzpicture}
+      \caption{Generate $\to$ validate $\to$ refine loop ($\le 3$ retries per slot).}
+    \end{figure}
+
+    \textbf{Validation gate:} grounded in lecture · correct difficulty · follows
+    instructions · not a duplicate ($>$85\% similarity rejected).
+
+  \end{block}
+
+  \begin{block}{Adaptive \& Socratic Learning}
+
+    \begin{itemize}
+      \item \textbf{Self-improving difficulty.} A Difficulty Adapter tracks
+        per-topic accuracy, flags weak topics ($<$50\%) and steers the planner there.
+      \item \textbf{Socratic tutor.} Asks guiding questions; reveals the full
+        answer only after 2 attempts. Cites timestamps and plays the exact
+        \textbf{video clip} inline.
+      \item \textbf{AI short-answer grading} with partial credit and feedback.
+    \end{itemize}
+
+  \end{block}
+
+  \begin{block}{Results \& Capabilities}
+
+    \begin{table}
+      \centering
+      \begin{tabular}{l r}
+        \toprule
+        \textbf{Capability} & \textbf{Outcome} \\
+        \midrule
+        Input formats        & 5 video + 3 doc \\
+        OCR languages        & EN + BN \\
+        Per-question checks   & 4, $\le 3$ retries \\
+        Quiz / study types    & 5 \\
+        Grounding            & 100\% + timestamp \\
+        LLM hosting          & local, \$0 API \\
+        Cached OCR re-runs    & skipped \\
+        Agent failures       & isolated \\
+        \bottomrule
+      \end{tabular}
+      \caption{System capabilities. Eval metrics (acceptance rate, validator-vs-human,
+      OCR/WER, T4 runtime) to be added.}
+    \end{table}
+
+  \end{block}
+
+  \begin{block}{Conclusion \& Future Work}
+
+    LectureAssist shows that a \textbf{fully local, validation-gated multi-agent}
+    system can turn raw lectures into grounded, adaptive study material at zero API
+    cost. \textbf{Next:} quantitative evaluation of validator accuracy and OCR/WER,
+    broader language support, and longitudinal learning-gain studies.
+
+  \end{block}
+
+  \begin{block}{References}
+
+    \nocite{*}
+    \scriptsize{\bibliographystyle{abbrv}\bibliography{poster}}
+
+  \end{block}
+
+\end{column}
+
+\separatorcolumn
+\end{columns}
+\end{frame}
+
+\end{document}
