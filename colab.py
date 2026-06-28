@@ -72,6 +72,10 @@ from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
 
 
 # Mount Google Drive for persistent storage
@@ -479,30 +483,54 @@ def call_ollama_json(prompt, system="You are an expert educational AI assistant.
 
 
 
-def call_ollama_json_quiz(prompt, key="questions"):
-    """Try fast quiz model first; if JSON is empty or invalid, retry with primary model."""
+def _extract_items(data, key):
+    """Pull the list of items out of a model JSON response, tolerating shape
+    drift. Models often ignore the exact wrapper and return a bare array
+    `[...]`, or use a different key (e.g. 'flashcards' instead of 'cards') —
+    which previously caused silently-empty results. Handles:
+      {key: [...]}  |  [...]  |  {some_other_key: [...]}"""
+    if isinstance(data, list):
+        return data
+    if isinstance(data, dict):
+        v = data.get(key)
+        if isinstance(v, list):
+            return v
+        for val in data.values():          # first list-valued field
+            if isinstance(val, list):
+                return val
+    return []
+
+
+def call_ollama_json_quiz(prompt, key="questions", force_primary=False):
+    """Normalises to {key: [...]} and tolerates bare-array / wrong-key replies.
+    Default: try fast quiz model first, fall back to primary on empty.
+    force_primary=True: skip the fast model entirely and use the primary model —
+    for BULK array tasks (e.g. flashcards) the small 4B model reliably returns
+    broken/empty JSON, so trying it first only wastes a slow round-trip."""
     fb = {key: []}
-    data = call_ollama_json(prompt, fallback=fb, model=QUIZ_MODEL, num_ctx=QUIZ_CTX)
-    if not isinstance(data, dict):
-        data = dict(fb)
-    items = data.get(key) or []
-    if items:
-        return data
-    print(f"  ⚠ Empty or bad '{key}' from {QUIZ_MODEL} — retrying with {state.active_model}…")
-    data2 = call_ollama_json(prompt, fallback=fb)
-    return data2 if isinstance(data2, dict) else fb
+    if not force_primary:
+        data  = call_ollama_json(prompt, fallback=fb, model=QUIZ_MODEL, num_ctx=QUIZ_CTX)
+        items = _extract_items(data, key)
+        if items:
+            return {key: items}
+        print(f"  ⚠ Empty or bad '{key}' from {QUIZ_MODEL} — using {state.active_model}…")
+    data2 = call_ollama_json(prompt, fallback=fb)        # primary (larger) model
+    return {key: _extract_items(data2, key)}
 
 
 
-def call_ollama_json_list_quiz(prompt, fallback_list):
-    """JSON list (e.g. suggested questions): try quiz model, then primary."""
-    data = call_ollama_json(prompt, fallback=fallback_list,
-                            model=QUIZ_MODEL, num_ctx=QUIZ_CTX)
-    if isinstance(data, list) and data:
-        return data
-    print(f"  ⚠ Empty list from {QUIZ_MODEL} — retrying with {state.active_model}…")
+def call_ollama_json_list_quiz(prompt, fallback_list, force_primary=False):
+    """JSON list (e.g. suggested questions). force_primary=True skips the fast
+    model and goes straight to the primary one (4B is unreliable at JSON lists)."""
+    if not force_primary:
+        data  = call_ollama_json(prompt, fallback=fallback_list,
+                                 model=QUIZ_MODEL, num_ctx=QUIZ_CTX)
+        items = _extract_items(data, "items")
+        if items:
+            return items
+        print(f"  ⚠ Empty list from {QUIZ_MODEL} — using {state.active_model}…")
     data2 = call_ollama_json(prompt, fallback=fallback_list)
-    return data2 if isinstance(data2, list) else fallback_list
+    return _extract_items(data2, "items") or (fallback_list if isinstance(fallback_list, list) else [])
 
 
 
@@ -1035,22 +1063,64 @@ def extract_docx(path):
 
 
 def extract_pptx(path):
+    """Pull text from a .pptx. Covers title + body text frames, tables,
+    grouped shapes (recursively), and speaker notes — lecture decks are often
+    image/diagram heavy, so we mine every text-bearing element to avoid the
+    'too little text extracted' failure. Each shape is guarded so one odd
+    shape can't abort a whole slide."""
     from pptx import Presentation
+    try:
+        from pptx.enum.shapes import MSO_SHAPE_TYPE
+    except Exception:
+        MSO_SHAPE_TYPE = None
     prs = Presentation(path)
     entries = []
+
+    def collect(shape, parts):
+        # Grouped shapes → recurse into children
+        try:
+            if MSO_SHAPE_TYPE is not None and shape.shape_type == MSO_SHAPE_TYPE.GROUP:
+                for sub in shape.shapes:
+                    collect(sub, parts)
+                return
+        except Exception:
+            pass
+        # Tables → join each row's non-empty cells
+        try:
+            if shape.has_table:
+                for row in shape.table.rows:
+                    cells = [c.text.strip() for c in row.cells if c.text.strip()]
+                    if cells:
+                        parts.append(" | ".join(cells))
+                return
+        except Exception:
+            pass
+        # Text frames (put the title placeholder first)
+        try:
+            if shape.has_text_frame:
+                txt = shape.text_frame.text.strip()
+                if not txt:
+                    return
+                ph = shape.placeholder_format
+                if ph is not None and ph.idx == 0:        # idx 0 = title placeholder
+                    parts.insert(0, txt)
+                else:
+                    parts.append(txt)
+        except Exception:
+            pass
+
     for i, slide in enumerate(prs.slides):
         parts = []
         for shape in slide.shapes:
-            if not shape.has_text_frame:
-                continue
-            ph = shape.placeholder_format
-            if ph and ph.idx == 0:                       # idx 0 = title placeholder
-                parts.insert(0, shape.text_frame.text.strip())
-            else:
-                for para in shape.text_frame.paragraphs:
-                    t = para.text.strip()
-                    if t:
-                        parts.append(t)
+            collect(shape, parts)
+        # Speaker notes — often where the actual explanation lives
+        try:
+            if slide.has_notes_slide:
+                notes = slide.notes_slide.notes_text_frame.text.strip()
+                if notes:
+                    parts.append("Notes: " + notes)
+        except Exception:
+            pass
         if parts:
             entries.append({"slide": i + 1, "text": "\n".join(parts), "source": "pptx"})
     return entries
@@ -1351,7 +1421,7 @@ def generate_flashcards(summary, doc_text="", board_text="", board_entries=None)
         "STRICT JSON: {\"cards\":[{\"front\",\"back\",\"topic\",\"difficulty\"}]}\n\n"
         f"CONTENT:\n{content}"
     )
-    data = call_ollama_json_quiz(prompt, key="cards")
+    data = call_ollama_json_quiz(prompt, key="cards", force_primary=True)
     return data.get("cards", []) if isinstance(data, dict) else []
 
 # ══════════════════════════════════════════════════════════════
@@ -1516,10 +1586,8 @@ class AgentContext:
         self.doc_text      = ""
         self.doc_entries   = []
 
-        # populated by analysis / quiz agents
+        # populated by analysis agents
         self.summary       = ""
-        self.quiz_counts   = {"mcq": 12, "tf": 10, "fill": 10, "short": 8}
-        self.difficulty_pref = None              # set by DifficultyAdapter
 
         # agent decision log
         self.agent_log     = []
@@ -1550,36 +1618,68 @@ class BaseAgent:
         return True, []
 
     def run(self, ctx):
-        """Full agent loop with retry on validation failure."""
+        """Full agent loop with retry on validation failure. Every attempt and
+        the overall run are timed so every agent's speed shows up in the agent
+        log for free (no per-subclass changes needed)."""
         if not self.should_run(ctx):
             self._log(ctx, "SKIP", "Not needed for this content type")
             return
 
         self._log(ctx, "PLAN", self.plan(ctx))
 
+        run_start   = time.time()
         last_issues = []
         for attempt in range(1, self.max_retries + 1):
+            attempt_start = time.time()
             try:
                 self.execute(ctx)
+                attempt_sec = time.time() - attempt_start
                 ok, issues = self.validate(ctx)
                 if ok:
-                    self._log(ctx, "DONE", f"Completed on attempt {attempt}")
+                    total_sec = time.time() - run_start
+                    self._log(
+                        ctx, "DONE",
+                        f"Completed on attempt {attempt} in {attempt_sec:.1f}s "
+                        f"(total {total_sec:.1f}s)",
+                        duration_sec=round(total_sec, 2),
+                    )
                     return
                 last_issues = issues
-                self._log(ctx, "RETRY", f"Quality issues (attempt {attempt}): {issues}")
+                self._log(
+                    ctx, "RETRY",
+                    f"Quality issues (attempt {attempt}, {attempt_sec:.1f}s): {issues}",
+                    duration_sec=round(attempt_sec, 2),
+                )
             except Exception as e:
-                self._log(ctx, "ERROR", f"Attempt {attempt} failed: {e}")
+                attempt_sec = time.time() - attempt_start
+                self._log(
+                    ctx, "ERROR",
+                    f"Attempt {attempt} failed after {attempt_sec:.1f}s: {e}",
+                    duration_sec=round(attempt_sec, 2),
+                )
                 if attempt == self.max_retries:
-                    self._log(ctx, "FAIL", f"Gave up after {self.max_retries} attempts: {e}")
+                    total_sec = time.time() - run_start
+                    self._log(
+                        ctx, "FAIL",
+                        f"Gave up after {self.max_retries} attempts "
+                        f"({total_sec:.1f}s total): {e}",
+                        duration_sec=round(total_sec, 2),
+                    )
                     return
 
-        self._log(ctx, "DONE", f"Completed with warnings: {last_issues}")
+        total_sec = time.time() - run_start
+        self._log(
+            ctx, "DONE", f"Completed with warnings in {total_sec:.1f}s: {last_issues}",
+            duration_sec=round(total_sec, 2),
+        )
 
-    def _log(self, ctx, level, msg):
+    def _log(self, ctx, level, msg, duration_sec=None):
         entry = {
             "agent": self.name, "level": level,
             "time": datetime.now().isoformat(), "message": msg,
         }
+        if duration_sec is not None:
+            entry["duration_sec"] = duration_sec
         ctx.agent_log.append(entry)
         icons = {"SKIP": "⏭", "PLAN": "📋", "DONE": "✅",
                  "RETRY": "🔄", "ERROR": "❌", "FAIL": "💀"}
@@ -1757,168 +1857,6 @@ class HintsAgent(BaseAgent):
         }
 
 
-
-class QuizAgent(BaseAgent):
-    """Runs the per-question agentic pipeline (Plan → Generate ONE → Validate
-    → Retry → Next) for every quiz type during initial processing.
-    Streams thinking events to state._quiz_agent_thinking so the UI can
-    render the live Agent Workspace while the upload is being processed."""
-    name        = "QuizGenerator"
-    max_retries = 1
-
-    # Quiz types we generate during processing, in execution order
-    _types_in_order = ("mcq", "tf", "fill", "short")
-
-    def plan(self, ctx):
-        c = ctx.quiz_counts
-        return (f"Agentic pipeline for {c['mcq']} MCQ, {c['tf']} T/F, "
-                f"{c['fill']} Fill-blank, {c['short']} Short-answer "
-                f"(per-question validate + retry)")
-
-    def execute(self, ctx):
-        c       = ctx.quiz_counts
-        target  = "medium"
-        # one content snippet shared across all quiz types
-        if ctx.content_type == "video":
-            content = pack_video_sources(ctx.board_text, ctx.transcript,
-                                         ctx.board_entries or [], 7500)
-        else:
-            content = (ctx.doc_text or "")[:7500]
-        summary = ctx.summary or state.status.get("summary", "")
-
-        # start a fresh thinking session for the UI
-        state._quiz_thinking_session += 1
-        state._quiz_thinking_active   = True
-        state._quiz_agent_thinking    = []
-        log = state._quiz_agent_thinking
-
-        def push(entry):
-            log.append(entry)
-
-        # propagate ctx fields used by _run_quiz_agentic_loop
-        ctx._user_instructions = ""
-        ctx._mode              = "auto"
-        ctx._agent_name        = self.name
-
-        push({
-            "agent": "Orchestrator",
-            "step":  "auto_quiz_start",
-            "phase": "PLAN",
-            "verdict": "PASS",
-            "reason": (
-                f"Auto-quiz starting: {c['mcq']} MCQ · {c['tf']} TF · "
-                f"{c['fill']} Fill · {c['short']} Short"
-            ),
-            "data": {"counts": c, "target_difficulty": target},
-        })
-
-        for qt in self._types_in_order:
-            num = c.get(qt, 0)
-            if num <= 0:
-                continue
-            ctx._quiz_count = num
-            ctx._quiz_type  = qt
-            ctx._quiz_plan  = None  # let the planner re-plan per type
-
-            push({
-                "agent":  self.name,
-                "step":   "type_start",
-                "phase":  "PLAN",
-                "verdict":"PASS",
-                "reason": f"Beginning agentic generation for {num} {qt.upper()} question(s)…",
-                "data":   {"quiz_type": qt, "count": num},
-            })
-
-            try:
-                result = _run_quiz_agentic_loop(
-                    ctx, qt, content, summary, "",
-                    target_difficulty=target,
-                    thinking_cb=push,
-                    max_attempts_per_q=3,
-                )
-                fill_missing_timestamps(
-                    result,
-                    segments=ctx.segment_list,
-                    board_entries=ctx.board_entries,
-                )
-                state.quiz[qt] = result
-                _append_generated_quiz_run("upload", qt, "auto", target, result)
-                push({
-                    "agent":  self.name,
-                    "step":   "type_done",
-                    "phase":  "DONE",
-                    "verdict":"DONE",
-                    "reason": f"{qt.upper()} ready: {len(result)} question(s)",
-                    "data":   {"quiz_type": qt, "total": len(result)},
-                })
-            except Exception as e:
-                push({
-                    "agent":  self.name,
-                    "step":   "type_error",
-                    "phase":  "DONE",
-                    "verdict":"FAIL",
-                    "reason": f"{qt.upper()} crashed: {e} — keeping previous results",
-                })
-                state.quiz.setdefault(qt, [])
-
-        push({
-            "agent":  "Orchestrator",
-            "step":   "auto_quiz_complete",
-            "phase":  "DONE",
-            "verdict":"DONE",
-            "reason": (
-                f"All quiz types ready: "
-                f"MCQ={len(state.quiz.get('mcq', []))} · "
-                f"TF={len(state.quiz.get('tf', []))} · "
-                f"Fill={len(state.quiz.get('fill', []))} · "
-                f"Short={len(state.quiz.get('short', []))}"
-            ),
-        })
-        state._quiz_thinking_active = False
-
-    def validate(self, ctx):
-        issues = []
-        mcqs = state.quiz.get("mcq", [])
-        if not mcqs:
-            issues.append("MCQ pipeline produced 0 questions")
-            if state.quiz.get("tf") or state.quiz.get("fill") or state.quiz.get("short"):
-                return True, issues
-            return False, issues
-
-        # The agentic loop already enforces uniqueness; this is a safety net.
-        texts = [q.get("question", "") for q in mcqs]
-        dupes = len(texts) - len(set(texts))
-        if dupes > 0:
-            seen, unique = set(), []
-            for q in mcqs:
-                t = q.get("question", "")
-                if t not in seen:
-                    seen.add(t); unique.append(q)
-            state.quiz["mcq"] = unique
-            issues.append(f"removed {dupes} duplicate MCQ(s)")
-
-        bad_keys = 0
-        for q in mcqs:
-            opts = q.get("options", {})
-            ans  = q.get("correct_answer", "")
-            if opts and ans not in opts:
-                bad_keys += 1
-        if bad_keys > len(mcqs) // 2:
-            issues.append(f"{bad_keys}/{len(mcqs)} MCQs have broken answer keys")
-            return False, issues
-        elif bad_keys > 0:
-            issues.append(f"{bad_keys} MCQ(s) have mismatched answer key — non-critical")
-
-        tfs = state.quiz.get("tf", [])
-        if tfs:
-            seen, unique = set(), []
-            for q in tfs:
-                t = q.get("statement", "")
-                if t not in seen:
-                    seen.add(t); unique.append(q)
-            state.quiz["tf"] = unique
-
-        return True, issues
 
 # ══════════════════════════════════════════════════════════════
 # TRUE AGENTIC QUIZ SYSTEM
@@ -2202,7 +2140,10 @@ DIFF_DESCRIPTIONS = {
 def _validate_one_question(quiz_type, question, content_snip, target_difficulty,
                             user_instr, existing_questions=None):
     """Run the validator on a SINGLE question.
-    Returns (passed: bool, fail_reason: str, checks: dict)."""
+    Returns (passed: bool, fail_reason: str, checks: dict).
+    On failure, checks["action"] carries the validator's recommended
+    remediation — one of 'regenerate' | 'fetch_context' | 'replan_topic' —
+    which the generation loop acts on instead of always blindly regenerating."""
     existing_questions = existing_questions or []
     qtxt = question.get("question") or question.get("statement") or ""
     ans  = str(
@@ -2214,7 +2155,7 @@ def _validate_one_question(quiz_type, question, content_snip, target_difficulty,
     if quiz_type == "fill" and "___" not in qtxt:
         return False, "fill question missing '___' blank marker", {
             "uniqueness": "PASS", "difficulty": "PASS",
-            "grounded": "PASS", "instruction": "PASS",
+            "grounded": "PASS", "instruction": "PASS", "action": "regenerate",
         }
 
     # cheap deterministic uniqueness check first
@@ -2227,13 +2168,13 @@ def _validate_one_question(quiz_type, question, content_snip, target_difficulty,
             if ex_text == qtxt_low:
                 return False, "duplicate of an existing question", {
                     "uniqueness": "FAIL", "difficulty": "PASS",
-                    "grounded": "PASS", "instruction": "PASS",
+                    "grounded": "PASS", "instruction": "PASS", "action": "regenerate",
                 }
             ratio = difflib.SequenceMatcher(None, ex_text, qtxt_low).ratio()
             if ratio > 0.85:
                 return False, f"too similar ({int(ratio*100)}%) to an existing question", {
                     "uniqueness": "FAIL", "difficulty": "PASS",
-                    "grounded": "PASS", "instruction": "PASS",
+                    "grounded": "PASS", "instruction": "PASS", "action": "regenerate",
                 }
 
     diff_desc  = DIFF_DESCRIPTIONS.get(target_difficulty, "")
@@ -2247,13 +2188,20 @@ def _validate_one_question(quiz_type, question, content_snip, target_difficulty,
         f"1. DIFFICULTY: Is it genuinely {target_difficulty.upper()}? ({diff_desc})\n"
         "2. GROUNDED: Is it answerable from the content snippet below?\n"
         f"3. INSTRUCTION: Does it follow the student instructions?{instr_note}\n\n"
-        f"Content snippet:\n{content_snip[:700]}\n\n"
+        f"Content snippet:\n{content_snip[:2500]}\n\n"
         "Question to validate:\n"
         f"Q: {qtxt[:300]}\n"
         f"A: {ans}\n\n"
+        "If it FAILS, also choose the single best remediation 'action':\n"
+        "- 'fetch_context': it fails because the snippet lacks the needed facts "
+        "(GROUNDED fail) — more lecture context would let a good question be written.\n"
+        "- 'replan_topic': the topic itself does not appear in the lecture at all — "
+        "no amount of rewriting or context will help; a different topic is needed.\n"
+        "- 'regenerate': wording/clarity/difficulty issues a plain rewrite can fix.\n\n"
         "Return STRICT JSON:\n"
         '{"difficulty":"PASS|FAIL","grounded":"PASS|FAIL",'
         '"instruction":"PASS|FAIL","overall":"PASS|FAIL",'
+        '"action":"regenerate|fetch_context|replan_topic",'
         '"reason":"1-line concrete fix hint if FAIL"}'
     )
 
@@ -2266,7 +2214,7 @@ def _validate_one_question(quiz_type, question, content_snip, target_difficulty,
     if not isinstance(result, dict):
         return True, "", {
             "difficulty": "PASS", "grounded": "PASS",
-            "instruction": "PASS", "uniqueness": "PASS",
+            "instruction": "PASS", "uniqueness": "PASS", "action": "regenerate",
         }
 
     overall = str(result.get("overall", "PASS")).upper()
@@ -2277,6 +2225,18 @@ def _validate_one_question(quiz_type, question, content_snip, target_difficulty,
         "instruction": str(result.get("instruction", "PASS")).upper(),
         "uniqueness":  "PASS",
     }
+
+    # Resolve the remediation action: trust the validator's pick when valid, but
+    # apply deterministic guards so the action matches the actual failure type.
+    action = str(result.get("action", "")).strip().lower()
+    if action not in ("regenerate", "fetch_context", "replan_topic"):
+        action = ""
+    if checks["grounded"] == "FAIL":
+        action = action or "fetch_context"      # grounding gap → get more context
+    elif checks["difficulty"] == "FAIL":
+        action = "regenerate"                    # difficulty is a rewrite problem
+    checks["action"] = action or "regenerate"
+
     # Enforce hard blocking checks deterministically:
     # - grounded must pass
     # - instruction must pass only when user gave instructions
@@ -2290,14 +2250,115 @@ def _validate_one_question(quiz_type, question, content_snip, target_difficulty,
     if hard_fail:
         return False, reason or f"failed checks: {', '.join(hard_fail)}", checks
 
-    # Difficulty mismatch can create long retry loops (especially HARD mode).
-    # Treat it as non-blocking if the question is grounded and instruction-safe.
+    # Difficulty is subjective and the small validator model is noisy on it,
+    # which used to be the main cause of questions burning all 3 attempts. Treat
+    # a difficulty mismatch as NON-blocking at every level (not just HARD) as
+    # long as the question is grounded and instruction-safe — accept it with a
+    # note rather than exhausting retries on a judgement call.
     if checks["difficulty"] == "FAIL":
-        if target_difficulty == "hard":
-            return True, "difficulty borderline; accepted (grounded + instruction-safe)", checks
-        return False, reason or "difficulty does not match target", checks
+        return True, "difficulty borderline; accepted (grounded + instruction-safe)", checks
 
-    return overall == "PASS", reason, checks
+    # Reaching here means every concrete check passed (grounded + instruction +
+    # uniqueness, with difficulty handled above). Trust those objective gates
+    # rather than the model's vague holistic "overall" flag, which on the small
+    # validator is noisy and caused needless retries when it contradicted the
+    # per-dimension verdicts.
+    return True, reason, checks
+
+
+def _fetch_more_context(topic, question_text, top_k=5):
+    """Remediation tool: pull extra lecture context from the RAG index for a
+    topic the validator flagged as under-grounded. Returns a context block, or
+    '' if no useful index/context is available."""
+    try:
+        query = (str(topic) + " " + (question_text or "")).strip()
+        if not query:
+            return ""
+        ctx_str, _ = rag.query(query, top_k=top_k)
+        if not ctx_str or ctx_str.strip().lower().startswith("no index"):
+            return ""
+        return "=== RETRIEVED CONTEXT (for grounding) ===\n" + ctx_str[:2500]
+    except Exception:
+        return ""
+
+
+def _pick_grounded_topic(quiz_type, content_snip, summary, avoid_topics):
+    """Remediation tool: ask the planner model for a different topic that is
+    actually covered in the lecture, when the validator says the current topic
+    isn't in the material. Returns a topic string, or '' on failure."""
+    avoid = ", ".join(t for t in avoid_topics if t) or "none"
+    prompt = (
+        f"Pick ONE specific topic that is clearly and explicitly covered in the "
+        f"lecture content below and is well-suited for a {quiz_type.upper()} question.\n"
+        f"Avoid these already-used or unsuitable topics: {avoid}.\n"
+        'Return STRICT JSON: {"topic":"..."}\n\n'
+        f"CONTENT:\n{content_snip[:3500]}\n\nSUMMARY:\n{summary[:800]}"
+    )
+    data = call_ollama_json(prompt, fallback={}, model=QUIZ_MODEL, num_ctx=QUIZ_CTX)
+    if isinstance(data, dict):
+        return (data.get("topic") or "").strip()
+    return ""
+
+
+def _topic_coverage(topic, content_snip):
+    """Fraction of a topic's significant words that appear in the content — a
+    cheap gate so the tool-use grounding check only fires when the handed-in
+    content looks thin on the topic (avoids an LLM call for well-covered ones)."""
+    words = [w for w in re.split(r'\W+', (topic or '').lower()) if len(w) > 3]
+    if not words:
+        return 1.0
+    low = content_snip.lower()
+    return sum(1 for w in words if w in low) / len(words)
+
+
+def _gather_grounding(quiz_type, topic, content_snip, summary, max_tool_calls=2,
+                      thinking_cb=None, qid=None, agent_name="QuizGenerator"):
+    """Tool-use loop run BEFORE drafting: the generator inspects the content it
+    was handed and decides for itself whether it has enough material on the
+    topic. If not, it calls its search_lecture(query) tool (RAG) — choosing the
+    query — to pull more context first. Returns the (possibly enriched) content.
+
+    This is genuine model-directed tool use: the LLM decides whether to call the
+    tool and with what arguments, rather than always being fed a fixed snippet."""
+    if rag is None or getattr(rag, "index", None) is None:
+        return content_snip                                   # no RAG tool available
+    if _topic_coverage(topic, content_snip) >= 0.6:
+        return content_snip                                   # already well covered
+
+    enriched = content_snip
+    for _ in range(max(1, max_tool_calls)):
+        prompt = (
+            f"You will write a {quiz_type.upper()} question on the topic '{topic}'.\n"
+            "Tool available — search_lecture(query): returns more text from THIS lecture.\n"
+            "Does the CONTENT below already contain enough specific material on that "
+            "topic to write a well-grounded question?\n"
+            '- If yes: return {"action":"ready"}\n'
+            '- If not: return {"action":"search","query":"<short search query>"}\n\n'
+            f"CONTENT:\n{enriched[:2800]}\n\nSUMMARY:\n{summary[:500]}\n\n"
+            'Return STRICT JSON: {"action":"ready|search","query":"..."}'
+        )
+        data   = call_ollama_json(prompt, fallback={"action": "ready"},
+                                  model=QUIZ_MODEL, num_ctx=QUIZ_CTX)
+        action = str((data or {}).get("action", "ready")).strip().lower()
+        query  = str((data or {}).get("query", "")).strip()
+        if action != "search" or not query:
+            break
+        extra = _fetch_more_context(query, "")
+        if thinking_cb:
+            thinking_cb({
+                "agent":       agent_name,
+                "step":        "tool_call",
+                "phase":       "GENERATE",
+                "question_id": qid,
+                "verdict":     "OVERRIDE",
+                "action":      "rag_query",
+                "reason":      (f"Generator searched the lecture for \"{query[:60]}\" "
+                                "before drafting" + ("" if extra else " — nothing new found")),
+            })
+        if not extra or extra[:160] in enriched:
+            break
+        enriched = extra + "\n\n" + enriched
+    return enriched
 
 
 def _generate_one_question_with_retry(
@@ -2305,11 +2366,17 @@ def _generate_one_question_with_retry(
     user_instr, existing_questions, question_idx,
     max_attempts=3, thinking_cb=None, agent_name="QuizGenerator",
 ):
-    """Generate ONE question, validate it, retry until pass or max attempts.
-    Pushes per-question events so the UI can render an attempt-by-attempt view."""
+    """Generate ONE question, validate it, and on failure let the VALIDATOR
+    choose the remediation — regenerate, fetch more RAG context, or replan the
+    topic — rather than blindly retrying. Pushes per-question events so the UI
+    can render an attempt-by-attempt view."""
     qid                  = f"q{question_idx + 1}"
+    q_start              = time.time()
     last_failure_reason  = ""
     last_question        = None
+    best_question        = None   # best of the failed attempts, if none ever passes
+    best_score           = -1
+    best_reason          = ""
     schema               = QUIZ_SCHEMAS.get(quiz_type, QUIZ_SCHEMAS["mcq"])
     diff_desc            = DIFF_DESCRIPTIONS.get(difficulty, "")
     strategy_tracks      = {
@@ -2335,6 +2402,20 @@ def _generate_one_question_with_retry(
         ],
     }
     strategies = strategy_tracks.get(quiz_type, strategy_tracks["mcq"])
+
+    # Tool-use: before drafting, let the generator decide whether it has enough
+    # grounding for this topic and, if not, issue its own RAG search to pull more
+    # context. The validator can still request a reactive fetch later, so this
+    # proactive pass does NOT consume the fetched_context budget.
+    working_content = _gather_grounding(
+        quiz_type, topic, content_snip, summary,
+        max_tool_calls=2, thinking_cb=thinking_cb, qid=qid, agent_name=agent_name,
+    )
+
+    # Remediation state — between attempts the validator can enrich the content
+    # (fetch_context) or switch the topic (replan_topic) instead of just retrying.
+    fetched_context = False
+    replanned       = False
 
     for attempt in range(1, max_attempts + 1):
         strategy = strategies[(attempt - 1) % len(strategies)]
@@ -2385,18 +2466,27 @@ def _generate_one_question_with_retry(
             f"Topic: '{topic}'\n"
             f"Difficulty: {difficulty.upper()} — {diff_desc}\n"
             f"Question strategy for this attempt: {strategy}\n"
+            "GROUNDING RULE: the question and its answer MUST be answerable using ONLY "
+            "the CONTENT below. Do NOT introduce formulas, methods, numbers, or concepts "
+            "that are not present in it — not even to make it harder. Make it harder by "
+            "deeper reasoning over the SAME material, never by adding outside topics.\n"
             f"{feedback_block}"
             f"{existing_summary}"
             f"{instr_line}"
             f"Output STRICT JSON in this exact shape (a 'questions' array containing exactly 1 object):\n"
             f"{schema}\n\n"
-            f"CONTENT:\n{content_snip[:5500]}\n\n"
+            f"CONTENT:\n{working_content[:5500]}\n\n"
             f"SUMMARY:\n{summary[:1200]}"
         )
 
-        # Per-question generation uses the primary model first, then falls back
-        # to the quiz JSON helper (which has additional parser/repair logic).
-        data = call_ollama_json(prompt, fallback={"questions": []})
+        # Speed: the first attempt uses the fast quiz model (4B) and a capped
+        # context; only escalate to the larger primary model on a retry, where
+        # the fast model has already failed validation and the extra quality is
+        # worth the latency. A 32K context on a T4 is both slow and OOM-prone
+        # next to Whisper/OCR, and this prompt is small, so cap it to QUIZ_CTX.
+        gen_model = QUIZ_MODEL if attempt == 1 else state.active_model
+        data = call_ollama_json(prompt, fallback={"questions": []},
+                                model=gen_model, num_ctx=QUIZ_CTX)
         qs   = data.get("questions", []) if isinstance(data, dict) else []
         if not qs:
             repaired = call_ollama_json_quiz(prompt, key="questions")
@@ -2422,7 +2512,7 @@ def _generate_one_question_with_retry(
         last_question = q
 
         passed, fail_reason, checks = _validate_one_question(
-            quiz_type, q, content_snip, difficulty, user_instr,
+            quiz_type, q, working_content, difficulty, user_instr,
             existing_questions=existing_questions,
         )
 
@@ -2440,6 +2530,7 @@ def _generate_one_question_with_retry(
                     "checks":      checks,
                     "reason":      "All quality checks passed",
                 })
+                q_duration_sec = round(time.time() - q_start, 2)
                 thinking_cb({
                     "agent":            agent_name,
                     "step":             "question_finalized",
@@ -2452,11 +2543,19 @@ def _generate_one_question_with_retry(
                     "topic":            topic,
                     "difficulty":       difficulty,
                     "question_preview": qtxt[:160],
-                    "reason":           f"Q{question_idx + 1} accepted on attempt {attempt}",
+                    "duration_sec":     q_duration_sec,
+                    "reason":           f"Q{question_idx + 1} accepted on attempt {attempt} ({q_duration_sec:.1f}s)",
                 })
             return q
 
         last_failure_reason = fail_reason or "validation failed"
+        # Track the best of the failed attempts (most checks passing) so that if
+        # we do exhaust retries we keep the strongest candidate, not just the
+        # last one generated.
+        score = sum(1 for k in ("grounded", "instruction", "difficulty", "uniqueness")
+                    if (checks or {}).get(k) == "PASS")
+        if score > best_score:
+            best_score, best_question, best_reason = score, q, last_failure_reason
         if thinking_cb:
             thinking_cb({
                 "agent":       "QuizValidatorAgent",
@@ -2469,26 +2568,82 @@ def _generate_one_question_with_retry(
                 "reason":      last_failure_reason,
             })
 
-    # Max attempts reached:
-    # - keep the last generated attempt (attempt #3) even if validator failed.
-    # - this preserves strict requested difficulty and avoids pipeline stop.
-    if last_question is not None:
+        # ── Validator-chosen remediation ──────────────────────────
+        # The validator decides HOW to fix, not just that it failed:
+        #   fetch_context → pull more lecture context from RAG, then retry
+        #   replan_topic  → switch to a topic that's actually in the lecture
+        #   regenerate    → plain rewrite (feedback already in the prompt)
+        # Only act if another attempt remains.
+        if attempt < max_attempts:
+            action = (checks or {}).get("action", "regenerate")
+            # Escalate when a remediation has already been tried and still fails.
+            if action == "fetch_context" and fetched_context:
+                action = "replan_topic"
+            if action == "replan_topic" and replanned:
+                action = "regenerate"
+
+            if action == "fetch_context":
+                extra = _fetch_more_context(topic, qtxt)
+                fetched_context = True   # attempted — escalate to replan if it fails again
+                if extra and extra[:160] not in working_content:
+                    working_content = (extra + "\n\n" + working_content)
+                    if thinking_cb:
+                        thinking_cb({
+                            "agent":       "QuizValidatorAgent",
+                            "step":        "remediation",
+                            "phase":       "VALIDATE",
+                            "question_id": qid,
+                            "attempt":     attempt,
+                            "verdict":     "OVERRIDE",
+                            "action":      "fetch_context",
+                            "reason":      f"Under-grounded — fetched extra RAG context for '{topic}', retrying",
+                        })
+
+            elif action == "replan_topic":
+                avoid = [topic] + [(q2.get("topic") or "") for q2 in (existing_questions or [])]
+                new_topic = _pick_grounded_topic(quiz_type, content_snip, summary, avoid)
+                if new_topic and new_topic.strip().lower() != (topic or "").strip().lower():
+                    if thinking_cb:
+                        thinking_cb({
+                            "agent":       "QuizValidatorAgent",
+                            "step":        "remediation",
+                            "phase":       "VALIDATE",
+                            "question_id": qid,
+                            "attempt":     attempt,
+                            "verdict":     "OVERRIDE",
+                            "action":      "replan_topic",
+                            "reason":      f"Topic '{topic}' not in lecture — replanning to '{new_topic}'",
+                        })
+                    topic               = new_topic
+                    replanned           = True
+                    last_failure_reason = ""   # fresh topic — don't carry stale feedback
+
+    # Max attempts reached without a clean pass: keep the BEST of the attempts
+    # (most checks passing) so the set still fills, but label it honestly as an
+    # OVERRIDE — NOT a PASS — so "max tries reached" is never silently passed off
+    # as if validation succeeded. The UI shows these amber and the metrics count
+    # them as overrides.
+    kept = best_question if best_question is not None else last_question
+    if kept is not None:
         if thinking_cb:
+            q_duration_sec = round(time.time() - q_start, 2)
             thinking_cb({
                 "agent":            agent_name,
                 "step":             "question_finalized",
                 "phase":            "GENERATE",
                 "question_id":      qid,
                 "question_idx":     question_idx,
-                "verdict":          "DONE",
-                "status":           "PASS",
+                "verdict":          "OVERRIDE",
+                "status":           "OVERRIDE",
                 "total_attempts":   max_attempts,
                 "topic":            topic,
                 "difficulty":       difficulty,
-                "question_preview": (last_question.get("question") or last_question.get("statement") or "")[:160],
-                "reason":           f"Attempt {max_attempts} accepted after max retries. Last issue: {last_failure_reason}",
+                "question_preview": (kept.get("question") or kept.get("statement") or "")[:160],
+                "duration_sec":     q_duration_sec,
+                "reason":           f"Validator not fully satisfied after {max_attempts} attempts "
+                                    f"({q_duration_sec:.1f}s) — kept best candidate. Last issue: {best_reason or last_failure_reason}",
             })
-        return last_question
+        return kept
 
     # Rare case: model produced no question in all attempts. Do a strict JSON recovery
     # and accept the recovered output as final attempt content.
@@ -2508,19 +2663,22 @@ def _generate_one_question_with_retry(
         if not q.get("topic"):      q["topic"] = topic
         if not q.get("difficulty"): q["difficulty"] = difficulty
         if thinking_cb:
+            q_duration_sec = round(time.time() - q_start, 2)
             thinking_cb({
                 "agent":            agent_name,
                 "step":             "question_finalized",
                 "phase":            "GENERATE",
                 "question_id":      qid,
                 "question_idx":     question_idx,
-                "verdict":          "DONE",
-                "status":           "PASS",
+                "verdict":          "OVERRIDE",
+                "status":           "OVERRIDE",
                 "total_attempts":   max_attempts,
                 "topic":            topic,
                 "difficulty":       difficulty,
                 "question_preview": (q.get("question") or q.get("statement") or "")[:160],
-                "reason":           f"Recovered and accepted after {max_attempts} attempts returned no question",
+                "duration_sec":     q_duration_sec,
+                "reason":           f"Recovered after {max_attempts} attempts returned no question — "
+                                    f"kept without full validation ({q_duration_sec:.1f}s)",
             })
         return q
 
@@ -2609,16 +2767,34 @@ def _run_quiz_agentic_loop(ctx, quiz_type, content, summary,
     content_snip    = content[:6000]
 
     for idx, (topic, diff) in enumerate(slots):
-        q = _generate_one_question_with_retry(
-            quiz_type=quiz_type, topic=topic, difficulty=diff,
-            content_snip=content_snip, summary=summary,
-            user_instr=user_instr,
-            existing_questions=final_questions,
-            question_idx=idx,
-            max_attempts=max_attempts_per_q,
-            thinking_cb=thinking_cb,
-            agent_name=agent_name,
-        )
+        # One impossible slot must not abort the whole batch — isolate failures
+        # per question so the rest of the set still gets generated.
+        try:
+            q = _generate_one_question_with_retry(
+                quiz_type=quiz_type, topic=topic, difficulty=diff,
+                content_snip=content_snip, summary=summary,
+                user_instr=user_instr,
+                existing_questions=final_questions,
+                question_idx=idx,
+                max_attempts=max_attempts_per_q,
+                thinking_cb=thinking_cb,
+                agent_name=agent_name,
+            )
+        except Exception as e:
+            q = None
+            if thinking_cb:
+                thinking_cb({
+                    "agent":        agent_name,
+                    "step":         "question_finalized",
+                    "phase":        "GENERATE",
+                    "question_id":  f"q{idx + 1}",
+                    "question_idx": idx,
+                    "verdict":      "FAIL",
+                    "status":       "FAIL",
+                    "topic":        topic,
+                    "difficulty":   diff,
+                    "reason":       f"Q{idx + 1} skipped — generation failed: {e}",
+                })
         if q:
             final_questions.append(q)
 
@@ -2823,8 +2999,10 @@ class FlashcardAgent(BaseAgent):
 
     def _validate_card(self, card, seen_fronts):
         """Return (ok, reason). Deterministic checks only."""
-        front = card.get("front", "").strip()
-        back  = card.get("back",  "").strip()
+        if not isinstance(card, dict):
+            return False, "not an object"
+        front = (card.get("front") or "").strip()
+        back  = (card.get("back")  or "").strip()
         if not front or not back:
             return False, "empty front or back"
         if front.lower() == back.lower():
@@ -2840,6 +3018,9 @@ class FlashcardAgent(BaseAgent):
         seen_fronts = set()
         accepted    = []
         batch_num   = 0
+        # Flashcards are a bulk JSON-array task the small 4B model can't do, so we
+        # generate straight on the primary (12B) model, which handles a full batch
+        # in one shot — a couple of batches is plenty.
         max_batches = self.max_retries + 2
 
         while len(accepted) < self.TARGET and batch_num < max_batches:
@@ -2862,7 +3043,7 @@ class FlashcardAgent(BaseAgent):
                 "Each card must cover a different concept.\n\n"
                 f"CONTENT:\n{content}"
             )
-            data  = call_ollama_json_quiz(prompt, key="cards")
+            data  = call_ollama_json_quiz(prompt, key="cards", force_primary=True)
             batch = data.get("cards", []) if isinstance(data, dict) else []
 
             for card in batch:
@@ -2910,12 +3091,833 @@ class SuggestedQuestionsAgent(BaseAgent):
             "(slides, boards, speech). Return a JSON list of strings:\n"
             f"{head[:7800]}",
             fallback_list=[],
+            force_primary=True,
         )
         state.suggested_questions = sq if isinstance(sq, list) else []
 
 
 
 print("✅ Specialist agents ready.")
+
+# ══════════════════════════════════════════════════════════════
+# EVALUATION HARNESS  —  LLM-as-Judge + Agentic vs Non-Agentic
+# ══════════════════════════════════════════════════════════════
+#
+# Compares the per-question agentic pipeline (_run_quiz_agentic_loop) against the
+# single-shot non-agentic baseline generators (generate_mcq/tf/fill/short) on
+# identical lecture content. Every generated question, from both pipelines, is
+# scored by an independent judge LLM (the larger OLLAMA_MODEL, distinct from the
+# QUIZ_MODEL used for all generation/validation). Call run_quiz_evaluation() from
+# a Colab cell after processing a real lecture.
+
+
+
+JUDGE_SCHEMA = (
+    '{"correctness":1,"clarity":1,"difficulty_match":1,"distractor_quality":1,'
+    '"overall":1,"accept":true,"reason":""}'
+)
+
+
+def judge_question(quiz_type, question, content_snip, target_difficulty, judge_model=None):
+    """LLM-as-judge: score ONE generated question on a 1-5 rubric using an
+    independent (larger) model. Fails closed (accept=False) on any parse error,
+    since fail-open would bias a measurement harness."""
+    qtxt = question.get("question") or question.get("statement") or ""
+    ans  = str(
+        question.get("correct_answer") or question.get("answer") or
+        question.get("model_answer") or ""
+    )[:200]
+    diff_desc       = DIFF_DESCRIPTIONS.get(target_difficulty, "")
+    options_line    = ""
+    distractor_line = ""
+    if quiz_type == "mcq":
+        options_line    = f"Options: {json.dumps(question.get('options', {}), ensure_ascii=False)}\n"
+        distractor_line = "4. distractor_quality — wrong options are plausible but clearly incorrect\n"
+
+    prompt = (
+        f"You are an impartial, strict but fair exam-quality judge. Score this ONE "
+        f"{quiz_type.upper()} question on a 1-5 scale for each dimension.\n\n"
+        f"Target difficulty: {target_difficulty.upper()} — {diff_desc}\n\n"
+        f"Content snippet (ground truth):\n{content_snip[:4500]}\n\n"
+        f"Question:\nQ: {qtxt[:400]}\n{options_line}A: {ans}\n\n"
+        "Score 1 (worst) to 5 (best) on:\n"
+        "1. correctness — factually correct and answerable from the content above\n"
+        "2. clarity — unambiguous, well-formed wording\n"
+        "3. difficulty_match — actual difficulty matches the target difficulty\n"
+        f"{distractor_line}"
+        "5. overall — holistic quality\n\n"
+        "BE DISCRIMINATING — use the FULL range, do not default to 5:\n"
+        "  5 = flawless, exam-ready as-is; 4 = good, minor nit; 3 = acceptable but "
+        "ordinary; 2 = weak (generic wording, shallow recall, weak distractors); 1 = poor.\n"
+        "Most decent questions are 3-4. Reserve 5 for genuinely excellent ones. "
+        "Penalise generic phrasing, near-duplicate framing, obvious/implausible "
+        "distractors, and shallow rote recall.\n\n"
+        "Then decide accept (true) or reject (false) for inclusion in a real exam.\n\n"
+        f"Return STRICT JSON: {JUDGE_SCHEMA}"
+    )
+
+    fallback = {
+        "correctness": 0, "clarity": 0, "difficulty_match": 0,
+        "distractor_quality": None, "overall": 0,
+        "accept": False, "reason": "judge_parse_error",
+    }
+    result = call_ollama_json(
+        prompt,
+        system="You are an impartial, strict but fair exam-quality judge. Return only JSON.",
+        fallback=fallback,
+        model=judge_model or OLLAMA_MODEL, num_ctx=QUIZ_CTX,
+    )
+    if not isinstance(result, dict) or "overall" not in result:
+        return dict(fallback)
+
+    out = {
+        "correctness":       int(result.get("correctness", 0) or 0),
+        "clarity":            int(result.get("clarity", 0) or 0),
+        "difficulty_match":   int(result.get("difficulty_match", 0) or 0),
+        "distractor_quality": (int(result["distractor_quality"])
+                                if quiz_type == "mcq" and result.get("distractor_quality") is not None
+                                else None),
+        "overall":            int(result.get("overall", 0) or 0),
+        "accept":             bool(result.get("accept", False)),
+        "reason":             str(result.get("reason", ""))[:300],
+    }
+    # Keep accept/overall internally consistent — a low overall score cannot be "accepted".
+    if out["overall"] < 3:
+        out["accept"] = False
+    return out
+
+
+def _build_eval_ctx(quiz_type, num_questions):
+    """Build the same duck-typed ctx object quiz_generate_route uses (see
+    colab.py's '/quiz/generate' route), so the agentic and non-agentic paths see
+    byte-identical lecture content. Returns (ctx, content, summary), or
+    (None, "", "") if no lecture has been processed yet."""
+    summary = state.status.get("summary", "")
+    if not summary:
+        return None, "", ""
+
+    ctx = type('Ctx', (), {
+        'content_type':       'video' if state.video_path else 'document',
+        'board_text':         state.status.get("board_text", ""),
+        'transcript':         state.status.get("transcript", ""),
+        'board_entries':      load_board_entries_from_disk(),
+        'doc_text':           state.status.get("summary", ""),
+        'summary':            summary,
+        'agent_log':          [],
+        '_quiz_type':         quiz_type,
+        '_quiz_count':        num_questions,
+        '_user_instructions': "",
+        '_plan_mode':         'auto',
+        '_manual_topics':     [],
+        '_manual_difficulty': 'medium',
+        '_mode':              'manual',
+        '_quiz_plan':         None,
+        '_agent_name':        'EvalAgent',
+        'segment_list':       [],
+        'file_path':          state.video_path or state.doc_path or "",
+        'source_name':        Path(state.video_path or state.doc_path or "unknown").name,
+        'thinking_cb':        None,
+    })()
+
+    seg_path = os.path.join(OUTPUT_DIR, "transcript_segments.json")
+    if os.path.exists(seg_path):
+        try:
+            with open(seg_path, "r", encoding="utf-8") as f:
+                ctx.segment_list = json.load(f)
+        except Exception:
+            ctx.segment_list = []
+
+    if state.doc_path:
+        doc_path = os.path.join(OUTPUT_DIR, "doc_text.txt")
+        if os.path.exists(doc_path):
+            with open(doc_path, "r", encoding="utf-8") as f:
+                ctx.doc_text = f.read()
+
+    content = (
+        pack_video_sources(ctx.board_text, ctx.transcript, ctx.board_entries or [], 7500)
+        if ctx.content_type == "video"
+        else (ctx.doc_text or "")[:7500]
+    )
+    return ctx, content, summary
+
+
+def _collect_agentic_results(quiz_type, ctx, content, summary, num_questions,
+                              target_difficulty="medium", max_attempts_per_q=3,
+                              on_event=None):
+    """Runs the production agentic loop unmodified, observing it via thinking_cb.
+    If on_event is given, each agentic event is also forwarded live (for the UI).
+    Returns {questions, attempts_by_qid, validator_verdict_by_qid,
+    durations_by_qid, approx_llm_calls, wall_clock_sec}."""
+    events = []
+    def cb(e):
+        events.append(e)
+        if on_event:
+            on_event(e)
+    t0 = time.time()
+    questions = _run_quiz_agentic_loop(
+        ctx, quiz_type, content, summary, "",
+        target_difficulty=target_difficulty,
+        thinking_cb=cb,
+        max_attempts_per_q=max_attempts_per_q,
+    )
+    wall_clock_sec = time.time() - t0
+
+    attempts_by_qid          = {}
+    durations_by_qid         = {}
+    validator_verdict_by_qid = {}
+    last_verdict_seen        = {}
+    for e in events:
+        qid = e.get("question_id")
+        if not qid:
+            continue
+        if e.get("step") == "question_validated":
+            last_verdict_seen[qid] = e.get("verdict", "FAIL")
+        elif e.get("step") == "question_finalized":
+            # A finalized event with status FAIL means the slot was skipped (no
+            # question kept) — don't count it, or it would misalign the
+            # per-question metrics/F1 against the actual `questions` list.
+            if e.get("status") == "FAIL":
+                continue
+            attempts_by_qid[qid]  = e.get("total_attempts", 1)
+            durations_by_qid[qid] = e.get("duration_sec", 0.0)
+            # Use the real internal-validator verdict on the kept attempt, NOT
+            # question_finalized.status — that field is hardcoded "PASS" even
+            # when the loop keeps a question after exhausting all retries on a
+            # FAIL (see _generate_one_question_with_retry's max-attempts path).
+            if qid in last_verdict_seen:
+                validator_verdict_by_qid[qid] = last_verdict_seen[qid]
+            # else: question came from the deep-fallback repair path and never
+            # went through _validate_one_question — no verdict to record.
+
+    approx_llm_calls = 2 * sum(attempts_by_qid.values())  # ~1 generate + 1 validate per attempt
+    return {
+        "questions":                questions,
+        "attempts_by_qid":          attempts_by_qid,
+        "durations_by_qid":         durations_by_qid,
+        "validator_verdict_by_qid": validator_verdict_by_qid,
+        "approx_llm_calls":         approx_llm_calls,
+        "wall_clock_sec":           wall_clock_sec,
+    }
+
+
+def _collect_nonagentic_results(quiz_type, ctx, num_questions, target_difficulty="medium"):
+    """Calls the matching legacy single-shot bulk generator ONCE, unmodified.
+    Returns {questions, wall_clock_sec, llm_call_count}.
+    NOTE: generate_tf/generate_fill/generate_short hardcode their own question
+    counts (10/10/8) and have no num_questions parameter at all — only
+    generate_mcq honors a count. The returned list length may therefore differ
+    from num_questions for those three; this is a reported methodology caveat,
+    not something this harness patches around."""
+    t0 = time.time()
+    if quiz_type == "mcq":
+        questions = generate_mcq(
+            ctx.board_text, ctx.transcript, ctx.summary, num_questions=num_questions,
+            doc_text=ctx.doc_text, board_entries=ctx.board_entries,
+            segment_list=ctx.segment_list, difficulty_hint=target_difficulty,
+        )
+    elif quiz_type == "tf":
+        questions = generate_tf(
+            ctx.transcript, ctx.summary, doc_text=ctx.doc_text,
+            segment_list=ctx.segment_list, difficulty_hint=target_difficulty,
+            board_text=ctx.board_text, board_entries=ctx.board_entries,
+        )
+    elif quiz_type == "fill":
+        questions = generate_fill(
+            ctx.transcript, ctx.summary, doc_text=ctx.doc_text,
+            board_entries=ctx.board_entries, difficulty_hint=target_difficulty,
+            board_text=ctx.board_text,
+        )
+    else:
+        questions = generate_short(
+            ctx.transcript, ctx.summary, doc_text=ctx.doc_text,
+            segment_list=ctx.segment_list, difficulty_hint=target_difficulty,
+            board_text=ctx.board_text, board_entries=ctx.board_entries,
+        )
+    wall_clock_sec = time.time() - t0
+    return {
+        "questions":      questions or [],
+        "wall_clock_sec": wall_clock_sec,
+        "llm_call_count": 1,
+    }
+
+
+def _duplicate_rate(questions):
+    """Pairwise near-duplicate rate using the same difflib approach as
+    _validate_one_question (ratio > 0.85)."""
+    texts = [
+        (q.get("question") or q.get("statement") or "").strip().lower()
+        for q in questions
+    ]
+    if not texts:
+        return 0.0
+    dup_count = 0
+    for i, t in enumerate(texts):
+        if not t:
+            continue
+        for prev in texts[:i]:
+            if prev and difflib.SequenceMatcher(None, prev, t).ratio() > 0.85:
+                dup_count += 1
+                break
+    return dup_count / len(texts)
+
+
+def _qtext(q):
+    return (q.get("question") or q.get("statement") or "")
+
+
+def _structural_metrics(quiz_type, questions):
+    """Deterministic, NO-LLM quality signals about a question set: length,
+    topic spread, and per-type structural validity (valid MCQ keys, T/F balance,
+    fill blanks present, short-answer key points)."""
+    n = len(questions)
+    lens   = [len(_qtext(q).split()) for q in questions if _qtext(q)]
+    topics = [(q.get("topic") or "").strip() for q in questions if (q.get("topic") or "").strip()]
+    m = {
+        "avg_question_len_words": round(sum(lens) / len(lens), 1) if lens else None,
+        "distinct_topics":        len(set(topics)),
+    }
+    if not n:
+        return m
+    if quiz_type == "mcq":
+        valid = sum(1 for q in questions
+                    if q.get("correct_answer") in (q.get("options", {}) or {}))
+        optn  = [len(q.get("options", {}) or {}) for q in questions]
+        m["valid_answer_key_rate"] = round(valid / n, 3)
+        m["avg_options"]           = round(sum(optn) / len(optn), 1) if optn else None
+    elif quiz_type == "tf":
+        trues = sum(1 for q in questions
+                    if str(q.get("answer")).strip().lower() in ("true", "1", "yes", "t"))
+        m["true_fraction"] = round(trues / n, 3)   # ~0.5 == well balanced
+    elif quiz_type == "fill":
+        m["has_blank_rate"] = round(sum(1 for q in questions if "___" in _qtext(q)) / n, 3)
+    elif quiz_type == "short":
+        m["has_key_points_rate"] = round(sum(1 for q in questions if q.get("key_points")) / n, 3)
+    return m
+
+
+def _grounding_metrics(questions, content):
+    """Embedding-based, NO-LLM-judge signals using the SentenceTransformer that
+    already powers RAG:
+      semantic_grounding     — mean cosine of each question to its best-matching
+                               chunk of the lecture (higher = better grounded).
+      inter_question_similarity — mean nearest-neighbour cosine between questions
+                               (lower = more diverse / less redundant)."""
+    try:
+        texts = [_qtext(q) for q in questions if _qtext(q).strip()]
+        if not texts or not (content or "").strip():
+            return {"semantic_grounding": None, "inter_question_similarity": None}
+        emb    = get_embedder()
+        chunks = [content[i:i + 500] for i in range(0, min(len(content), 8000), 500)] or [content[:500]]
+        qv = np.asarray(emb.encode(texts), dtype="float32")
+        cv = np.asarray(emb.encode(chunks), dtype="float32")
+
+        def _norm(mtx):
+            nrm = np.linalg.norm(mtx, axis=1, keepdims=True)
+            nrm[nrm == 0] = 1.0
+            return mtx / nrm
+
+        qn, cn = _norm(qv), _norm(cv)
+        grounding = float((qn @ cn.T).max(axis=1).mean())
+        if len(texts) > 1:
+            qq = qn @ qn.T
+            np.fill_diagonal(qq, 0.0)
+            inter = float(qq.max(axis=1).mean())
+        else:
+            inter = 0.0
+        return {"semantic_grounding": round(grounding, 3),
+                "inter_question_similarity": round(inter, 3)}
+    except Exception:
+        return {"semantic_grounding": None, "inter_question_similarity": None}
+
+
+def _compute_pipeline_metrics(questions, judged_scores, attempts_by_qid=None,
+                               llm_call_count=1, wall_clock_sec=0.0, durations_by_qid=None,
+                               quiz_type=None, content=""):
+    """judged_scores: list of judge_question() output dicts, same order/length as
+    questions. Returns a flat metrics dict for one pipeline on one quiz_type,
+    combining (a) LLM-judge scores, (b) deterministic structural metrics, and
+    (c) embedding-based grounding/diversity metrics — so the comparison isn't
+    judge-only."""
+    n = len(judged_scores)
+
+    def _mean(key, only_not_none=False):
+        vals = [s.get(key) for s in judged_scores]
+        if only_not_none:
+            vals = [v for v in vals if v is not None]
+        return round(sum(vals) / len(vals), 3) if vals else None
+
+    accept_count   = sum(1 for s in judged_scores if s.get("accept"))
+    attempts_vals  = list((attempts_by_qid or {}).values())
+    duration_vals  = list((durations_by_qid or {}).values())
+
+    metrics = {
+        "n_questions":                          n,
+        # ── LLM-judge metrics ──
+        "mean_overall":                         _mean("overall"),
+        "mean_correctness":                     _mean("correctness"),
+        "mean_clarity":                         _mean("clarity"),
+        "mean_difficulty_match":                _mean("difficulty_match"),
+        "mean_distractor_quality":              _mean("distractor_quality", only_not_none=True),
+        "judge_accept_rate":                    round(accept_count / n, 3) if n else 0.0,
+        # ── diversity / redundancy ──
+        "duplicate_rate":                       round(_duplicate_rate(questions), 3),
+        # ── cost / latency ──
+        "avg_attempts":                         round(sum(attempts_vals) / len(attempts_vals), 2) if attempts_vals else 1.0,
+        "avg_question_duration_sec":            round(sum(duration_vals) / len(duration_vals), 2) if duration_vals else None,
+        "llm_call_count":                       llm_call_count,
+        "avg_llm_calls_per_accepted_question":  round(llm_call_count / max(accept_count, 1), 2),
+        "wall_clock_sec":                       round(wall_clock_sec, 2),
+    }
+    # ── deterministic structural + embedding-based metrics (no judge) ──
+    metrics.update(_structural_metrics(quiz_type or "", questions))
+    metrics.update(_grounding_metrics(questions, content))
+    return metrics
+
+
+def _compute_validator_judge_f1(validator_verdicts, judge_accepts):
+    """validator_verdicts: list of 'PASS'/'FAIL' (internal validator, agentic
+    only). judge_accepts: list of bool (judge accept/reject), same order/length,
+    already filtered to only the questions that actually went through the
+    validator. Treats judge accept as the ground-truth label, validator PASS as
+    the predicted label. Returns {precision, recall, f1, accuracy, tp, fp, fn, tn, n}."""
+    pairs = list(zip(validator_verdicts, judge_accepts))
+    tp = sum(1 for v, j in pairs if v == "PASS" and j)
+    fp = sum(1 for v, j in pairs if v == "PASS" and not j)
+    fn = sum(1 for v, j in pairs if v == "FAIL" and j)
+    tn = sum(1 for v, j in pairs if v == "FAIL" and not j)
+
+    precision = tp / (tp + fp) if (tp + fp) else 0.0
+    recall    = tp / (tp + fn) if (tp + fn) else 0.0
+    f1        = (2 * precision * recall / (precision + recall)) if (precision + recall) else 0.0
+    accuracy  = (tp + tn) / len(pairs) if pairs else 0.0
+
+    return {
+        "precision": round(precision, 3), "recall": round(recall, 3),
+        "f1": round(f1, 3), "accuracy": round(accuracy, 3),
+        "tp": tp, "fp": fp, "fn": fn, "tn": tn, "n": len(pairs),
+    }
+
+
+def run_quiz_evaluation(quiz_types=("mcq", "tf", "fill", "short"),
+                         num_questions=6, repeats=2, judge_model=None,
+                         target_difficulty="medium", save_outputs=True,
+                         progress_cb=None):
+    """Top-level evaluation harness — call this from a Colab cell after
+    processing a real lecture. Runs both the agentic pipeline and the
+    non-agentic baseline on identical content for each quiz_type (repeated
+    `repeats` times), judges generated questions with an independent LLM judge,
+    aggregates comparison metrics (incl. validator-vs-judge F1), renders charts,
+    and (if save_outputs) writes eval_results.json + PNGs to OUTPUT_DIR.
+    If progress_cb is given it is called with live event dicts for the UI.
+    Always returns the full results dict."""
+    def emit(kind, **kw):
+        if progress_cb:
+            try:
+                progress_cb({"kind": kind, **kw})
+            except Exception:
+                pass
+
+    ctx0, _, _ = _build_eval_ctx(quiz_types[0], 1)
+    if ctx0 is None:
+        emit("error", reason="No content processed yet — upload and process a lecture first.")
+        return {"ok": False, "error": "No content processed yet — upload and process a lecture first."}
+
+    total_units = len(quiz_types) * max(1, repeats)
+    unit        = 0
+    # Cap how many questions per pipeline get judged, so the slow 12B judge
+    # doesn't have to score the non-agentic generators' 10/10/8 hardcoded
+    # outputs — keeps both pipelines comparable and the run bounded.
+    judge_cap = max(1, num_questions)
+    emit("start", total_units=total_units, quiz_types=list(quiz_types),
+         num_questions=num_questions, repeats=repeats, judge_cap=judge_cap)
+
+    runs_by_type = {qt: [] for qt in quiz_types}
+
+    for qt in quiz_types:
+        for r in range(max(1, repeats)):
+            unit += 1
+            ctx, content, summary = _build_eval_ctx(qt, num_questions)
+            emit("unit_start", quiz_type=qt, repeat=r + 1, unit=unit, total_units=total_units)
+
+            # ── Agentic pipeline (live sub-events forwarded) ──
+            emit("agentic_start", quiz_type=qt, unit=unit)
+            def _fwd(e, _qt=qt, _u=unit):
+                emit("agentic_event", quiz_type=_qt, unit=_u,
+                     step=e.get("step"), agent=e.get("agent"),
+                     verdict=e.get("verdict"), reason=e.get("reason", ""))
+            agentic = _collect_agentic_results(qt, ctx, content, summary,
+                                               num_questions, target_difficulty,
+                                               on_event=_fwd)
+            emit("agentic_done", quiz_type=qt, unit=unit,
+                 count=len(agentic["questions"]),
+                 secs=round(agentic["wall_clock_sec"], 1))
+
+            # show a couple of the agentic questions in the live feed
+            for q in agentic["questions"][:3]:
+                emit("sample", quiz_type=qt, unit=unit, pipeline="agentic",
+                     text=(_qtext(q) or "")[:140])
+
+            # ── Non-agentic baseline (single shot) ──
+            emit("nonagentic_start", quiz_type=qt, unit=unit)
+            nonagentic = _collect_nonagentic_results(qt, ctx, num_questions, target_difficulty)
+            emit("nonagentic_done", quiz_type=qt, unit=unit,
+                 count=len(nonagentic["questions"]),
+                 secs=round(nonagentic["wall_clock_sec"], 1))
+            # show a couple of the non-agentic questions so the student can see
+            # exactly what the baseline produced
+            for q in nonagentic["questions"][:3]:
+                emit("sample", quiz_type=qt, unit=unit, pipeline="nonagentic",
+                     text=(_qtext(q) or "")[:140])
+
+            # ── Judge both (capped) ──
+            content_snip  = content[:6000]
+            ag_qs = agentic["questions"][:judge_cap]
+            na_qs = nonagentic["questions"][:judge_cap]
+            emit("judge_start", quiz_type=qt, unit=unit,
+                 n_agentic=len(ag_qs), n_nonagentic=len(na_qs))
+            agentic_judged = []
+            for i, q in enumerate(ag_qs):
+                agentic_judged.append(judge_question(qt, q, content_snip, target_difficulty, judge_model))
+                emit("judge_progress", quiz_type=qt, unit=unit, pipeline="agentic",
+                     done=i + 1, total=len(ag_qs))
+            nonagentic_judged = []
+            for i, q in enumerate(na_qs):
+                nonagentic_judged.append(judge_question(qt, q, content_snip, target_difficulty, judge_model))
+                emit("judge_progress", quiz_type=qt, unit=unit, pipeline="nonagentic",
+                     done=i + 1, total=len(na_qs))
+
+            agentic_metrics = _compute_pipeline_metrics(
+                ag_qs, agentic_judged, agentic["attempts_by_qid"],
+                agentic["approx_llm_calls"], agentic["wall_clock_sec"],
+                durations_by_qid=agentic["durations_by_qid"],
+                quiz_type=qt, content=content_snip,
+            )
+            nonagentic_metrics = _compute_pipeline_metrics(
+                na_qs, nonagentic_judged, None,
+                nonagentic["llm_call_count"], nonagentic["wall_clock_sec"],
+                quiz_type=qt, content=content_snip,
+            )
+
+            # F1 only over questions that actually went through the internal
+            # validator (excludes the rare deep-fallback recovery path).
+            validator_verdicts, judge_accepts_for_f1 = [], []
+            for idx, qid in enumerate(list(agentic["attempts_by_qid"].keys())[:judge_cap]):
+                if qid in agentic["validator_verdict_by_qid"] and idx < len(agentic_judged):
+                    validator_verdicts.append(agentic["validator_verdict_by_qid"][qid])
+                    judge_accepts_for_f1.append(agentic_judged[idx]["accept"])
+            f1_metrics = _compute_validator_judge_f1(validator_verdicts, judge_accepts_for_f1)
+
+            emit("unit_done", quiz_type=qt, unit=unit, total_units=total_units,
+                 agentic_score=agentic_metrics.get("mean_overall"),
+                 nonagentic_score=nonagentic_metrics.get("mean_overall"),
+                 agentic_accept=agentic_metrics.get("judge_accept_rate"),
+                 nonagentic_accept=nonagentic_metrics.get("judge_accept_rate"),
+                 f1=f1_metrics.get("f1"))
+
+            def _q_with_score(qs, judged):
+                out = []
+                for i, q in enumerate(qs):
+                    j = judged[i] if i < len(judged) else {}
+                    out.append({
+                        "question": (_qtext(q) or "")[:300],
+                        "answer":   str(q.get("correct_answer") or q.get("answer")
+                                        or q.get("model_answer") or "")[:160],
+                        "options":  q.get("options") if qt == "mcq" else None,
+                        "topic":    q.get("topic", ""),
+                        "difficulty": q.get("difficulty", ""),
+                        "judge_overall": j.get("overall"),
+                        "judge_accept":  j.get("accept"),
+                        "judge_reason":  j.get("reason", ""),
+                    })
+                return out
+
+            runs_by_type[qt].append({
+                "agentic_metrics":    agentic_metrics,
+                "nonagentic_metrics": nonagentic_metrics,
+                "f1_metrics":         f1_metrics,
+                # the ACTUAL questions each pipeline produced (with judge scores),
+                # so the report/UI can show what non-agentic vs agentic generated
+                "agentic_questions":    _q_with_score(ag_qs, agentic_judged),
+                "nonagentic_questions": _q_with_score(na_qs, nonagentic_judged),
+            })
+
+    def _aggregate(metric_dicts, numeric_keys):
+        agg = {}
+        for k in numeric_keys:
+            vals = [m[k] for m in metric_dicts if m.get(k) is not None]
+            agg[k] = round(sum(vals) / len(vals), 3) if vals else None
+        return agg
+
+    metric_keys = [
+        "mean_overall", "mean_correctness", "mean_clarity", "mean_difficulty_match",
+        "mean_distractor_quality", "judge_accept_rate", "duplicate_rate",
+        "avg_attempts", "avg_question_duration_sec",
+        "avg_llm_calls_per_accepted_question", "wall_clock_sec",
+        # deterministic + embedding metrics (no judge)
+        "avg_question_len_words", "distinct_topics", "semantic_grounding",
+        "inter_question_similarity", "valid_answer_key_rate", "avg_options",
+        "true_fraction", "has_blank_rate", "has_key_points_rate",
+    ]
+    f1_keys = ["precision", "recall", "f1", "accuracy"]
+
+    aggregated = {}
+    for qt in quiz_types:
+        runs = runs_by_type[qt]
+        aggregated[qt] = {
+            "agentic":    _aggregate([r["agentic_metrics"] for r in runs], metric_keys),
+            "nonagentic": _aggregate([r["nonagentic_metrics"] for r in runs], metric_keys),
+            "f1_metrics": _aggregate([r["f1_metrics"] for r in runs], f1_keys),
+        }
+
+    all_runs = [r for qt in quiz_types for r in runs_by_type[qt]]
+    aggregated["overall"] = {
+        "agentic":    _aggregate([r["agentic_metrics"] for r in all_runs], metric_keys),
+        "nonagentic": _aggregate([r["nonagentic_metrics"] for r in all_runs], metric_keys),
+        "f1_metrics": _aggregate([r["f1_metrics"] for r in all_runs], f1_keys),
+    }
+
+    results = {
+        "ok": True,
+        "generated_at": datetime.now().isoformat(),
+        "config": {
+            "quiz_types": list(quiz_types), "num_questions": num_questions,
+            "repeats": repeats, "target_difficulty": target_difficulty,
+            "judge_model": judge_model or OLLAMA_MODEL, "generator_model": QUIZ_MODEL,
+        },
+        "runs_by_quiz_type": runs_by_type,
+        "aggregated": aggregated,
+    }
+
+    if save_outputs:
+        save_json("eval_results.json", results)
+        _render_eval_charts(results, OUTPUT_DIR)
+
+    ov = aggregated.get("overall", {})
+    emit("done",
+         agentic_score=ov.get("agentic", {}).get("mean_overall"),
+         nonagentic_score=ov.get("nonagentic", {}).get("mean_overall"),
+         f1=ov.get("f1_metrics", {}).get("f1"))
+    return results
+
+
+def _generate_nonagentic_on_topic(quiz_type, topic, content, summary, model=None):
+    """The NON-AGENTIC way: one single-shot LLM call to write ONE question on a
+    given topic — no planning, no validation, no retry. Used to produce a
+    head-to-head counterpart for an already-generated agentic question on the
+    SAME topic."""
+    schema = QUIZ_SCHEMAS.get(quiz_type, QUIZ_SCHEMAS["mcq"])
+    prompt = (
+        f"Generate exactly ONE {quiz_type.upper()} question on the topic '{topic}'.\n"
+        "Single attempt, no self-checking.\n"
+        f"Output STRICT JSON (a 'questions' array with exactly 1 object):\n{schema}\n\n"
+        f"CONTENT:\n{content[:5000]}\n\nSUMMARY:\n{summary[:1000]}"
+    )
+    data  = call_ollama_json(prompt, fallback={"questions": []},
+                             model=model or QUIZ_MODEL, num_ctx=QUIZ_CTX)
+    items = _extract_items(data, "questions")
+    if not items:
+        # fast model returned nothing usable — fall back to the primary model so
+        # the non-agentic side still produces a question to compare against
+        data  = call_ollama_json(prompt, fallback={"questions": []})
+        items = _extract_items(data, "questions")
+    if items:
+        q = items[0]
+        if not q.get("topic"):
+            q["topic"] = topic
+        return q
+    return None
+
+
+def run_quiz_comparison(quiz_type, judge_model=None, target_difficulty="medium",
+                        progress_cb=None):
+    """Evaluate the ALREADY-GENERATED questions of one quiz type against a
+    non-agentic baseline built on the SAME topics, then judge both with an
+    independent LLM and report a 3-segment rating (overall / in-context /
+    difficulty), F1, and other metrics. Anchors on existing questions — it does
+    NOT regenerate the agentic side."""
+    def emit(kind, **kw):
+        if progress_cb:
+            try:
+                progress_cb({"kind": kind, **kw})
+            except Exception:
+                pass
+
+    agentic_qs = state.quiz.get(quiz_type, [])
+    if not agentic_qs:
+        emit("error", reason=f"No {quiz_type.upper()} questions generated yet.")
+        return {"ok": False, "error": f"No {quiz_type.upper()} questions generated yet — generate first."}
+
+    ctx, content, summary = _build_eval_ctx(quiz_type, len(agentic_qs))
+    content_snip     = (content or summary or state.status.get("summary", ""))[:6000]
+    nonagentic_model = QUIZ_MODEL
+    judge            = judge_model or OLLAMA_MODEL
+
+    emit("compare_start", quiz_type=quiz_type, n=len(agentic_qs),
+         nonagentic_model=nonagentic_model, judge_model=judge,
+         agentic_model=QUIZ_MODEL)
+
+    # 1) Non-agentic generates one question per existing topic
+    emit("nonagentic_model", model=nonagentic_model)
+    pairs = []
+    for i, aq in enumerate(agentic_qs):
+        topic = (aq.get("topic") or "General")
+        emit("nonagentic_gen", topic=topic, idx=i + 1, total=len(agentic_qs))
+        nq = _generate_nonagentic_on_topic(quiz_type, topic, content_snip, summary, nonagentic_model)
+        emit("nonagentic_q", topic=topic, text=((_qtext(nq) if nq else "(generation failed)") or "")[:140])
+        pairs.append((aq, nq, topic))
+
+    # 2) Judge both sides + re-validate the agentic side for F1
+    emit("judge_model", model=judge)
+    rows = []
+    ag_overall, ag_ctx, ag_diff, ag_accept = [], [], [], 0
+    na_overall, na_ctx, na_diff, na_accept = [], [], [], 0
+    val_verdicts, judge_accepts = [], []
+    for i, (aq, nq, topic) in enumerate(pairs):
+        diff = aq.get("difficulty") or target_difficulty
+        ja   = judge_question(quiz_type, aq, content_snip, diff, judge)
+        passed, _, _ = _validate_one_question(quiz_type, aq, content_snip, diff, "")
+        val_verdicts.append("PASS" if passed else "FAIL")
+        judge_accepts.append(bool(ja.get("accept")))
+        jn = (judge_question(quiz_type, nq, content_snip, diff, judge) if nq else
+              {"overall": 0, "correctness": 0, "difficulty_match": 0, "accept": False, "reason": "no question produced"})
+
+        ag_overall.append(ja.get("overall") or 0); ag_ctx.append(ja.get("correctness") or 0)
+        ag_diff.append(ja.get("difficulty_match") or 0); ag_accept += 1 if ja.get("accept") else 0
+        na_overall.append(jn.get("overall") or 0); na_ctx.append(jn.get("correctness") or 0)
+        na_diff.append(jn.get("difficulty_match") or 0); na_accept += 1 if jn.get("accept") else 0
+
+        rows.append({
+            "topic": topic,
+            "agentic": {
+                "question": (_qtext(aq) or "")[:240], "overall": ja.get("overall"),
+                "in_context": ja.get("correctness"), "difficulty": ja.get("difficulty_match"),
+                "accept": bool(ja.get("accept")), "reason": ja.get("reason", ""),
+            },
+            "nonagentic": {
+                "question": (_qtext(nq) if nq else "") or "", "overall": jn.get("overall"),
+                "in_context": jn.get("correctness"), "difficulty": jn.get("difficulty_match"),
+                "accept": bool(jn.get("accept")), "reason": jn.get("reason", ""),
+            },
+        })
+        emit("pair_done", idx=i + 1, total=len(pairs), topic=topic,
+             agentic_overall=ja.get("overall"), nonagentic_overall=jn.get("overall"))
+
+    def _avg(x):
+        return round(sum(x) / len(x), 2) if x else None
+
+    n = len(pairs)
+    f1 = _compute_validator_judge_f1(val_verdicts, judge_accepts)
+    ag_list = [p[0] for p in pairs]
+    na_list = [p[1] for p in pairs if p[1]]
+    agentic_metrics = {
+        "accept_rate":    round(ag_accept / n, 2) if n else 0.0,
+        "duplicate_rate": round(_duplicate_rate(ag_list), 3),
+        **_grounding_metrics(ag_list, content_snip),
+    }
+    nonagentic_metrics = {
+        "accept_rate":    round(na_accept / n, 2) if n else 0.0,
+        "duplicate_rate": round(_duplicate_rate(na_list), 3),
+        **_grounding_metrics(na_list, content_snip),
+    }
+
+    # Deterministic tiebreaker: when the judge averages are equal, decide the
+    # segment on real metrics — reward grounding, penalise repetition — so the
+    # comparison gives an actual verdict instead of collapsing to "tie".
+    ag_comp = (agentic_metrics.get("semantic_grounding") or 0)    - (agentic_metrics.get("duplicate_rate") or 0)
+    na_comp = (nonagentic_metrics.get("semantic_grounding") or 0) - (nonagentic_metrics.get("duplicate_rate") or 0)
+
+    segments = {
+        "overall":    {"label": "Overall quality",    "agentic": _avg(ag_overall), "nonagentic": _avg(na_overall)},
+        "in_context": {"label": "In-context / grounded", "agentic": _avg(ag_ctx),  "nonagentic": _avg(na_ctx)},
+        "difficulty": {"label": "Difficulty match",    "agentic": _avg(ag_diff),    "nonagentic": _avg(na_diff)},
+    }
+    for seg in segments.values():
+        a, b = seg["agentic"] or 0, seg["nonagentic"] or 0
+        if a > b:
+            seg["winner"] = "agentic"
+        elif b > a:
+            seg["winner"] = "nonagentic"
+        elif ag_comp > na_comp:
+            seg["winner"], seg["tiebreak"] = "agentic", "grounding/diversity"
+        elif na_comp > ag_comp:
+            seg["winner"], seg["tiebreak"] = "nonagentic", "grounding/diversity"
+        else:
+            seg["winner"] = "tie"
+
+    result = {
+        "ok": True, "quiz_type": quiz_type, "n": n,
+        "agentic_model": QUIZ_MODEL, "nonagentic_model": nonagentic_model, "judge_model": judge,
+        "segments": segments, "f1": f1,
+        "agentic_metrics": agentic_metrics, "nonagentic_metrics": nonagentic_metrics,
+        "rows": rows, "generated_at": datetime.now().isoformat(),
+    }
+    save_json("eval_compare.json", result)
+    emit("compare_done",
+         overall_agentic=segments["overall"]["agentic"],
+         overall_nonagentic=segments["overall"]["nonagentic"], f1=f1.get("f1"))
+    return result
+
+
+def _render_eval_charts(results, output_dir):
+    """Renders 4 matplotlib bar charts comparing agentic vs non-agentic
+    pipelines, saves them as PNGs to output_dir, and calls plt.show() so Colab
+    displays them inline. Returns the list of saved file paths."""
+    quiz_types = results["config"]["quiz_types"]
+    agg        = results["aggregated"]
+    saved      = []
+
+    def _save(fig, name):
+        path = os.path.join(output_dir, name)
+        fig.savefig(path, bbox_inches="tight")
+        plt.show()
+        plt.close(fig)
+        saved.append(path)
+
+    def _grouped_bar(metric_key, title, ylabel, fname):
+        agentic_vals    = [agg[qt]["agentic"].get(metric_key) or 0 for qt in quiz_types]
+        nonagentic_vals = [agg[qt]["nonagentic"].get(metric_key) or 0 for qt in quiz_types]
+        x     = range(len(quiz_types))
+        width = 0.35
+        fig, ax = plt.subplots(figsize=(7, 4.5))
+        ax.bar([i - width / 2 for i in x], agentic_vals, width, label="Agentic")
+        ax.bar([i + width / 2 for i in x], nonagentic_vals, width, label="Non-agentic")
+        ax.set_xticks(list(x))
+        ax.set_xticklabels([qt.upper() for qt in quiz_types])
+        ax.set_ylabel(ylabel)
+        ax.set_title(title)
+        ax.legend()
+        fig.tight_layout()
+        _save(fig, fname)
+
+    _grouped_bar("mean_overall", "Mean Judge Score — Agentic vs Non-Agentic",
+                 "Mean overall score (1-5)", "eval_chart_mean_judge_score.png")
+    _grouped_bar("judge_accept_rate", "Judge Accept Rate — Agentic vs Non-Agentic",
+                 "Accept rate (0-1)", "eval_chart_accept_rate.png")
+    _grouped_bar("duplicate_rate", "Duplicate Rate — Agentic vs Non-Agentic",
+                 "Duplicate rate (0-1)", "eval_chart_duplicate_rate.png")
+
+    # Validator-vs-judge agreement — agentic only, no non-agentic counterpart.
+    fig, ax = plt.subplots(figsize=(7, 4.5))
+    x          = range(len(quiz_types))
+    width      = 0.25
+    precisions = [agg[qt]["f1_metrics"].get("precision") or 0 for qt in quiz_types]
+    recalls    = [agg[qt]["f1_metrics"].get("recall") or 0 for qt in quiz_types]
+    f1s        = [agg[qt]["f1_metrics"].get("f1") or 0 for qt in quiz_types]
+    ax.bar([i - width for i in x], precisions, width, label="Precision")
+    ax.bar(list(x), recalls, width, label="Recall")
+    ax.bar([i + width for i in x], f1s, width, label="F1")
+    ax.set_xticks(list(x))
+    ax.set_xticklabels([qt.upper() for qt in quiz_types])
+    ax.set_ylabel("Score (0-1)")
+    ax.set_title("Validator-vs-Judge Agreement (Agentic only)")
+    ax.legend()
+    fig.tight_layout()
+    _save(fig, "eval_chart_validator_judge_f1.png")
+
+    return saved
+
+
+print("✅ Evaluation harness ready.")
 
 # ══════════════════════════════════════════════════════════════
 # ORCHESTRATOR AGENT
@@ -2942,32 +3944,10 @@ class OrchestratorAgent:
         "document": [
             [DocParserAgent],
             [SummaryAgent],
-            [RAGBuilderAgent],
+            [RAGBuilderAgent, HintsAgent],                     # parallel: index + topic ranking
             [FlashcardAgent, SuggestedQuestionsAgent],         # parallel: cards + suggestions
         ],
     }
-
-    def estimate_quiz_counts(self, ctx):
-        """Adapt question counts to content length. The agentic pipeline runs
-        per-question with retry+validation so we keep these tighter than the
-        old upfront generator: a typical lecture lands around 18-22 questions."""
-        content_len = len(ctx.transcript) + len(ctx.board_text) + len(ctx.doc_text)
-        if content_len > 10000:
-            return {"mcq": 10, "tf": 6, "fill": 6, "short": 5}
-        if content_len > 5000:
-            return {"mcq": 8, "tf": 5, "fill": 5, "short": 4}
-        return {"mcq": 5, "tf": 4, "fill": 4, "short": 3}
-
-    def build_difficulty_preference(self):
-        """Use student performance history to suggest difficulty weighting."""
-        perf = state.student_performance
-        if not perf:
-            return None
-        weak = [t for t, scores in perf.items()
-                if scores and (sum(scores) / len(scores)) < 0.5]
-        if weak:
-            return f"focus harder questions on weak topics: {', '.join(weak[:5])}"
-        return None
 
     def _run_agent(self, agent, ctx):
         """Run a single agent, catching crashes so the pipeline continues."""
@@ -2979,15 +3959,6 @@ class OrchestratorAgent:
     def _run_parallel_group(self, agent_classes, ctx):
         """Run a group of agents concurrently and wait for all to finish."""
         agents = [cls() for cls in agent_classes]
-
-        # prepare quiz agent params before launching
-        for a in agents:
-            if isinstance(a, QuizAgent):
-                ctx.quiz_counts     = self.estimate_quiz_counts(ctx)
-                ctx.difficulty_pref = self.build_difficulty_preference()
-                self._log(ctx, "PLAN",
-                          f"Quiz counts: {ctx.quiz_counts}, "
-                          f"difficulty: {ctx.difficulty_pref or 'balanced'}")
 
         if len(agents) == 1:
             self._run_agent(agents[0], ctx)
@@ -3002,7 +3973,10 @@ class OrchestratorAgent:
                 fut.result()   # propagate exceptions if any
 
     def run(self, content_type, file_path):
-        """Execute the full agentic pipeline with parallel steps."""
+        """Execute the full agentic pipeline with parallel steps. Times the
+        overall run and every step so speed shows up in the agent log
+        alongside the per-agent timing BaseAgent already records."""
+        pipeline_start = time.time()
         ctx = AgentContext(content_type, file_path)
         state.session_id = state._make_session_id(ctx.source_name)
         state.agent_log  = []
@@ -3022,7 +3996,14 @@ class OrchestratorAgent:
             state.update_status(
                 state="running", stage=f"{names}…", pct=min(pct, 98),
             )
+            step_start = time.time()
             self._run_parallel_group(agent_group, ctx)
+            step_sec = time.time() - step_start
+            self._log(
+                ctx, "DONE",
+                f"Step {step_idx + 1}/{total_steps} ({names}) finished in {step_sec:.1f}s",
+                duration_sec=round(step_sec, 2),
+            )
 
         # finalize
         timeline = ""
@@ -3042,14 +4023,20 @@ class OrchestratorAgent:
         )
         state.agent_log = ctx.agent_log
         state.save_session(ctx.source_name)
-        self._log(ctx, "DONE",
-                  f"Pipeline complete — {len(ctx.agent_log)} agent decisions logged")
+        total_sec = time.time() - pipeline_start
+        self._log(
+            ctx, "DONE",
+            f"Pipeline complete in {total_sec:.1f}s — {len(ctx.agent_log)} agent decisions logged",
+            duration_sec=round(total_sec, 2),
+        )
 
-    def _log(self, ctx, level, msg):
+    def _log(self, ctx, level, msg, duration_sec=None):
         entry = {
             "agent": "Orchestrator", "level": level,
             "time": datetime.now().isoformat(), "message": msg,
         }
+        if duration_sec is not None:
+            entry["duration_sec"] = duration_sec
         ctx.agent_log.append(entry)
         print(f"  [Orchestrator] {msg}")
 
@@ -3693,6 +4680,8 @@ def flashcards_generate_route():
     # Deduplicate by front text
     seen, unique = set(), []
     for c in cards or []:
+        if not isinstance(c, dict):
+            continue
         front = (c.get("front") or "").strip().lower()
         if front and front not in seen:
             seen.add(front)
@@ -4093,6 +5082,148 @@ def quiz_thinking_route():
 
 
 
+def _summarize_quiz_thinking(events):
+    """Roll the raw per-question thinking events of the LAST generation into a
+    compact per-question metrics table (attempts, time, validator verdicts,
+    remediations) plus totals — what the UI offers as a download."""
+    per, order = {}, []
+    for e in events or []:
+        qid  = e.get("question_id")
+        step = e.get("step")
+        if not qid:
+            continue
+        if qid not in per:
+            per[qid] = {
+                "question_id": qid, "question_idx": e.get("question_idx"),
+                "topic": e.get("topic", ""), "difficulty": e.get("difficulty", ""),
+                "attempts": None, "duration_sec": None, "final_status": None,
+                "validator_pass": 0, "validator_fail": 0,
+                "tool_calls": 0, "remediations": [],
+            }
+            order.append(qid)
+        row = per[qid]
+        if e.get("topic"):      row["topic"] = e.get("topic")
+        if e.get("difficulty"): row["difficulty"] = e.get("difficulty")
+        if step == "question_validated":
+            v = str(e.get("verdict", "")).upper()
+            if   v == "PASS": row["validator_pass"] += 1
+            elif v == "FAIL": row["validator_fail"] += 1
+        elif step == "tool_call":
+            row["tool_calls"] += 1
+        elif step == "remediation":
+            row["remediations"].append(e.get("action") or e.get("reason", ""))
+        elif step == "question_finalized":
+            row["attempts"]     = e.get("total_attempts", row["attempts"])
+            row["duration_sec"] = e.get("duration_sec", row["duration_sec"])
+            row["final_status"] = e.get("status", e.get("verdict"))
+            if e.get("question_idx") is not None:
+                row["question_idx"] = e.get("question_idx")
+
+    rows = [per[q] for q in order]
+    durs = [r["duration_sec"] for r in rows if isinstance(r["duration_sec"], (int, float))]
+    atts = [r["attempts"]     for r in rows if isinstance(r["attempts"], (int, float))]
+    totals = {
+        "questions":          len(rows),
+        "total_duration_sec": round(sum(durs), 2) if durs else 0.0,
+        "avg_duration_sec":   round(sum(durs) / len(durs), 2) if durs else None,
+        "avg_attempts":       round(sum(atts) / len(atts), 2) if atts else None,
+        "first_try_count":    sum(1 for r in rows if r["attempts"] == 1),
+        "total_tool_calls":   sum(r.get("tool_calls", 0) for r in rows),
+        "total_remediations": sum(len(r["remediations"]) for r in rows),
+    }
+    return {"per_question": rows, "totals": totals}
+
+
+
+@app.route('/quiz/last_run_metrics')
+def quiz_last_run_metrics_route():
+    """Compiled per-question metrics for the LAST quiz generation run — the
+    thing the UI downloads after generating a quiz (distinct from the eval
+    harness benchmark, which compares pipelines)."""
+    events  = state._quiz_agent_thinking or []
+    summary = _summarize_quiz_thinking(events)
+    return jsonify(
+        ok=True,
+        generated_at=datetime.now().isoformat(),
+        totals=summary["totals"],
+        per_question=summary["per_question"],
+        total_events=len(events),
+        raw_events=events,
+    )
+
+
+
+@app.route('/quiz/score_current', methods=['POST'])
+def quiz_score_current_route():
+    """AI-judge ONLY the quiz questions ALREADY generated — not a benchmark, not
+    new questions. quiz_type='all' (default) scores every type that has
+    questions; a specific type scores just that one. Scores exactly what the
+    student made and sees (1, 5, MCQ, TF, short — whatever exists)."""
+    data        = request.get_json(silent=True) or {}
+    quiz_type   = data.get("quiz_type", "all")
+    target_diff = data.get("target_difficulty", "medium")
+    judge_model = data.get("judge_model") or None
+
+    valid = ("mcq", "tf", "fill", "short")
+    types = [quiz_type] if quiz_type in valid else list(valid)
+
+    by_type      = {}
+    all_overalls = []
+    all_accepts  = 0
+    all_n        = 0
+
+    for qt in types:
+        qs = state.quiz.get(qt, [])
+        if not qs:
+            continue
+        ctx, content, summary = _build_eval_ctx(qt, len(qs))
+        content_snip = (content or summary or state.status.get("summary", ""))[:6000]
+
+        scored = []
+        for q in qs:
+            diff = q.get("difficulty") or target_diff
+            j = judge_question(qt, q, content_snip, diff, judge_model)
+            scored.append({
+                "question":         (q.get("question") or q.get("statement") or "")[:200],
+                "topic":            q.get("topic", ""),
+                "difficulty":       diff,
+                "correctness":      j.get("correctness"),
+                "clarity":          j.get("clarity"),
+                "difficulty_match": j.get("difficulty_match"),
+                "overall":          j.get("overall"),
+                "accept":           bool(j.get("accept")),
+                "reason":           j.get("reason", ""),
+            })
+
+        overalls = [s["overall"] for s in scored if isinstance(s["overall"], (int, float))]
+        accepts  = sum(1 for s in scored if s["accept"])
+        totals = {
+            "n":            len(scored),
+            "mean_overall": round(sum(overalls) / len(overalls), 2) if overalls else None,
+            "accept_rate":  round(accepts / len(scored), 2) if scored else 0.0,
+            "duplicate_rate": round(_duplicate_rate(qs), 3),
+        }
+        # add the same deterministic + embedding metrics the benchmark uses
+        totals.update(_structural_metrics(qt, qs))
+        totals.update(_grounding_metrics(qs, content_snip))
+        by_type[qt] = {"scored": scored, "totals": totals}
+        all_overalls += overalls
+        all_accepts  += accepts
+        all_n        += len(scored)
+
+    if not by_type:
+        return jsonify(ok=False, error="No questions generated yet — generate a quiz first.")
+
+    overall = {
+        "n":            all_n,
+        "mean_overall": round(sum(all_overalls) / len(all_overalls), 2) if all_overalls else None,
+        "accept_rate":  round(all_accepts / all_n, 2) if all_n else 0.0,
+    }
+    return jsonify(ok=True, by_type=by_type, overall=overall,
+                   judge_model=judge_model or OLLAMA_MODEL)
+
+
+
 def _new_job_id():
     short_hash = hashlib.md5(f"{time.time()}_{os.urandom(8)}".encode()).hexdigest()[:10]
     return f"job_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{short_hash}"
@@ -4459,6 +5590,7 @@ DOWNLOAD_MAP = {
     "transcript": f"{OUTPUT_DIR}/transcript.txt",
     "board":      f"{OUTPUT_DIR}/board_text.txt",
     "timeline":   f"{OUTPUT_DIR}/lecture_timeline.txt",
+    "eval":       f"{OUTPUT_DIR}/eval_results.json",   # evaluation harness results + metrics
 }
 
 
@@ -4518,6 +5650,220 @@ h1{{text-align:center;border-bottom:2px solid #333;padding-bottom:8px}}
 <div class="key"><b>Answer Key:</b><br>{key_html}</div>
 </body></html>"""
     return html, 200, {'Content-Type': 'text/html; charset=utf-8'}
+
+# ── Evaluation harness ────────────────────────────────────────
+
+
+
+@app.route('/eval/run', methods=['POST'])
+def eval_run_route():
+    """Trigger the agentic-vs-non-agentic evaluation harness remotely (blocking).
+    Body: {quiz_types: ["mcq","tf","fill","short"], num_questions: 6, repeats: 2,
+           judge_model: null, target_difficulty: "medium"}"""
+    data          = request.get_json(silent=True) or {}
+    quiz_types    = data.get("quiz_types") or ["mcq", "tf", "fill", "short"]
+    num_questions = min(int(data.get("num_questions", 6)), 15)
+    repeats       = min(int(data.get("repeats", 2)), 5)
+    judge_model   = data.get("judge_model") or None
+    target_diff   = data.get("target_difficulty", "medium")
+
+    results = run_quiz_evaluation(
+        quiz_types=tuple(quiz_types), num_questions=num_questions,
+        repeats=repeats, judge_model=judge_model, target_difficulty=target_diff,
+    )
+    return jsonify(results)
+
+
+# Background eval runner — the harness can take minutes (it judges many
+# questions with the 12B model), so the UI kicks it off here and polls
+# /eval/status for a LIVE feed rather than holding one long HTTP request open.
+_eval_job      = {"status": "idle", "error": "", "started_at": "", "finished_at": "",
+                  "phase": "", "log": [], "result": None, "pct": 0,
+                  "_total": 0, "_done": 0}
+_eval_job_lock = threading.Lock()
+
+
+def _eval_to_line(ev):
+    """Turn a progress event from run_quiz_evaluation into a short live line
+    tagged by pipeline, for the UI feed."""
+    k  = ev.get("kind")
+    qt = (ev.get("quiz_type") or "").upper()
+    if k == "start":
+        return ("info", f"Starting benchmark — {len(ev.get('quiz_types', []))} type(s), "
+                        f"{ev.get('num_questions')} Q each, judging up to {ev.get('judge_cap')} per side")
+    if k == "unit_start":
+        return ("info", f"{qt}  (unit {ev.get('unit')}/{ev.get('total_units')})")
+    if k == "agentic_start":
+        return ("agentic", f"{qt}: agentic pipeline started (plan → generate → validate → retry)")
+    if k == "agentic_event":
+        step = (ev.get("step") or "").replace("_", " ")
+        rsn  = (ev.get("reason") or "")[:90]
+        return ("agentic", f"{qt} · {step}: {rsn}")
+    if k == "agentic_done":
+        return ("agentic", f"{qt}: agentic produced {ev.get('count')} question(s) in {ev.get('secs')}s")
+    if k == "nonagentic_start":
+        return ("nonagentic", f"{qt}: non-agentic single-shot generation…")
+    if k == "nonagentic_done":
+        return ("nonagentic", f"{qt}: non-agentic produced {ev.get('count')} question(s) in {ev.get('secs')}s")
+    if k == "sample":
+        return (ev.get("pipeline", "info"),
+                f"{qt} {ev.get('pipeline', '')} Q: {ev.get('text', '')}")
+    if k == "judge_start":
+        return ("judge", f"{qt}: judging {ev.get('n_agentic')} agentic + {ev.get('n_nonagentic')} non-agentic…")
+    if k == "judge_progress":
+        return ("judge", f"{qt}: judged {ev.get('pipeline')} {ev.get('done')}/{ev.get('total')}")
+    if k == "unit_done":
+        return ("result", f"{qt} done: agentic score {ev.get('agentic_score')} vs non-agentic "
+                          f"{ev.get('nonagentic_score')} · accept {ev.get('agentic_accept')} vs "
+                          f"{ev.get('nonagentic_accept')} · validator-judge F1 {ev.get('f1')}")
+    if k == "done":
+        return ("result", f"DONE — overall agentic {ev.get('agentic_score')} vs non-agentic "
+                          f"{ev.get('nonagentic_score')} · F1 {ev.get('f1')}")
+    # ── per-tab comparison (run_quiz_comparison) ──
+    if k == "compare_start":
+        return ("info", f"Comparing {ev.get('n')} existing {qt} question(s): agentic "
+                        f"({ev.get('agentic_model')}) vs non-agentic ({ev.get('nonagentic_model')}), "
+                        f"judge: {ev.get('judge_model')}")
+    if k == "nonagentic_model":
+        return ("nonagentic", f"Non-agentic generator model: {ev.get('model')}")
+    if k == "nonagentic_gen":
+        return ("nonagentic", f"Non-agentic generating on topic '{ev.get('topic')}' "
+                              f"({ev.get('idx')}/{ev.get('total')})…")
+    if k == "nonagentic_q":
+        return ("nonagentic", f"Non-agentic Q [{ev.get('topic')}]: {ev.get('text')}")
+    if k == "judge_model":
+        return ("judge", f"Judge model: {ev.get('model')}")
+    if k == "pair_done":
+        return ("result", f"[{ev.get('topic')}] {ev.get('idx')}/{ev.get('total')}: "
+                          f"agentic {ev.get('agentic_overall')}/5 vs non-agentic "
+                          f"{ev.get('nonagentic_overall')}/5")
+    if k == "compare_done":
+        return ("result", f"DONE — agentic {ev.get('overall_agentic')}/5 vs non-agentic "
+                          f"{ev.get('overall_nonagentic')}/5 · F1 {ev.get('f1')}")
+    if k == "error":
+        return ("error", ev.get("reason", "error"))
+    return ("info", k or "…")
+
+
+def _eval_push(ev):
+    tag, line = _eval_to_line(ev)
+    k = ev.get("kind")
+    with _eval_job_lock:
+        # progress tracking → pct (so the UI bar doesn't depend on glyphs)
+        if k == "start":
+            _eval_job["_total"] = ev.get("total_units") or 0
+            _eval_job["_done"]  = 0
+            _eval_job["pct"]    = 0
+        elif k == "compare_start":
+            _eval_job["_total"] = ev.get("n") or 0
+            _eval_job["_done"]  = 0
+            _eval_job["pct"]    = 0
+        elif k in ("unit_done", "pair_done"):
+            _eval_job["_done"] = _eval_job.get("_done", 0) + 1
+            tot = _eval_job.get("_total", 0) or 0
+            _eval_job["pct"] = round(_eval_job["_done"] / tot * 100) if tot else 0
+        elif k in ("done", "compare_done"):
+            _eval_job["pct"] = 100
+
+        _eval_job["phase"] = line if tag in ("info", "result") else _eval_job.get("phase", "")
+        _eval_job["log"].append({"tag": tag, "line": line,
+                                 "t": datetime.now().strftime("%H:%M:%S")})
+        if len(_eval_job["log"]) > 400:
+            _eval_job["log"] = _eval_job["log"][-400:]
+
+
+@app.route('/eval/run_async', methods=['POST'])
+def eval_run_async_route():
+    """Start the evaluation harness in a background thread with a LIVE feed.
+    Poll /eval/status for status + log. Defaults kept small so it finishes."""
+    data          = request.get_json(silent=True) or {}
+    quiz_types    = tuple(data.get("quiz_types") or ["mcq", "tf", "fill", "short"])
+    num_questions = min(int(data.get("num_questions", 3)), 15)
+    repeats       = min(int(data.get("repeats", 1)), 5)
+    judge_model   = data.get("judge_model") or None
+    target_diff   = data.get("target_difficulty", "medium")
+
+    if not state.status.get("summary"):
+        return jsonify(ok=False, error="No content processed yet — upload and process a lecture first.")
+
+    with _eval_job_lock:
+        if _eval_job["status"] == "running":
+            return jsonify(ok=False, error="An evaluation is already running.", status="running")
+        _eval_job.update(status="running", error="", phase="Starting…", log=[],
+                         pct=0, _total=0, _done=0,
+                         started_at=datetime.now().isoformat(), finished_at="")
+
+    def worker():
+        try:
+            res = run_quiz_evaluation(
+                quiz_types=quiz_types, num_questions=num_questions,
+                repeats=repeats, judge_model=judge_model, target_difficulty=target_diff,
+                progress_cb=_eval_push,
+            )
+            if isinstance(res, dict) and not res.get("ok", False):
+                with _eval_job_lock:
+                    _eval_job.update(status="error", error=res.get("error", "evaluation failed"),
+                                     finished_at=datetime.now().isoformat())
+                return
+            with _eval_job_lock:
+                _eval_job.update(status="done", finished_at=datetime.now().isoformat())
+        except Exception as e:
+            with _eval_job_lock:
+                _eval_job.update(status="error", error=str(e),
+                                 finished_at=datetime.now().isoformat())
+
+    threading.Thread(target=worker, daemon=True).start()
+    return jsonify(ok=True, status="running")
+
+
+@app.route('/eval/compare_async', methods=['POST'])
+def eval_compare_async_route():
+    """Per-tab evaluation: judge the ALREADY-generated questions of one quiz
+    type against a non-agentic baseline built on the same topics. Runs in the
+    background with the same live feed; final structured comparison is returned
+    in /eval/status's `result`."""
+    data        = request.get_json(silent=True) or {}
+    quiz_type   = data.get("quiz_type", "mcq")
+    judge_model = data.get("judge_model") or None
+    target_diff = data.get("target_difficulty", "medium")
+
+    if not state.quiz.get(quiz_type):
+        return jsonify(ok=False, error=f"No {quiz_type.upper()} questions generated yet — generate first.")
+
+    with _eval_job_lock:
+        if _eval_job["status"] == "running":
+            return jsonify(ok=False, error="An evaluation is already running.", status="running")
+        _eval_job.update(status="running", error="", phase="Starting…", log=[], result=None,
+                         pct=0, _total=0, _done=0,
+                         started_at=datetime.now().isoformat(), finished_at="")
+
+    def worker():
+        try:
+            res = run_quiz_comparison(quiz_type, judge_model=judge_model,
+                                      target_difficulty=target_diff, progress_cb=_eval_push)
+            with _eval_job_lock:
+                if isinstance(res, dict) and not res.get("ok", False):
+                    _eval_job.update(status="error", error=res.get("error", "comparison failed"),
+                                     finished_at=datetime.now().isoformat())
+                else:
+                    _eval_job.update(status="done", result=res,
+                                     finished_at=datetime.now().isoformat())
+        except Exception as e:
+            with _eval_job_lock:
+                _eval_job.update(status="error", error=str(e),
+                                 finished_at=datetime.now().isoformat())
+
+    threading.Thread(target=worker, daemon=True).start()
+    return jsonify(ok=True, status="running")
+
+
+@app.route('/eval/status')
+def eval_status_route():
+    with _eval_job_lock:
+        job = dict(_eval_job)
+        job["log"] = list(_eval_job["log"])
+    job["has_results"] = os.path.exists(os.path.join(OUTPUT_DIR, "eval_results.json"))
+    return jsonify(**job)
 
 
 

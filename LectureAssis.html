@@ -1349,6 +1349,7 @@ body{
         <div class="qmode-group" id="countGroup">
           <span class="qmode-label">Questions</span>
           <select class="qmode-select" id="countSelect">
+            <option value="1">1</option>
             <option value="5">5</option>
             <option value="10" selected>10</option>
             <option value="15">15</option>
@@ -1422,10 +1423,14 @@ body{
           <button class="tp" onclick="setT(30,this)">30m</button>
           <button class="tp" onclick="setT(60,this)">60m</button>
         </div>
-        <div style="margin-left:auto">
-          <button class="btn btn-grad btn-sm" onclick="startQuiz()">▶ Start Quiz</button>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" id="scoreQuizBtn" onclick="runQuizCompare()">Run Evaluation</button>
+          <button class="btn btn-grad btn-sm" onclick="startQuiz()">Start Quiz</button>
         </div>
       </div>
+
+      <!-- Per-tab evaluation: existing questions vs non-agentic baseline, judged -->
+      <div class="card" id="quizScorePanel" style="display:none"></div>
 
       <div id="quizPlayBlocked" class="card quiz-blocked" style="display:none" aria-live="polite">
         <div class="qb-inner">
@@ -1602,7 +1607,29 @@ body{
     <div id="page-agentlog" style="display:none">
       <div class="page-head">
         <div class="page-title">Agent Log</div>
-        <div class="page-sub">Timeline of every agent decision during the last processing pipeline.</div>
+        <div class="page-sub">Timeline of every agent decision during the last processing pipeline — with per-agent timing.</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <button class="btn btn-outline btn-sm" onclick="downloadAgentLog('txt')">Pipeline Log (.txt)</button>
+        <button class="btn btn-outline btn-sm" onclick="downloadAgentLog('json')">Pipeline Log (.json)</button>
+        <button class="btn btn-outline btn-sm" onclick="downloadLastQuizMetrics()">Last Quiz Run Metrics</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadAgentLog()" style="margin-left:auto">Refresh</button>
+      </div>
+      <div style="margin-bottom:14px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <span style="font-size:12px;font-weight:700;color:var(--ink2)">Benchmark — all types (agentic vs non-agentic):</span>
+          <button class="btn btn-grad btn-sm" id="runEvalBtn" onclick="runEvaluationBenchmark()">Run Benchmark</button>
+          <button class="btn btn-outline btn-sm" onclick="downloadEvalResults()">Download Eval Results</button>
+          <span id="evalStatus" style="font-size:12px;color:var(--muted)"></span>
+        </div>
+        <!-- live progress bar + feed -->
+        <div id="evalLive" style="display:none;margin-top:12px">
+          <div style="height:6px;background:var(--border);border-radius:100px;overflow:hidden;margin-bottom:4px">
+            <div id="evalBar" style="height:100%;width:0%;background:var(--g1);transition:width .4s"></div>
+          </div>
+          <div id="evalPhase" style="font-size:12px;font-weight:600;color:var(--g1);margin-bottom:8px"></div>
+          <div id="evalFeed" style="max-height:300px;overflow:auto;font-size:11.5px;line-height:1.7;font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px"></div>
+        </div>
       </div>
       <div class="card" id="agentLogContent">
         <div class="empty"><div class="empty-icon">🤖</div><div class="empty-title">No agent log yet</div><div class="empty-sub">Process a file to see the orchestrator's decision trail.</div></div>
@@ -1929,6 +1956,112 @@ function clearAll() {
 }
 
 function dl(t){window.open(API_BASE+'/download/'+t,'_blank')}
+
+// Per-tab evaluation: judge the ALREADY-generated questions of the current
+// type against a non-agentic baseline on the same topics, with a live log.
+var _cmpPoll=null;
+function runQuizCompare() {
+  if(!API_BASE){toast('Connect to backend first!','er');return;}
+  var btn=document.getElementById('scoreQuizBtn');
+  var panel=document.getElementById('quizScorePanel');
+  if(btn){ btn.disabled=true; btn.textContent='Running…'; }
+  if(panel){
+    panel.style.display='block';
+    panel.innerHTML='<div id="cmpFeed" style="max-height:240px;overflow:auto;font-size:11.5px;line-height:1.7;font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px">starting…</div><div id="cmpResult" style="margin-top:12px"></div>';
+  }
+  apiPost('/eval/compare_async', { quiz_type: qType }).then(function(r){return r.json();}).then(function(d){
+    if(!d.ok){
+      toast(d.error||'Could not start evaluation.','er');
+      if(btn){ btn.disabled=false; btn.textContent='Run Evaluation'; }
+      if(panel) panel.innerHTML='<div style="color:var(--red);font-size:13px">'+esc(d.error||'Failed')+'</div>';
+      return;
+    }
+    toast('Evaluation started for '+qType.toUpperCase()+' — watch live below…','info');
+    if(_cmpPoll) clearInterval(_cmpPoll);
+    _cmpPoll=setInterval(pollCompare,1500);
+  }).catch(function(){
+    toast('Could not start evaluation.','er');
+    if(btn){ btn.disabled=false; btn.textContent='Run Evaluation'; }
+  });
+}
+function pollCompare(){
+  apiFetch('/eval/status').then(function(r){return r.json();}).then(function(d){
+    var btn=document.getElementById('scoreQuizBtn');
+    renderCmpFeed(d.log||[]);
+    if(d.status==='running') return;
+    clearInterval(_cmpPoll); _cmpPoll=null;
+    if(btn){ btn.disabled=false; btn.textContent='Run Evaluation'; }
+    if(d.status==='done' && d.result){ renderCompare(d.result); toast('Evaluation complete!','ok'); }
+    else if(d.status==='error'){ toast('Evaluation failed: '+(d.error||''),'er'); }
+  }).catch(function(){ /* keep polling on transient errors */ });
+}
+var _cmpColor={agentic:'#6366f1',nonagentic:'#f59e0b',judge:'#06b6d4',result:'#10b981',error:'#ef4444',info:'var(--muted)'};
+function renderCmpFeed(log){
+  var feed=document.getElementById('cmpFeed'); if(!feed) return;
+  feed.innerHTML=(log||[]).map(function(e){
+    return '<div><span style="color:var(--muted)">'+esc(e.t||'')+'</span> '+
+      '<b style="color:'+(_cmpColor[e.tag]||'var(--muted)')+'">['+esc((e.tag||'').toUpperCase())+']</b> '+esc(e.line||'')+'</div>';
+  }).join('');
+  feed.scrollTop=feed.scrollHeight;
+}
+function renderCompare(res){
+  var el=document.getElementById('cmpResult'); if(!el) return;
+  var seg=res.segments||{};
+  function segCard(key){
+    var s=seg[key]; if(!s) return '';
+    function bar(v,who){
+      var pct=Math.round(((v||0)/5)*100);
+      var col=(s.winner===who)?'var(--green)':'var(--g1)';
+      return '<div style="display:flex;align-items:center;gap:6px;margin:2px 0">'+
+        '<span style="width:96px;font-size:11px;color:var(--ink2)">'+who+'</span>'+
+        '<div style="flex:1;height:10px;background:var(--surface);border:1px solid var(--border);border-radius:100px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+col+'"></div></div>'+
+        '<span style="width:38px;text-align:right;font-size:11px;font-weight:700">'+(v!=null?v:'-')+'/5</span></div>';
+    }
+    var wcol=s.winner==='agentic'?'var(--green)':(s.winner==='nonagentic'?'var(--amber)':'var(--muted)');
+    var tb=s.tiebreak?' <span style="font-weight:500;color:var(--muted)">(judge tie → won on '+esc(s.tiebreak)+')</span>':'';
+    return '<div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px">'+
+      '<div style="font-weight:800;font-size:12px;margin-bottom:5px">'+esc(s.label||key)+
+      ' <span style="font-weight:700;color:'+wcol+'">— winner: '+esc(s.winner)+'</span>'+tb+'</div>'+
+      bar(s.agentic,'agentic')+bar(s.nonagentic,'non-agentic')+'</div>';
+  }
+  var f1=res.f1||{}, am=res.agentic_metrics||{}, nm=res.nonagentic_metrics||{};
+  function chip(t){ return '<span class="sess-counts" style="margin:0 4px 4px 0"><span>'+t+'</span></span>'; }
+  var html='<div style="font-family:Cabinet Grotesk,sans-serif;font-weight:800;font-size:1.05rem;margin-bottom:4px">Evaluation — '+esc((res.quiz_type||'').toUpperCase())+' ('+res.n+' question'+(res.n>1?'s':'')+')</div>'+
+    '<div style="font-size:12px;color:var(--muted);margin-bottom:12px">agentic gen: '+esc(res.agentic_model||'')+' · non-agentic gen: '+esc(res.nonagentic_model||'')+' · judge: '+esc(res.judge_model||'')+'</div>'+
+    '<div style="font-weight:800;font-size:12px;margin-bottom:6px">Rating out of 5 — 3 segments</div>'+
+    segCard('overall')+segCard('in_context')+segCard('difficulty')+
+    '<div style="display:flex;flex-wrap:wrap;margin:10px 0">'+
+      chip('validator-judge F1 '+(f1.f1!=null?f1.f1:'-'))+
+      chip('precision '+(f1.precision!=null?f1.precision:'-'))+
+      chip('recall '+(f1.recall!=null?f1.recall:'-'))+
+      chip('agentic accept '+Math.round((am.accept_rate||0)*100)+'%')+
+      chip('non-agentic accept '+Math.round((nm.accept_rate||0)*100)+'%')+
+      chip('agentic grounding '+(am.semantic_grounding!=null?am.semantic_grounding:'-'))+
+      chip('non-agentic grounding '+(nm.semantic_grounding!=null?nm.semantic_grounding:'-'))+
+      chip('agentic dup '+Math.round((am.duplicate_rate||0)*100)+'%')+
+      chip('non-agentic dup '+Math.round((nm.duplicate_rate||0)*100)+'%')+
+    '</div>'+
+    '<div style="font-weight:800;font-size:12px;margin:10px 0 6px">Question by question (agentic vs non-agentic, same topic)</div>';
+  (res.rows||[]).forEach(function(row,i){
+    var a=row.agentic||{}, b=row.nonagentic||{};
+    html+='<div class="ri" style="border-left-color:var(--g1);margin-bottom:8px">'+
+      '<div class="ri-meta">'+(i+1)+' · topic: '+esc(row.topic||'')+'</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+        '<div><div style="font-size:11px;font-weight:800;color:#6366f1">AGENTIC ('+(a.accept?'accept':'reject')+')</div>'+
+          '<div class="ri-q" style="font-size:12.5px">'+esc(a.question||'')+'</div>'+
+          '<div style="font-size:11px;color:var(--ink2)">overall '+a.overall+' / in-context '+a.in_context+' / difficulty '+a.difficulty+'</div>'+
+          (a.reason?'<div style="font-size:11px;color:var(--muted)">'+esc(a.reason)+'</div>':'')+'</div>'+
+        '<div><div style="font-size:11px;font-weight:800;color:#f59e0b">NON-AGENTIC ('+(b.accept?'accept':'reject')+')</div>'+
+          '<div class="ri-q" style="font-size:12.5px">'+esc(b.question||'')+'</div>'+
+          '<div style="font-size:11px;color:var(--ink2)">overall '+b.overall+' / in-context '+b.in_context+' / difficulty '+b.difficulty+'</div>'+
+          (b.reason?'<div style="font-size:11px;color:var(--muted)">'+esc(b.reason)+'</div>':'')+'</div>'+
+      '</div></div>';
+  });
+  html+='<div style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.6">'+
+    '<b>Guide:</b> overall=judge quality 1-5 · in-context=grounded in the lecture · difficulty=matches target · '+
+    'F1=how well the agent\'s own validator agrees with the independent judge · grounding=question vs lecture similarity.</div>';
+  el.innerHTML=html;
+}
 
 // ═══════════════════════════════════════════════
 //  Quiz
@@ -3294,10 +3427,12 @@ function regenFromPerf() {
 // ═══════════════════════════════════════════════
 //  Agent Log
 // ═══════════════════════════════════════════════
+var lastAgentLog=[];
 function loadAgentLog() {
   if(!API_BASE)return;
   apiFetch('/agent_log').then(function(r){return r.json();}).then(function(d){
     var log=d.log||[];
+    lastAgentLog=log;
     var el=document.getElementById('agentLogContent');
     if(!log.length){el.innerHTML='<div class="empty"><div class="empty-icon">🤖</div><div class="empty-title">No agent log yet</div><div class="empty-sub">Process a file to see the orchestrator\'s decision trail.</div></div>';return;}
 
@@ -3306,15 +3441,159 @@ function loadAgentLog() {
     log.forEach(function(e){
       var t=e.time?new Date(e.time).toLocaleTimeString():'';
       var ic=icons[e.level]||'📌';
+      var dur=(typeof e.duration_sec==='number')?(' · '+e.duration_sec+'s'):'';
       html+='<div class="al-entry" data-level="'+esc(e.level||'')+'">';
       html+='<div class="al-icon">'+ic+'</div>';
       html+='<div class="al-agent">'+esc(e.agent||'')+'</div>';
       html+='<div class="al-msg">'+esc(e.message||'')+'</div>';
-      html+='<div class="al-time">'+esc(t)+'</div>';
+      html+='<div class="al-time">'+esc(t)+esc(dur)+'</div>';
       html+='</div>';
     });
     el.innerHTML=html;
   }).catch(function(){});
+}
+
+// Trigger a browser download of arbitrary text content
+function downloadTextFile(filename, content, mime) {
+  var blob=new Blob([content],{type:mime||'text/plain;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(url);},1000);
+}
+
+// Download the agent log (with timing) as a readable .txt or raw .json
+function downloadAgentLog(fmt) {
+  if(!lastAgentLog||!lastAgentLog.length){toast('No agent log yet — process a file first.','er');return;}
+  var stamp=new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+  if(fmt==='json'){
+    downloadTextFile('agent_log_'+stamp+'.json',JSON.stringify(lastAgentLog,null,2),'application/json');
+    toast('Agent log (JSON) downloaded.','ok');
+    return;
+  }
+  // readable text: timing summary first, then full timeline
+  var timed=lastAgentLog.filter(function(e){return typeof e.duration_sec==='number';});
+  var lines=[];
+  lines.push('LectureForge — Agent Log');
+  lines.push('Generated: '+new Date().toLocaleString());
+  lines.push('Total entries: '+lastAgentLog.length);
+  lines.push('');
+  if(timed.length){
+    lines.push('=== TIMING SUMMARY (seconds) ===');
+    timed.forEach(function(e){
+      lines.push('  '+(e.duration_sec+'s').padEnd(10)+(e.agent||'')+'  —  '+(e.message||''));
+    });
+    lines.push('');
+  }
+  lines.push('=== FULL TIMELINE ===');
+  lastAgentLog.forEach(function(e){
+    var t=e.time?new Date(e.time).toLocaleTimeString():'';
+    var dur=(typeof e.duration_sec==='number')?(' ('+e.duration_sec+'s)'):'';
+    lines.push('['+t+'] '+(e.level||'').padEnd(6)+' '+(e.agent||'').padEnd(16)+' '+(e.message||'')+dur);
+  });
+  downloadTextFile('agent_log_'+stamp+'.txt',lines.join('\n'));
+  toast('Agent log (.txt) downloaded.','ok');
+}
+
+// Download the evaluation harness results JSON (judge scores, accept rate, F1, timings)
+function downloadEvalResults() {
+  if(!API_BASE){toast('Connect to backend first!','er');return;}
+  apiFetch('/download/eval').then(function(r){
+    if(!r.ok){throw new Error('not found');}
+    return r.blob();
+  }).then(function(blob){
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url; a.download='eval_results.json';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url);},1000);
+    toast('Eval results downloaded.','ok');
+  }).catch(function(){
+    toast('No eval results yet — click "Run Evaluation" first (or run run_quiz_evaluation() in Colab).','er');
+  });
+}
+
+// Download the per-question metrics of the LAST quiz generation (attempts,
+// time, validator verdicts, remediations) — exists as soon as you generate one.
+function downloadLastQuizMetrics() {
+  if(!API_BASE){toast('Connect to backend first!','er');return;}
+  apiFetch('/quiz/last_run_metrics').then(function(r){return r.json();}).then(function(d){
+    if(!d.ok || !d.per_question || !d.per_question.length){
+      toast('No quiz run yet — generate a quiz first.','er');
+      return;
+    }
+    var stamp=new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+    downloadTextFile('last_quiz_run_metrics_'+stamp+'.json',JSON.stringify(d,null,2),'application/json');
+    toast('Last quiz run metrics downloaded ('+d.per_question.length+' questions).','ok');
+  }).catch(function(){ toast('Could not fetch quiz metrics.','er'); });
+}
+
+// Trigger the agentic-vs-non-agentic benchmark on the backend, poll until it
+// finishes, then offer the results download — no Colab cell needed.
+var _evalPoll=null;
+function setEvalStatus(msg){ var el=document.getElementById('evalStatus'); if(el) el.textContent=msg||''; }
+
+var _evalTagStyle={
+  agentic:    {label:'AGENTIC',    color:'#6366f1'},
+  nonagentic: {label:'NON-AGENTIC',color:'#f59e0b'},
+  judge:      {label:'JUDGE',      color:'#06b6d4'},
+  result:     {label:'RESULT',     color:'#10b981'},
+  error:      {label:'ERROR',      color:'#ef4444'},
+  info:       {label:'INFO',       color:'var(--muted)'}
+};
+function renderEvalFeed(log){
+  var feed=document.getElementById('evalFeed'); if(!feed) return;
+  var html='';
+  (log||[]).forEach(function(e){
+    var s=_evalTagStyle[e.tag]||_evalTagStyle.info;
+    html+='<div><span style="color:var(--muted)">'+esc(e.t||'')+'</span> '+
+          '<b style="color:'+s.color+'">['+s.label+']</b> '+esc(e.line||'')+'</div>';
+  });
+  feed.innerHTML=html;
+  feed.scrollTop=feed.scrollHeight;   // autoscroll to newest
+}
+
+function runEvaluationBenchmark() {
+  if(!API_BASE){toast('Connect to backend first!','er');return;}
+  var btn=document.getElementById('runEvalBtn');
+  // Benchmark ONLY the currently selected quiz type (the tab you're on)
+  apiPost('/eval/run_async', {quiz_types:[qType], num_questions:3, repeats:1}).then(function(r){return r.json();}).then(function(d){
+    if(!d.ok){ toast(d.error||'Could not start evaluation.','er'); setEvalStatus(d.error||''); return; }
+    if(btn){ btn.disabled=true; btn.textContent='Running…'; }
+    document.getElementById('evalLive').style.display='block';
+    document.getElementById('evalBar').style.width='0%';
+    document.getElementById('evalFeed').innerHTML='';
+    setEvalStatus('live ↓ ('+qType.toUpperCase()+')');
+    toast('Evaluation started for '+qType.toUpperCase()+' — watch it live below…','info');
+    if(_evalPoll) clearInterval(_evalPoll);
+    _evalPoll=setInterval(pollEvalStatus,1500);
+  }).catch(function(){ toast('Could not start evaluation — is the backend running?','er'); });
+}
+function pollEvalStatus() {
+  apiFetch('/eval/status').then(function(r){return r.json();}).then(function(d){
+    var btn=document.getElementById('runEvalBtn');
+    var log=d.log||[];
+    renderEvalFeed(log);
+    var phaseEl=document.getElementById('evalPhase');
+    if(phaseEl) phaseEl.textContent=d.phase||'';
+    if(typeof d.pct==='number'){ document.getElementById('evalBar').style.width=Math.min(100,d.pct)+'%'; }
+
+    if(d.status==='running'){ return; }
+    clearInterval(_evalPoll); _evalPoll=null;
+    if(btn){ btn.disabled=false; btn.textContent='Run Benchmark'; }
+    if(d.status==='done'){
+      document.getElementById('evalBar').style.width='100%';
+      setEvalStatus('✅ done');
+      toast('Evaluation complete!','ok');
+      downloadEvalResults();
+    } else if(d.status==='error'){
+      setEvalStatus('❌ '+(d.error||'failed'));
+      toast('Evaluation failed: '+(d.error||''),'er');
+    }
+  }).catch(function(){ /* keep polling on transient errors */ });
 }
 </script>
 </body>
