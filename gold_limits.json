@@ -1,0 +1,22 @@
+[
+  {"question": "lim (x→0) sin(x)/x = ?", "options": {"A": "1", "B": "0", "C": "∞", "D": "does not exist"}, "answer": "A", "difficulty": "easy"},
+  {"question": "lim (x→3) (x² − 9)/(x − 3) = ?", "options": {"A": "0", "B": "6", "C": "3", "D": "does not exist"}, "answer": "B", "difficulty": "easy"},
+  {"question": "lim (x→2) (3x + 1) = ?", "options": {"A": "5", "B": "6", "C": "7", "D": "does not exist"}, "answer": "C", "difficulty": "easy"},
+  {"question": "lim (x→∞) 1/x = ?", "options": {"A": "1", "B": "∞", "C": "−1", "D": "0"}, "answer": "D", "difficulty": "easy"},
+  {"question": "lim (x→4) √x = ?", "options": {"A": "2", "B": "4", "C": "16", "D": "does not exist"}, "answer": "A", "difficulty": "easy"},
+  {"question": "lim (x→0⁺) 1/x = ?", "options": {"A": "0", "B": "+∞", "C": "−∞", "D": "does not exist"}, "answer": "B", "difficulty": "easy"},
+  {"question": "lim (x→0) (x² + 2x) = ?", "options": {"A": "2", "B": "∞", "C": "0", "D": "does not exist"}, "answer": "C", "difficulty": "easy"},
+  {"question": "lim (x→∞) (2x² + 3)/(x² − 1) = ?", "options": {"A": "0", "B": "1", "C": "∞", "D": "2"}, "answer": "D", "difficulty": "medium"},
+  {"question": "lim (x→0) (1 − cos x)/x² = ?", "options": {"A": "1/2", "B": "1", "C": "0", "D": "does not exist"}, "answer": "A", "difficulty": "medium"},
+  {"question": "lim (x→∞) (3x + 2)/(2x − 5) = ?", "options": {"A": "1", "B": "3/2", "C": "0", "D": "∞"}, "answer": "B", "difficulty": "medium"},
+  {"question": "lim (x→0) tan(x)/x = ?", "options": {"A": "0", "B": "∞", "C": "1", "D": "does not exist"}, "answer": "C", "difficulty": "medium"},
+  {"question": "lim (x→2) (x − 2)/(x² − 4) = ?", "options": {"A": "1/2", "B": "0", "C": "1", "D": "1/4"}, "answer": "D", "difficulty": "medium"},
+  {"question": "lim (x→0) |x|/x = ?", "options": {"A": "does not exist", "B": "1", "C": "−1", "D": "0"}, "answer": "A", "difficulty": "medium"},
+  {"question": "lim (x→0) (eˣ − 1)/x = ?", "options": {"A": "0", "B": "1", "C": "e", "D": "does not exist"}, "answer": "B", "difficulty": "medium"},
+  {"question": "lim (x→0) sin(3x)/sin(5x) = ?", "options": {"A": "1", "B": "5/3", "C": "3/5", "D": "0"}, "answer": "C", "difficulty": "hard"},
+  {"question": "lim (x→∞) (√(x² + x) − x) = ?", "options": {"A": "0", "B": "1", "C": "∞", "D": "1/2"}, "answer": "D", "difficulty": "hard"},
+  {"question": "lim (x→0) (sin x − x)/x³ = ?", "options": {"A": "−1/6", "B": "1/6", "C": "0", "D": "does not exist"}, "answer": "A", "difficulty": "hard"},
+  {"question": "lim (x→1) (x⁵ − 1)/(x − 1) = ?", "options": {"A": "1", "B": "5", "C": "0", "D": "does not exist"}, "answer": "B", "difficulty": "hard"},
+  {"question": "lim (x→∞) (1 + 1/x)ˣ = ?", "options": {"A": "1", "B": "2", "C": "e", "D": "∞"}, "answer": "C", "difficulty": "hard"},
+  {"question": "lim (x→0⁺) x·ln(x) = ?", "options": {"A": "−∞", "B": "1", "C": "does not exist", "D": "0"}, "answer": "D", "difficulty": "hard"}
+]
