@@ -1,0 +1,48 @@
+# LectureForge — Python dependencies (RunPod / any CUDA box)
+#
+# NOTE on PyTorch: use a CUDA PyTorch base image (e.g. a RunPod "PyTorch" template)
+# so torch/torchvision are already installed with the right CUDA build. This file
+# deliberately does NOT pin torch — installing it here could pull a CPU-only build
+# and clobber the pod's GPU torch. If your box has NO torch, install it first from
+# https://pytorch.org matching your CUDA version, then `pip install -r requirements.txt`.
+#
+# Install:  pip install -r requirements.txt
+# Also needs system packages (not pip):  apt-get install -y ffmpeg curl zstd
+# And Ollama:  curl -fsSL https://ollama.com/install.sh | sh
+
+# OCR (lecture slides/boards)
+easyocr
+
+# Speech-to-text
+faster-whisper
+
+# Embeddings + RAG
+sentence-transformers
+faiss-cpu
+
+# Document parsing (PDF / DOCX / PPTX)
+PyMuPDF
+python-docx
+python-pptx
+
+# OPTIONAL — math-aware PDF extraction (equations → LaTeX), needs a GPU.
+# Install only if you set LF_MATH_PDF=1 for calculus/physics PDFs:
+#   pip install nougat-ocr
+# (kept out of the default install because it pulls a large model + torch deps)
+# nougat-ocr
+
+# Image / numeric
+opencv-python-headless
+pillow
+numpy
+
+# Web API
+flask
+flask-cors
+werkzeug
+
+# Charts (evaluation)
+matplotlib
+
+# HTTP client (Ollama calls)
+requests
