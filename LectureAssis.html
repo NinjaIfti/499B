@@ -1631,6 +1631,32 @@ body{
           <div id="evalFeed" style="max-height:300px;overflow:auto;font-size:11.5px;line-height:1.7;font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px"></div>
         </div>
       </div>
+
+      <!-- Bulk evaluation: N MCQ x difficulties, agentic vs non-agentic, answer-correctness -->
+      <div style="margin-bottom:14px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <span style="font-size:12px;font-weight:700;color:var(--ink2)">Bulk evaluation (MCQ, easy/medium/hard, with answer-correctness):</span>
+          <label style="font-size:12px;color:var(--ink2)">Total
+            <input id="bulkTotal" type="number" value="200" min="6" max="400" style="width:64px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--ink)"/>
+          </label>
+          <label style="font-size:12px;color:var(--ink2)"><input id="bulkResume" type="checkbox" checked/> resume</label>
+          <label style="font-size:12px;color:var(--ink2)">Gold file
+            <input id="bulkGold" type="text" placeholder="(optional) /workspace/.../gold.json" style="width:220px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--ink)"/>
+          </label>
+          <button class="btn btn-grad btn-sm" id="runBulkBtn" onclick="runBulkEvaluation()">Run Bulk Evaluation</button>
+          <button class="btn btn-outline btn-sm" onclick="dl('bulk_csv')">Download CSV</button>
+          <button class="btn btn-outline btn-sm" onclick="dl('bulk_eval')">Download JSON</button>
+          <span id="bulkStatus" style="font-size:12px;color:var(--muted)"></span>
+        </div>
+        <div id="bulkLive" style="display:none;margin-top:12px">
+          <div style="height:6px;background:var(--border);border-radius:100px;overflow:hidden;margin-bottom:4px">
+            <div id="bulkBar" style="height:100%;width:0%;background:var(--g1);transition:width .4s"></div>
+          </div>
+          <div id="bulkPhase" style="font-size:12px;font-weight:600;color:var(--g1);margin-bottom:8px"></div>
+          <div id="bulkFeed" style="max-height:260px;overflow:auto;font-size:11.5px;line-height:1.7;font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px"></div>
+          <div id="bulkResult" style="margin-top:12px"></div>
+        </div>
+      </div>
       <div class="card" id="agentLogContent">
         <div class="empty"><div class="empty-icon">🤖</div><div class="empty-title">No agent log yet</div><div class="empty-sub">Process a file to see the orchestrator's decision trail.</div></div>
       </div>
@@ -3594,6 +3620,110 @@ function pollEvalStatus() {
       toast('Evaluation failed: '+(d.error||''),'er');
     }
   }).catch(function(){ /* keep polling on transient errors */ });
+}
+
+// ── Bulk evaluation (N MCQ x difficulties, agentic vs non-agentic) ──
+var _bulkPoll=null;
+function runBulkEvaluation(){
+  if(!API_BASE){toast('Connect to backend first!','er');return;}
+  var btn=document.getElementById('runBulkBtn');
+  var total=parseInt(document.getElementById('bulkTotal').value)||200;
+  var resume=document.getElementById('bulkResume').checked;
+  var goldPath=(document.getElementById('bulkGold').value||'').trim();
+  apiPost('/eval/bulk_async', {total:total, compare:true, fresh:!resume, gold_path:goldPath}).then(function(r){return r.json();}).then(function(d){
+    if(!d.ok){ toast(d.error||'Could not start.','er'); document.getElementById('bulkStatus').textContent=d.error||''; return; }
+    if(btn){ btn.disabled=true; btn.textContent='Running…'; }
+    document.getElementById('bulkLive').style.display='block';
+    document.getElementById('bulkBar').style.width='0%';
+    document.getElementById('bulkFeed').innerHTML='starting…';
+    document.getElementById('bulkResult').innerHTML='';
+    document.getElementById('bulkStatus').textContent='running ('+total+' MCQ) — this takes a while';
+    toast('Bulk evaluation started ('+total+' MCQ)…','info');
+    if(_bulkPoll) clearInterval(_bulkPoll);
+    _bulkPoll=setInterval(pollBulk,2000);
+  }).catch(function(){ toast('Could not start bulk evaluation.','er'); });
+}
+function pollBulk(){
+  apiFetch('/eval/bulk_status').then(function(r){return r.json();}).then(function(d){
+    var btn=document.getElementById('runBulkBtn');
+    renderEvalFeedInto('bulkFeed', d.log||[]);
+    var ph=document.getElementById('bulkPhase'); if(ph) ph.textContent=d.phase||'';
+    if(typeof d.pct==='number'){ document.getElementById('bulkBar').style.width=Math.min(100,d.pct)+'%'; }
+    if(d.status==='running'){ document.getElementById('bulkStatus').textContent='running… '+(d.pct||0)+'%'; return; }
+    clearInterval(_bulkPoll); _bulkPoll=null;
+    if(btn){ btn.disabled=false; btn.textContent='Run Bulk Evaluation'; }
+    if(d.status==='done'){
+      document.getElementById('bulkBar').style.width='100%';
+      document.getElementById('bulkStatus').textContent='done';
+      toast('Bulk evaluation complete!','ok');
+      if(d.result) renderBulkResult(d.result);
+    } else if(d.status==='error'){
+      document.getElementById('bulkStatus').textContent=(d.error||'failed');
+      toast('Bulk eval failed: '+(d.error||''),'er');
+    }
+  }).catch(function(){});
+}
+// shared feed renderer that writes into a given element id
+function renderEvalFeedInto(elId, log){
+  var feed=document.getElementById(elId); if(!feed) return;
+  feed.innerHTML=(log||[]).map(function(e){
+    var s=_evalTagStyle[e.tag]||_evalTagStyle.info;
+    return '<div><span style="color:var(--muted)">'+esc(e.t||'')+'</span> '+
+      '<b style="color:'+s.color+'">['+s.label+']</b> '+esc(e.line||'')+'</div>';
+  }).join('');
+  feed.scrollTop=feed.scrollHeight;
+}
+function renderBulkResult(res){
+  var el=document.getElementById('bulkResult'); if(!el) return;
+  var agg=res.aggregated||{}, cfg=res.config||{};
+  var diffs=(cfg.difficulties||['easy','medium','hard']);
+  var pipes=['agentic']; if(cfg.compare!==false) pipes.push('nonagentic');
+  function cell(v,suffix){ return (v==null?'–':(suffix==='%'?Math.round(v*100)+'%':v)); }
+  // one table per metric row, columns = difficulty x pipeline
+  var metrics=[
+    ['independent_match_rate','Answer accuracy (re-solve)','%'],
+    ['verified_correct_rate','Answer correct (judge)','%'],
+    ['accept_rate','Accept rate','%'],
+    ['effective_accept_rate','Effective accept (dup-penalised)','%'],
+    ['duplicate_rate','Duplicate rate','%'],
+    ['semantic_grounding','Grounding',''],
+    ['mean_overall','Mean judge score (1-5)','']
+  ];
+  var html='<div style="font-family:Cabinet Grotesk,sans-serif;font-weight:800;font-size:1.05rem;margin-bottom:6px">Bulk results — '+(res.n_rows||0)+' MCQ</div>'+
+    '<div style="font-size:12px;color:var(--muted);margin-bottom:10px">generator '+esc(cfg.generator_model||'')+' · judge '+esc(cfg.judge_model||'')+'</div>';
+  html+='<div style="overflow:auto"><table style="border-collapse:collapse;font-size:12px;min-width:480px">';
+  html+='<tr><th style="text-align:left;padding:4px 8px">Metric</th>';
+  diffs.forEach(function(d){ pipes.forEach(function(p){
+    html+='<th style="padding:4px 8px;border-bottom:1px solid var(--border)">'+d.toUpperCase()+'<br><span style="font-weight:500;color:var(--muted)">'+(p==='agentic'?'agen.':'non.')+'</span></th>';
+  });});
+  html+='</tr>';
+  metrics.forEach(function(m){
+    html+='<tr><td style="padding:4px 8px;font-weight:600">'+m[1]+'</td>';
+    diffs.forEach(function(d){ pipes.forEach(function(p){
+      var v=((agg[d]||{})[p]||{})[m[0]];
+      html+='<td style="padding:4px 8px;text-align:center">'+cell(v,m[2])+'</td>';
+    });});
+    html+='</tr>';
+  });
+  html+='</table></div>';
+  // agentic validator-judge F1 (overall)
+  var agf=((agg.overall||{}).agentic||{});
+  var f1row=diffs.map(function(d){ var f=((agg[d]||{}).agentic||{}).validator_judge_f1; return d.toUpperCase()+' '+(f&&f.f1!=null?f.f1:'–'); }).join(' · ');
+  html+='<div style="font-size:12px;color:var(--ink2);margin-top:8px">Agentic validator-judge F1: '+f1row+'</div>';
+  // gold cross-check: both models' answer accuracy vs the true answer
+  var gc=res.gold_calibration;
+  if(gc && gc.per_model){
+    html+='<div style="font-weight:800;font-size:12px;margin-top:12px">Answer accuracy vs gold (both models cross-checked on '+gc.n+' known MCQ)</div>';
+    html+='<div style="display:flex;flex-wrap:wrap;margin-top:4px">';
+    Object.keys(gc.per_model).forEach(function(m){
+      var role = (m===gc.agentic_model?'agentic-model':(m===gc.nonagentic_model?'non-agentic model':''));
+      var acc=gc.per_model[m].accuracy;
+      html+='<span class="sess-counts" style="margin:0 4px 4px 0"><span>'+esc(m)+(role?' ('+role+')':'')+': '+(acc!=null?Math.round(acc*100)+'%':'–')+'</span></span>';
+    });
+    html+='</div>';
+  }
+  html+='<div style="font-size:11px;color:var(--muted);margin-top:8px">Answer accuracy = an independent solve matches the marked answer · Answer correct = judge confirms the marked answer · Effective accept = accept rate after removing repeats.</div>';
+  el.innerHTML=html;
 }
 </script>
 </body>
