@@ -1030,7 +1030,37 @@ print("✅ Video extraction ready.")
 
 
 
+def _nougat_extract(path):
+    """Math-aware PDF extraction via Nougat — outputs Markdown with LaTeX for
+    equations (far better than plain text for calculus/physics PDFs). Requires
+    `pip install nougat-ocr` and a GPU. Returns the text, or '' on any failure
+    so the caller can fall back to PyMuPDF."""
+    try:
+        import tempfile, glob
+        outdir = tempfile.mkdtemp(prefix="nougat_")
+        # CLI is the most stable interface; uses the GPU automatically.
+        subprocess.run(["nougat", path, "-o", outdir],
+                       capture_output=True, timeout=2400)
+        mmds = glob.glob(os.path.join(outdir, "*.mmd"))
+        if not mmds:
+            return ""
+        with open(mmds[0], "r", encoding="utf-8") as f:
+            return f.read().strip()
+    except Exception as e:
+        print(f"  [extract_pdf] Nougat unavailable/failed ({e}); using PyMuPDF")
+        return ""
+
+
 def extract_pdf(path):
+    # Math-aware path (Nougat → LaTeX) when enabled with LF_MATH_PDF=1; this is
+    # the only way equations survive. Falls back to fast PyMuPDF text otherwise
+    # or if Nougat fails.
+    if os.environ.get("LF_MATH_PDF", "0") == "1":
+        mmd = _nougat_extract(path)
+        if mmd and len(mmd) > 50:
+            print(f"  [extract_pdf] Nougat math extraction OK ({len(mmd)} chars, LaTeX preserved)")
+            return [{"page": 1, "text": mmd, "source": "pdf-nougat"}]
+
     import fitz
     doc = fitz.open(path)
     entries = []
@@ -3114,7 +3144,7 @@ print("✅ Specialist agents ready.")
 
 JUDGE_SCHEMA = (
     '{"correctness":1,"clarity":1,"difficulty_match":1,"distractor_quality":1,'
-    '"overall":1,"accept":true,"reason":""}'
+    '"overall":1,"accept":true,"answer_correct":true,"reason":""}'
 )
 
 
@@ -3152,6 +3182,8 @@ def judge_question(quiz_type, question, content_snip, target_difficulty, judge_m
         "Most decent questions are 3-4. Reserve 5 for genuinely excellent ones. "
         "Penalise generic phrasing, near-duplicate framing, obvious/implausible "
         "distractors, and shallow rote recall.\n\n"
+        "Also set answer_correct: is the marked answer 'A:' actually the correct "
+        "answer to this question given the content? (true/false)\n"
         "Then decide accept (true) or reject (false) for inclusion in a real exam.\n\n"
         f"Return STRICT JSON: {JUDGE_SCHEMA}"
     )
@@ -3159,7 +3191,7 @@ def judge_question(quiz_type, question, content_snip, target_difficulty, judge_m
     fallback = {
         "correctness": 0, "clarity": 0, "difficulty_match": 0,
         "distractor_quality": None, "overall": 0,
-        "accept": False, "reason": "judge_parse_error",
+        "accept": False, "answer_correct": False, "reason": "judge_parse_error",
     }
     result = call_ollama_json(
         prompt,
@@ -3179,6 +3211,7 @@ def judge_question(quiz_type, question, content_snip, target_difficulty, judge_m
                                 else None),
         "overall":            int(result.get("overall", 0) or 0),
         "accept":             bool(result.get("accept", False)),
+        "answer_correct":     bool(result.get("answer_correct", False)),
         "reason":             str(result.get("reason", ""))[:300],
     }
     # Keep accept/overall internally consistent — a low overall score cannot be "accepted".
@@ -3253,6 +3286,12 @@ def _collect_agentic_results(quiz_type, ctx, content, summary, num_questions,
         events.append(e)
         if on_event:
             on_event(e)
+    # Honor the requested count. _run_quiz_agentic_loop reads ctx._quiz_count and
+    # caches ctx._quiz_plan, and the same ctx is reused across difficulty groups
+    # in run_bulk_evaluation — so force the count and clear any stale plan here,
+    # or every group would generate just 1 question (or reuse the prior plan).
+    ctx._quiz_count = num_questions
+    ctx._quiz_plan  = None
     t0 = time.time()
     questions = _run_quiz_agentic_loop(
         ctx, quiz_type, content, summary, "",
@@ -3856,6 +3895,385 @@ def run_quiz_comparison(quiz_type, judge_model=None, target_difficulty="medium",
          overall_agentic=segments["overall"]["agentic"],
          overall_nonagentic=segments["overall"]["nonagentic"], f1=f1.get("f1"))
     return result
+
+
+# ══════════════════════════════════════════════════════════════
+# BULK EVALUATION  —  N MCQ x difficulties, agentic vs non-agentic,
+# with answer-correctness (independent re-solve + judge-verify) and
+# gold-answer calibration. Resumable background run.
+# ══════════════════════════════════════════════════════════════
+
+BULK_ROWS_PATH      = os.path.join(OUTPUT_DIR, "bulk_eval_rows.jsonl")
+BULK_QUESTIONS_PATH = os.path.join(OUTPUT_DIR, "bulk_eval_questions.json")
+BULK_RESULTS_PATH   = os.path.join(OUTPUT_DIR, "bulk_eval_results.json")
+BULK_CSV_PATH       = os.path.join(OUTPUT_DIR, "bulk_eval.csv")
+
+
+def solve_mcq_independently(question, content_snip, judge_model=None):
+    """Independent re-solve: answer an MCQ from the content WITHOUT seeing the
+    marked answer. Returns the chosen option letter (upper) or ''."""
+    opts = question.get("options", {}) or {}
+    if not opts:
+        return ""
+    opt_lines = "\n".join(f"{k}. {v}" for k, v in opts.items())
+    prompt = (
+        "Answer this multiple-choice question using ONLY the content below. "
+        "Pick the single best option.\n\n"
+        f"CONTENT:\n{(content_snip or '')[:4500]}\n\n"
+        f"Question: {(question.get('question') or '')[:400]}\n{opt_lines}\n\n"
+        'Return STRICT JSON: {"answer":"A"}'
+    )
+    data = call_ollama_json(prompt, fallback={}, model=judge_model or OLLAMA_MODEL, num_ctx=QUIZ_CTX)
+    if isinstance(data, dict):
+        return str(data.get("answer", "")).strip().upper()[:1]
+    return ""
+
+
+def load_gold_mcqs(path):
+    """Load gold MCQs from JSON (list or {questions:[...]}) or CSV with columns
+    question,A,B,C,D,answer[,difficulty,passage]. Returns a normalised list."""
+    if not path or not os.path.exists(path):
+        return []
+    gold = []
+    if path.lower().endswith(".csv"):
+        import csv
+        with open(path, "r", encoding="utf-8") as f:
+            for r in csv.DictReader(f):
+                opts = {k: r[k] for k in ("A", "B", "C", "D") if r.get(k)}
+                gold.append({"question": r.get("question", ""), "options": opts,
+                             "answer": str(r.get("answer", "")).strip().upper()[:1],
+                             "difficulty": r.get("difficulty", ""),
+                             "passage": r.get("passage", "")})
+        return gold
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    items = data.get("questions", data) if isinstance(data, dict) else data
+    for q in (items or []):
+        gold.append({"question": q.get("question", ""),
+                     "options": q.get("options", {}) or {},
+                     "answer": str(q.get("answer") or q.get("correct_answer") or "").strip().upper()[:1],
+                     "difficulty": q.get("difficulty", ""),
+                     "passage": q.get("passage", "")})
+    return gold
+
+
+def evaluate_solver_on_gold(gold, models=None, progress_cb=None):
+    """Cross-check answer correctness against KNOWN gold answers. Each model in
+    `models` independently answers every gold MCQ and we report its accuracy vs
+    the gold answer (overall + per difficulty). Default models = the agentic
+    generator model (QUIZ_MODEL, 4B) and the non-agentic/primary model
+    (OLLAMA_MODEL, 12B), so BOTH are cross-checked against ground truth.
+    This validates the answer-checkers and gives a true answer-accuracy number."""
+    if models is None:
+        models = []
+        for m in (QUIZ_MODEL, OLLAMA_MODEL):
+            if m and m not in models:
+                models.append(m)
+    n = len(gold)
+    per_model = {}
+    for m in models:
+        correct, per_diff, rows = 0, {}, []
+        for i, g in enumerate(gold):
+            choice = solve_mcq_independently(
+                {"question": g["question"], "options": g["options"]},
+                g.get("passage", ""), m,
+            )
+            ok = bool(choice) and choice == g.get("answer", "")
+            correct += 1 if ok else 0
+            d = g.get("difficulty") or "all"
+            per_diff.setdefault(d, [0, 0]); per_diff[d][0] += 1 if ok else 0; per_diff[d][1] += 1
+            rows.append({"question": (g["question"] or "")[:200], "gold": g.get("answer"),
+                         "choice": choice, "correct": ok, "difficulty": d})
+            if progress_cb:
+                progress_cb({"kind": "gold_progress", "model": m, "done": i + 1, "total": n})
+        per_model[m] = {
+            "accuracy": round(correct / n, 3) if n else None,
+            "by_difficulty": {d: round(c / t, 3) for d, (c, t) in per_diff.items() if t},
+            "rows": rows,
+        }
+    result = {
+        "ok": True, "n": n,
+        "agentic_model": QUIZ_MODEL, "nonagentic_model": OLLAMA_MODEL,
+        "per_model": per_model, "generated_at": datetime.now().isoformat(),
+    }
+    save_json("gold_calibration.json", result)
+    return result
+
+
+def _bulk_split(total, difficulties):
+    base = total // len(difficulties)
+    rem  = total - base * len(difficulties)
+    counts = {d: base for d in difficulties}
+    counts[difficulties[0]] += rem
+    return counts
+
+
+def _bulk_load_done():
+    """Return (rows, done_set) from the resumable jsonl, keyed by pipeline/diff/idx."""
+    rows, done = [], set()
+    if os.path.exists(BULK_ROWS_PATH):
+        with open(BULK_ROWS_PATH, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    r = json.loads(line)
+                except Exception:
+                    continue
+                rows.append(r)
+                done.add((r["pipeline"], r["difficulty"], r["idx"]))
+    return rows, done
+
+
+def run_bulk_evaluation(total=200, difficulties=("easy", "medium", "hard"),
+                        compare=True, judge_model=None, fresh=False,
+                        gold_path="", progress_cb=None, max_attempts_per_q=3):
+    """Generate ~`total` MCQ split across `difficulties` with the agentic pipeline
+    (and the non-agentic baseline if `compare`), judge each (quality +
+    answer_correct) and independently re-solve it, and report per-difficulty
+    comparison metrics including answer correctness. Resumable: generated
+    questions and judged rows are written to disk and reused on re-invocation
+    unless `fresh=True`. Returns the aggregated results dict."""
+    def emit(kind, **kw):
+        if progress_cb:
+            try:
+                progress_cb({"kind": kind, **kw})
+            except Exception:
+                pass
+
+    ctx, content, summary = _build_eval_ctx("mcq", 1)
+    if ctx is None:
+        emit("error", reason="No content processed yet — upload and process a lecture first.")
+        return {"ok": False, "error": "No content processed yet — upload and process a lecture first."}
+    content_snip = content[:6000]
+
+    if fresh:
+        for p in (BULK_ROWS_PATH, BULK_QUESTIONS_PATH):
+            if os.path.exists(p):
+                os.remove(p)
+
+    counts    = _bulk_split(total, difficulties)
+    pipelines = ["agentic"] + (["nonagentic"] if compare else [])
+    emit("bulk_start", total=total, counts=counts, pipelines=pipelines,
+         judge_model=judge_model or OLLAMA_MODEL, generator_model=QUIZ_MODEL)
+
+    # ── Phase 1: generation (saved per group; reused on resume) ──
+    questions = {}
+    verdicts  = {}            # group key -> [validator PASS/FAIL per question] (agentic)
+    if not fresh and os.path.exists(BULK_QUESTIONS_PATH):
+        try:
+            with open(BULK_QUESTIONS_PATH, "r", encoding="utf-8") as f:
+                saved = json.load(f)
+            questions = saved.get("questions", {})
+            verdicts  = saved.get("verdicts", {})
+        except Exception:
+            questions, verdicts = {}, {}
+
+    def _save_questions():
+        save_json("bulk_eval_questions.json", {"questions": questions, "verdicts": verdicts})
+
+    for d in difficulties:
+        k = counts[d]
+        # agentic group
+        key = f"agentic:{d}"
+        if key not in questions:
+            emit("group_gen", pipeline="agentic", difficulty=d, count=k)
+            ag = _collect_agentic_results("mcq", ctx, content, summary, k,
+                                          target_difficulty=d, max_attempts_per_q=max_attempts_per_q)
+            qs = ag["questions"][:k]
+            questions[key] = qs
+            vv = ag.get("validator_verdict_by_qid", {})
+            verdicts[key] = [vv.get(f"q{i+1}", "") for i in range(len(qs))]
+            _save_questions()
+            emit("group_done", pipeline="agentic", difficulty=d, count=len(qs))
+        # non-agentic group
+        if compare:
+            key = f"nonagentic:{d}"
+            if key not in questions:
+                emit("group_gen", pipeline="nonagentic", difficulty=d, count=k)
+                collected = []
+                while len(collected) < k:
+                    need  = min(10, k - len(collected))
+                    batch = generate_mcq(ctx.board_text, ctx.transcript, summary,
+                                         num_questions=need, doc_text=ctx.doc_text,
+                                         board_entries=ctx.board_entries,
+                                         segment_list=ctx.segment_list, difficulty_hint=d)
+                    if not batch:
+                        break
+                    collected.extend(batch)
+                questions[key] = collected[:k]
+                _save_questions()
+                emit("group_done", pipeline="nonagentic", difficulty=d, count=len(questions[key]))
+
+    # ── Phase 2: judge + independent solve (per-question resumable) ──
+    rows, done = ([], set()) if fresh else _bulk_load_done()
+    total_to_judge = sum(len(questions.get(f"{p}:{d}", [])) for p in pipelines for d in difficulties)
+    judged = len(rows)
+    emit("judge_start", total=total_to_judge, already=judged)
+
+    rf = open(BULK_ROWS_PATH, "a", encoding="utf-8")
+    try:
+        for p in pipelines:
+            for d in difficulties:
+                key = f"{p}:{d}"
+                for idx, q in enumerate(questions.get(key, [])):
+                    if (p, d, idx) in done:
+                        continue
+                    jr     = judge_question("mcq", q, content_snip, d, judge_model)
+                    choice = solve_mcq_independently(q, content_snip, judge_model)
+                    marked = str(q.get("correct_answer", "")).strip().upper()[:1]
+                    row = {
+                        "pipeline": p, "difficulty": d, "idx": idx,
+                        "question": (q.get("question") or "")[:300],
+                        "options": q.get("options", {}),
+                        "topic": q.get("topic", ""),
+                        "marked_answer": marked,
+                        "judge_overall": jr.get("overall"),
+                        "judge_correctness": jr.get("correctness"),
+                        "judge_clarity": jr.get("clarity"),
+                        "judge_difficulty_match": jr.get("difficulty_match"),
+                        "judge_accept": bool(jr.get("accept")),
+                        "answer_correct": bool(jr.get("answer_correct")),      # judge-verify
+                        "independent_choice": choice,
+                        "independent_match": bool(choice) and choice == marked, # re-solve
+                        "validator_verdict": (verdicts.get(key, [None] * (idx + 1))[idx]
+                                              if p == "agentic" else None),
+                    }
+                    rf.write(json.dumps(row, ensure_ascii=False) + "\n"); rf.flush()
+                    rows.append(row); judged += 1
+                    emit("judge_progress", done=judged, total=total_to_judge,
+                         pipeline=p, difficulty=d)
+    finally:
+        rf.close()
+
+    # ── Aggregate ──
+    def _agg(pipeline, difficulty):
+        sub = [r for r in rows if r["pipeline"] == pipeline and r["difficulty"] == difficulty]
+        n = len(sub)
+        if not n:
+            return None
+        def mean(key):
+            vals = [r[key] for r in sub if isinstance(r.get(key), (int, float))]
+            return round(sum(vals) / len(vals), 3) if vals else None
+        qlist = [{"question": r["question"], "options": r["options"]} for r in sub]
+        m = {
+            "n": n,
+            "mean_overall": mean("judge_overall"),
+            "mean_correctness": mean("judge_correctness"),
+            "mean_clarity": mean("judge_clarity"),
+            "mean_difficulty_match": mean("judge_difficulty_match"),
+            "accept_rate": round(sum(1 for r in sub if r["judge_accept"]) / n, 3),
+            "verified_correct_rate": round(sum(1 for r in sub if r["answer_correct"]) / n, 3),
+            "independent_match_rate": round(sum(1 for r in sub if r["independent_match"]) / n, 3),
+            "duplicate_rate": round(_duplicate_rate(qlist), 3),
+        }
+        m.update(_grounding_metrics(qlist, content_snip))
+        # effective accept (duplicate-penalised) and answer accuracy
+        m["effective_accept_rate"] = round(m["accept_rate"] * (1 - m["duplicate_rate"]), 3)
+        if pipeline == "agentic":
+            vv = [r["validator_verdict"] for r in sub]
+            ja = [r["judge_accept"] for r in sub]
+            pairs = [(v, j) for v, j in zip(vv, ja) if v in ("PASS", "FAIL")]
+            if pairs:
+                m["validator_judge_f1"] = _compute_validator_judge_f1(
+                    [v for v, _ in pairs], [j for _, j in pairs])
+        return m
+
+    aggregated = {}
+    for d in difficulties:
+        aggregated[d] = {p: _agg(p, d) for p in pipelines}
+    aggregated["overall"] = {
+        p: _agg_overall(rows, p, content_snip) for p in pipelines
+    }
+
+    gold_result = None
+    if gold_path:
+        gold = load_gold_mcqs(gold_path)
+        if gold:
+            emit("gold_start", n=len(gold))
+            gold_result = evaluate_solver_on_gold(gold, progress_cb=progress_cb)
+
+    results = {
+        "ok": True, "generated_at": datetime.now().isoformat(),
+        "config": {"total": total, "difficulties": list(difficulties), "compare": compare,
+                   "quiz_type": "mcq", "judge_model": judge_model or OLLAMA_MODEL,
+                   "generator_model": QUIZ_MODEL},
+        "aggregated": aggregated,
+        "gold_calibration": gold_result,
+        "n_rows": len(rows),
+    }
+    save_json("bulk_eval_results.json", results)
+    _write_bulk_csv(rows)
+    try:
+        _render_bulk_charts(results, OUTPUT_DIR)
+    except Exception as e:
+        print(f"  [bulk] chart render skipped: {e}")
+
+    emit("bulk_done", n_rows=len(rows))
+    return results
+
+
+def _agg_overall(rows, pipeline, content_snip):
+    sub = [r for r in rows if r["pipeline"] == pipeline]
+    n = len(sub)
+    if not n:
+        return None
+    qlist = [{"question": r["question"], "options": r["options"]} for r in sub]
+    def mean(key):
+        vals = [r[key] for r in sub if isinstance(r.get(key), (int, float))]
+        return round(sum(vals) / len(vals), 3) if vals else None
+    dup = round(_duplicate_rate(qlist), 3)
+    acc = round(sum(1 for r in sub if r["judge_accept"]) / n, 3)
+    out = {
+        "n": n, "mean_overall": mean("judge_overall"),
+        "accept_rate": acc,
+        "verified_correct_rate": round(sum(1 for r in sub if r["answer_correct"]) / n, 3),
+        "independent_match_rate": round(sum(1 for r in sub if r["independent_match"]) / n, 3),
+        "duplicate_rate": dup,
+        "effective_accept_rate": round(acc * (1 - dup), 3),
+    }
+    out.update(_grounding_metrics(qlist, content_snip))
+    return out
+
+
+def _write_bulk_csv(rows):
+    import csv
+    cols = ["pipeline", "difficulty", "idx", "topic", "question", "marked_answer",
+            "judge_overall", "judge_correctness", "judge_clarity",
+            "judge_difficulty_match", "judge_accept", "answer_correct",
+            "independent_choice", "independent_match", "validator_verdict"]
+    with open(BULK_CSV_PATH, "w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=cols, extrasaction="ignore")
+        w.writeheader()
+        for r in rows:
+            w.writerow(r)
+
+
+def _render_bulk_charts(results, output_dir):
+    """Bar charts by difficulty (agentic vs non-agentic) for the headline rates."""
+    agg   = results["aggregated"]
+    diffs = results["config"]["difficulties"]
+    pipes = ["agentic"] + (["nonagentic"] if results["config"]["compare"] else [])
+
+    def chart(metric, title, ylabel, fname):
+        fig, ax = plt.subplots(figsize=(7, 4.5))
+        x, width = range(len(diffs)), 0.35
+        for pi, p in enumerate(pipes):
+            vals = [((agg.get(d, {}).get(p) or {}).get(metric) or 0) for d in diffs]
+            off  = (pi - (len(pipes) - 1) / 2) * width
+            ax.bar([i + off for i in x], vals, width, label=p)
+        ax.set_xticks(list(x)); ax.set_xticklabels([d.upper() for d in diffs])
+        ax.set_ylabel(ylabel); ax.set_title(title); ax.legend()
+        fig.tight_layout()
+        fig.savefig(os.path.join(output_dir, fname), bbox_inches="tight")
+        plt.show(); plt.close(fig)
+
+    chart("independent_match_rate", "Answer Accuracy (independent re-solve)", "match rate (0-1)", "bulk_answer_accuracy.png")
+    chart("verified_correct_rate", "Answer Correct (judge-verified)", "rate (0-1)", "bulk_answer_verified.png")
+    chart("accept_rate", "Judge Accept Rate by Difficulty", "accept rate (0-1)", "bulk_accept_rate.png")
+    chart("duplicate_rate", "Duplicate Rate by Difficulty", "duplicate rate (0-1)", "bulk_duplicate_rate.png")
+    chart("mean_overall", "Mean Judge Score by Difficulty", "overall (1-5)", "bulk_mean_overall.png")
 
 
 def _render_eval_charts(results, output_dir):
@@ -5591,6 +6009,9 @@ DOWNLOAD_MAP = {
     "board":      f"{OUTPUT_DIR}/board_text.txt",
     "timeline":   f"{OUTPUT_DIR}/lecture_timeline.txt",
     "eval":       f"{OUTPUT_DIR}/eval_results.json",   # evaluation harness results + metrics
+    "bulk_eval":  f"{OUTPUT_DIR}/bulk_eval_results.json",  # bulk evaluation aggregates
+    "bulk_csv":   f"{OUTPUT_DIR}/bulk_eval.csv",           # bulk eval, one row per question
+    "gold":       f"{OUTPUT_DIR}/gold_calibration.json",   # solver-vs-gold calibration
 }
 
 
@@ -5863,6 +6284,111 @@ def eval_status_route():
         job = dict(_eval_job)
         job["log"] = list(_eval_job["log"])
     job["has_results"] = os.path.exists(os.path.join(OUTPUT_DIR, "eval_results.json"))
+    return jsonify(**job)
+
+
+# ── Bulk evaluation: background job + live feed (resumable) ────
+_bulk_job      = {"status": "idle", "error": "", "phase": "", "log": [],
+                  "result": None, "pct": 0, "started_at": "", "finished_at": ""}
+_bulk_job_lock = threading.Lock()
+
+
+def _bulk_to_line(ev):
+    k = ev.get("kind")
+    if k == "bulk_start":
+        return ("info", f"Bulk eval: {ev.get('total')} MCQ across {', '.join(ev.get('counts', {}).keys())} "
+                        f"| pipelines: {', '.join(ev.get('pipelines', []))} | judge {ev.get('judge_model')}")
+    if k == "group_gen":
+        return (ev.get("pipeline", "info"),
+                f"Generating {ev.get('count')} {ev.get('pipeline')} MCQ ({ev.get('difficulty')})…")
+    if k == "group_done":
+        return (ev.get("pipeline", "info"),
+                f"{ev.get('pipeline')} ({ev.get('difficulty')}): {ev.get('count')} questions ready")
+    if k == "judge_start":
+        return ("judge", f"Judging + answer-checking {ev.get('total')} questions "
+                         f"(resuming from {ev.get('already')})…")
+    if k == "judge_progress":
+        return ("judge", f"{ev.get('done')}/{ev.get('total')} judged "
+                         f"({ev.get('pipeline')} {ev.get('difficulty')})")
+    if k == "gold_start":
+        return ("judge", f"Gold cross-check: both models answer {ev.get('n')} known MCQ…")
+    if k == "gold_progress":
+        return ("judge", f"gold [{ev.get('model')}] {ev.get('done')}/{ev.get('total')}")
+    if k == "bulk_done":
+        return ("result", f"DONE — {ev.get('n_rows')} questions evaluated")
+    if k == "error":
+        return ("error", ev.get("reason", "error"))
+    return ("info", k or "…")
+
+
+def _bulk_push(ev):
+    tag, line = _bulk_to_line(ev)
+    k = ev.get("kind")
+    with _bulk_job_lock:
+        if k == "judge_start":
+            _bulk_job["_total"] = ev.get("total") or 0
+            _bulk_job["_done"]  = ev.get("already") or 0
+        elif k == "judge_progress":
+            _bulk_job["_done"] = ev.get("done") or _bulk_job.get("_done", 0)
+            tot = _bulk_job.get("_total", 0) or 0
+            _bulk_job["pct"] = round(_bulk_job["_done"] / tot * 100) if tot else 0
+        elif k == "bulk_done":
+            _bulk_job["pct"] = 100
+        _bulk_job["phase"] = line if tag in ("info", "result") else _bulk_job.get("phase", "")
+        _bulk_job["log"].append({"tag": tag, "line": line,
+                                 "t": datetime.now().strftime("%H:%M:%S")})
+        if len(_bulk_job["log"]) > 600:
+            _bulk_job["log"] = _bulk_job["log"][-600:]
+
+
+@app.route('/eval/bulk_async', methods=['POST'])
+def eval_bulk_async_route():
+    """Start the bulk evaluation (N MCQ x difficulties, agentic vs non-agentic,
+    answer-correctness) in the background. Poll /eval/bulk_status."""
+    data       = request.get_json(silent=True) or {}
+    total      = min(int(data.get("total", 200)), 400)
+    compare    = bool(data.get("compare", True))
+    fresh      = bool(data.get("fresh", False))
+    judge_model = data.get("judge_model") or None
+    gold_path  = data.get("gold_path") or ""
+
+    if not state.status.get("summary"):
+        return jsonify(ok=False, error="No content processed yet — upload and process a lecture first.")
+
+    with _bulk_job_lock:
+        if _bulk_job["status"] == "running":
+            return jsonify(ok=False, error="A bulk evaluation is already running.", status="running")
+        _bulk_job.update(status="running", error="", phase="Starting…", log=[], result=None,
+                         pct=0, _total=0, _done=0,
+                         started_at=datetime.now().isoformat(), finished_at="")
+
+    def worker():
+        try:
+            res = run_bulk_evaluation(total=total, compare=compare, fresh=fresh,
+                                      judge_model=judge_model, gold_path=gold_path,
+                                      progress_cb=_bulk_push)
+            with _bulk_job_lock:
+                if isinstance(res, dict) and not res.get("ok", False):
+                    _bulk_job.update(status="error", error=res.get("error", "bulk eval failed"),
+                                     finished_at=datetime.now().isoformat())
+                else:
+                    _bulk_job.update(status="done", result=res,
+                                     finished_at=datetime.now().isoformat())
+        except Exception as e:
+            with _bulk_job_lock:
+                _bulk_job.update(status="error", error=str(e),
+                                 finished_at=datetime.now().isoformat())
+
+    threading.Thread(target=worker, daemon=True).start()
+    return jsonify(ok=True, status="running")
+
+
+@app.route('/eval/bulk_status')
+def eval_bulk_status_route():
+    with _bulk_job_lock:
+        job = dict(_bulk_job)
+        job["log"] = list(_bulk_job["log"])
+    job["has_results"] = os.path.exists(BULK_RESULTS_PATH)
     return jsonify(**job)
 
 
