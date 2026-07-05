@@ -1377,6 +1377,73 @@ def generate_mcq(board_text, transcript, summary, num_questions=12,
 
 
 
+def generate_mcq_cot(board_text, transcript, summary, num_questions=12,
+                     doc_text="", board_entries=None, segment_list=None,
+                     difficulty_hint=""):
+    """Non-agentic MCQ generation with CHAIN-OF-THOUGHT prompting: the model is
+    told to reason step by step to DERIVE each answer before committing to it,
+    and to record that reasoning in a 'reasoning' field. Single LLM call, same
+    JSON shape as generate_mcq (extra 'reasoning' field is ignored downstream),
+    so it drops straight into the bulk-eval comparison as a stronger baseline."""
+    board_entries = board_entries or []
+    segment_list  = segment_list or []
+    content = doc_text[:8000] if doc_text else pack_video_sources(board_text, transcript, board_entries, 8000)
+    diff_line = f"\nDifficulty focus: {difficulty_hint}\n" if difficulty_hint else ""
+    prompt = (
+        f"Generate {num_questions} high-quality MCQ from this lecture content.\n"
+        f"{diff_line}"
+        "Use CHAIN-OF-THOUGHT: for EACH question, think step by step to work out the "
+        "correct answer BEFORE choosing it, and record that step-by-step reasoning. "
+        "The option you mark correct MUST be exactly the answer your reasoning reaches, "
+        "and each distractor must be wrong for a stateable reason.\n"
+        "STRICT JSON: {\"questions\":[{\"question\",\"options\":{\"A\",\"B\",\"C\",\"D\"},"
+        "\"reasoning\",\"correct_answer\",\"explanation\",\"topic\",\"difficulty\","
+        "\"bloom_level\",\"source_timestamp\",\"source_type\"}]}\n"
+        "'reasoning' = your step-by-step derivation of the correct option.\n\n"
+        f"CONTENT:\n{content}\n\nSUMMARY:\n{summary[:1500]}"
+    )
+    data = call_ollama_json_quiz(prompt, key="questions")
+    qs   = data.get("questions", []) if isinstance(data, dict) else []
+    fill_missing_timestamps(qs, segments=segment_list)
+    return qs
+
+
+
+def generate_mcq_pot(board_text, transcript, summary, num_questions=12,
+                     doc_text="", board_entries=None, segment_list=None,
+                     difficulty_hint=""):
+    """Non-agentic MCQ generation with PROGRAM-OF-THOUGHT prompting: the model
+    derives each answer through an explicit ORDERED sequence of computation
+    steps (as if writing a short program — define, substitute, simplify,
+    evaluate) before selecting the option equal to the final computed result.
+    Well suited to calculus/limits where the answer is a computed value. Single
+    LLM call, same JSON shape as generate_mcq (extra 'computation' field ignored
+    downstream)."""
+    board_entries = board_entries or []
+    segment_list  = segment_list or []
+    content = doc_text[:8000] if doc_text else pack_video_sources(board_text, transcript, board_entries, 8000)
+    diff_line = f"\nDifficulty focus: {difficulty_hint}\n" if difficulty_hint else ""
+    prompt = (
+        f"Generate {num_questions} high-quality MCQ from this lecture content.\n"
+        f"{diff_line}"
+        "Use PROGRAM-OF-THOUGHT: for EACH question, derive the answer through an "
+        "explicit ordered sequence of computation/derivation steps (like a short "
+        "program: define, substitute, simplify, evaluate), record those steps, and "
+        "only then mark the option that EQUALS the final computed result. The marked "
+        "correct option MUST equal the endpoint of your computation.\n"
+        "STRICT JSON: {\"questions\":[{\"question\",\"options\":{\"A\",\"B\",\"C\",\"D\"},"
+        "\"computation\",\"correct_answer\",\"explanation\",\"topic\",\"difficulty\","
+        "\"bloom_level\",\"source_timestamp\",\"source_type\"}]}\n"
+        "'computation' = your ordered derivation steps ending at the correct value.\n\n"
+        f"CONTENT:\n{content}\n\nSUMMARY:\n{summary[:1500]}"
+    )
+    data = call_ollama_json_quiz(prompt, key="questions")
+    qs   = data.get("questions", []) if isinstance(data, dict) else []
+    fill_missing_timestamps(qs, segments=segment_list)
+    return qs
+
+
+
 def generate_tf(transcript, summary, doc_text="", segment_list=None,
                 difficulty_hint="", board_text="", board_entries=None):
     segment_list = segment_list or []
@@ -4069,7 +4136,15 @@ def run_bulk_evaluation(total=200, difficulties=("easy", "medium", "hard"),
                 os.remove(p)
 
     counts    = _bulk_split(total, difficulties)
-    pipelines = ["agentic"] + (["nonagentic"] if compare else [])
+    # Non-agentic baseline family — all single-shot, differing only by prompt
+    # strategy: plain, chain-of-thought (CoT), program-of-thought (PoT). Compared
+    # head-to-head against the agentic pipeline.
+    baseline_generators = {
+        "nonagentic": generate_mcq,
+        "cot":        generate_mcq_cot,
+        "pot":        generate_mcq_pot,
+    }
+    pipelines = ["agentic"] + (list(baseline_generators) if compare else [])
     emit("bulk_start", total=total, counts=counts, pipelines=pipelines,
          judge_model=judge_model or OLLAMA_MODEL, generator_model=QUIZ_MODEL)
 
@@ -4102,24 +4177,26 @@ def run_bulk_evaluation(total=200, difficulties=("easy", "medium", "hard"),
             verdicts[key] = [vv.get(f"q{i+1}", "") for i in range(len(qs))]
             _save_questions()
             emit("group_done", pipeline="agentic", difficulty=d, count=len(qs))
-        # non-agentic group
+        # non-agentic baseline family: plain, chain-of-thought, program-of-thought
         if compare:
-            key = f"nonagentic:{d}"
-            if key not in questions:
-                emit("group_gen", pipeline="nonagentic", difficulty=d, count=k)
+            for p, gen in baseline_generators.items():
+                key = f"{p}:{d}"
+                if key in questions:
+                    continue
+                emit("group_gen", pipeline=p, difficulty=d, count=k)
                 collected = []
                 while len(collected) < k:
                     need  = min(10, k - len(collected))
-                    batch = generate_mcq(ctx.board_text, ctx.transcript, summary,
-                                         num_questions=need, doc_text=ctx.doc_text,
-                                         board_entries=ctx.board_entries,
-                                         segment_list=ctx.segment_list, difficulty_hint=d)
+                    batch = gen(ctx.board_text, ctx.transcript, summary,
+                                num_questions=need, doc_text=ctx.doc_text,
+                                board_entries=ctx.board_entries,
+                                segment_list=ctx.segment_list, difficulty_hint=d)
                     if not batch:
                         break
                     collected.extend(batch)
                 questions[key] = collected[:k]
                 _save_questions()
-                emit("group_done", pipeline="nonagentic", difficulty=d, count=len(questions[key]))
+                emit("group_done", pipeline=p, difficulty=d, count=len(questions[key]))
 
     # ── Phase 2: judge + independent solve (per-question resumable) ──
     rows, done = ([], set()) if fresh else _bulk_load_done()
@@ -4269,7 +4346,8 @@ def _render_bulk_charts(results, output_dir):
     """Bar charts by difficulty (agentic vs non-agentic) for the headline rates."""
     agg   = results["aggregated"]
     diffs = results["config"]["difficulties"]
-    pipes = ["agentic"] + (["nonagentic"] if results["config"]["compare"] else [])
+    order = ["agentic", "nonagentic", "cot", "pot"]
+    pipes = [p for p in order if (agg.get("overall", {}) or {}).get(p)]
 
     def chart(metric, title, ylabel, fname):
         fig, ax = plt.subplots(figsize=(7, 4.5))
@@ -5840,11 +5918,37 @@ def quiz_generate_async_route():
                 fill_missing_timestamps(final, segments=ctx.segment_list, board_entries=ctx.board_entries)
                 state.quiz[quiz_type] = final
 
+            elif mode in ("cot", "pot"):
+                # Direct-prompting baselines exposed for a live demo: single-shot
+                # Chain-of-Thought / Program-of-Thought MCQ generation (no agentic
+                # loop). MCQ-only, since the CoT/PoT prompts are MCQ-specific.
+                if quiz_type != "mcq":
+                    raise ValueError("Chain-of-thought / program-of-thought generation is MCQ-only — pick MCQ as the question type.")
+                label = "Chain-of-Thought" if mode == "cot" else "Program-of-Thought"
+                gen   = generate_mcq_cot if mode == "cot" else generate_mcq_pot
+                ctx._agent_name = f"{label} Generator"
+                push({"agent": ctx._agent_name, "step": "start", "phase": "GENERATE", "verdict": "PASS",
+                      "reason": f"{label} direct prompting (non-agentic, single shot) — {num} MCQ at {difficulty.upper()} difficulty"})
+                push({"agent": ctx._agent_name, "step": "generating", "phase": "GENERATE", "verdict": "PASS",
+                      "reason": ("Prompting the model to reason step by step before choosing each answer…"
+                                 if mode == "cot" else
+                                 "Prompting the model to derive each answer via explicit computation steps…")})
+                qs = gen(ctx.board_text, ctx.transcript, summary,
+                         num_questions=num, doc_text=ctx.doc_text,
+                         board_entries=ctx.board_entries,
+                         segment_list=ctx.segment_list, difficulty_hint=difficulty) or []
+                for q in qs:
+                    q["difficulty"] = difficulty
+                fill_missing_timestamps(qs, segments=ctx.segment_list, board_entries=ctx.board_entries)
+                state.quiz[quiz_type] = qs
+                push({"agent": ctx._agent_name, "step": "final", "phase": "DONE", "verdict": "DONE",
+                      "reason": f"{label} quiz ready — {len(qs)} MCQ generated in one shot"})
+
             else:
                 raise ValueError(f"Unknown mode: {mode}")
 
             final_qs = state.quiz.get(quiz_type, [])
-            diff_label = difficulty if mode == "manual" else "adaptive"
+            diff_label = difficulty if mode in ("manual", "cot", "pot") else "adaptive"
             _append_generated_quiz_run("async", quiz_type, mode, diff_label, final_qs)
             with state.quiz_generation_lock:
                 job = state.quiz_generation_jobs.get(job_id)
@@ -5852,7 +5956,7 @@ def quiz_generate_async_route():
                     job["status"] = "done"
                     job["result"] = {
                         "mode":       mode,
-                        "difficulty": difficulty if mode == "manual" else "adaptive",
+                        "difficulty": difficulty if mode in ("manual", "cot", "pot") else "adaptive",
                         "total":      len(final_qs),
                         "questions":  final_qs,
                     }

@@ -1325,6 +1325,8 @@ body{
           <select class="qmode-select" id="qmodeSelect" onchange="onQModeChange()">
             <option value="adaptive">Adaptive</option>
             <option value="manual">Manual</option>
+            <option value="cot">Chain-of-Thought (MCQ)</option>
+            <option value="pot">Program-of-Thought (MCQ)</option>
           </select>
         </div>
         <div class="qmode-group" id="planGroup">
@@ -2105,7 +2107,18 @@ function updCounts() {
 // ── Quiz Mode Controls ──
 function onQModeChange() {
   var mode = document.getElementById('qmodeSelect').value;
-  document.getElementById('diffGroup').style.display = mode === 'manual' ? '' : 'none';
+  // manual, CoT and PoT all pick a fixed target difficulty
+  var showDiff = (mode === 'manual' || mode === 'cot' || mode === 'pot');
+  document.getElementById('diffGroup').style.display = showDiff ? '' : 'none';
+  // CoT/PoT are single-shot direct prompting — the agentic Plan Mode / topic
+  // controls don't apply, so hide them for a clean demo.
+  var isDirect = (mode === 'cot' || mode === 'pot');
+  var pg = document.getElementById('planGroup');
+  if (pg) pg.style.display = isDirect ? 'none' : '';
+  if (isDirect) {
+    var mtg = document.getElementById('manualTopicsGroup');
+    if (mtg) mtg.style.display = 'none';
+  }
 }
 
 function onPlanModeChange() {
@@ -2502,6 +2515,10 @@ function generateQuiz() {
   }
   if (planMode === 'manual_topics' && manualTopics.length === 0) {
     toast('Select at least one topic in Plan Mode.', 'er');
+    return;
+  }
+  if ((mode === 'cot' || mode === 'pot') && qType !== 'mcq') {
+    toast('Chain-of-Thought / Program-of-Thought is MCQ-only — switch the question type to MCQ.', 'er');
     return;
   }
   var btn    = document.getElementById('qmodeGenBtn');
@@ -3677,7 +3694,11 @@ function renderBulkResult(res){
   var el=document.getElementById('bulkResult'); if(!el) return;
   var agg=res.aggregated||{}, cfg=res.config||{};
   var diffs=(cfg.difficulties||['easy','medium','hard']);
-  var pipes=['agentic']; if(cfg.compare!==false) pipes.push('nonagentic');
+  var PLBL={agentic:'agen.',nonagentic:'plain',cot:'cot',pot:'pot'};
+  var _order=['agentic','nonagentic','cot','pot'];
+  var _ov=agg.overall||{};
+  var pipes=_order.filter(function(p){ return _ov[p]; });
+  if(!pipes.length){ pipes=['agentic']; if(cfg.compare!==false) pipes.push('nonagentic'); }
   function cell(v,suffix){ return (v==null?'–':(suffix==='%'?Math.round(v*100)+'%':v)); }
   // one table per metric row, columns = difficulty x pipeline
   var metrics=[
@@ -3694,7 +3715,7 @@ function renderBulkResult(res){
   html+='<div style="overflow:auto"><table style="border-collapse:collapse;font-size:12px;min-width:480px">';
   html+='<tr><th style="text-align:left;padding:4px 8px">Metric</th>';
   diffs.forEach(function(d){ pipes.forEach(function(p){
-    html+='<th style="padding:4px 8px;border-bottom:1px solid var(--border)">'+d.toUpperCase()+'<br><span style="font-weight:500;color:var(--muted)">'+(p==='agentic'?'agen.':'non.')+'</span></th>';
+    html+='<th style="padding:4px 8px;border-bottom:1px solid var(--border)">'+d.toUpperCase()+'<br><span style="font-weight:500;color:var(--muted)">'+(PLBL[p]||p)+'</span></th>';
   });});
   html+='</tr>';
   metrics.forEach(function(m){
