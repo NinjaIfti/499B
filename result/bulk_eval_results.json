@@ -1,0 +1,475 @@
+{
+  "ok": true,
+  "generated_at": "2026-07-02T19:35:38.993182",
+  "config": {
+    "total": 200,
+    "difficulties": [
+      "easy",
+      "medium",
+      "hard"
+    ],
+    "compare": true,
+    "quiz_type": "mcq",
+    "judge_model": "gemma3:12b",
+    "generator_model": "gemma3:4b"
+  },
+  "aggregated": {
+    "easy": {
+      "agentic": {
+        "n": 68,
+        "mean_overall": 4.956,
+        "mean_correctness": 4.971,
+        "mean_clarity": 4.868,
+        "mean_difficulty_match": 4.956,
+        "accept_rate": 1.0,
+        "verified_correct_rate": 1.0,
+        "independent_match_rate": 0.971,
+        "duplicate_rate": 0.353,
+        "semantic_grounding": 0.562,
+        "inter_question_similarity": 0.924,
+        "effective_accept_rate": 0.647,
+        "validator_judge_f1": {
+          "precision": 1.0,
+          "recall": 0.647,
+          "f1": 0.786,
+          "accuracy": 0.647,
+          "tp": 44,
+          "fp": 0,
+          "fn": 24,
+          "tn": 0,
+          "n": 68
+        }
+      },
+      "nonagentic": {
+        "n": 68,
+        "mean_overall": 5.0,
+        "mean_correctness": 5.0,
+        "mean_clarity": 5.0,
+        "mean_difficulty_match": 5.0,
+        "accept_rate": 1.0,
+        "verified_correct_rate": 0.985,
+        "independent_match_rate": 0.971,
+        "duplicate_rate": 0.324,
+        "semantic_grounding": 0.642,
+        "inter_question_similarity": 0.892,
+        "effective_accept_rate": 0.676
+      }
+    },
+    "medium": {
+      "agentic": {
+        "n": 66,
+        "mean_overall": 4.939,
+        "mean_correctness": 4.955,
+        "mean_clarity": 4.955,
+        "mean_difficulty_match": 4.015,
+        "accept_rate": 0.985,
+        "verified_correct_rate": 0.985,
+        "independent_match_rate": 0.879,
+        "duplicate_rate": 0.379,
+        "semantic_grounding": 0.595,
+        "inter_question_similarity": 0.92,
+        "effective_accept_rate": 0.612,
+        "validator_judge_f1": {
+          "precision": 1.0,
+          "recall": 0.631,
+          "f1": 0.774,
+          "accuracy": 0.636,
+          "tp": 41,
+          "fp": 0,
+          "fn": 24,
+          "tn": 1,
+          "n": 66
+        }
+      },
+      "nonagentic": {
+        "n": 66,
+        "mean_overall": 5.0,
+        "mean_correctness": 5.0,
+        "mean_clarity": 5.0,
+        "mean_difficulty_match": 4.136,
+        "accept_rate": 1.0,
+        "verified_correct_rate": 1.0,
+        "independent_match_rate": 0.955,
+        "duplicate_rate": 0.227,
+        "semantic_grounding": 0.614,
+        "inter_question_similarity": 0.877,
+        "effective_accept_rate": 0.773
+      }
+    },
+    "hard": {
+      "agentic": {
+        "n": 66,
+        "mean_overall": 4.682,
+        "mean_correctness": 5.0,
+        "mean_clarity": 4.939,
+        "mean_difficulty_match": 4.091,
+        "accept_rate": 1.0,
+        "verified_correct_rate": 1.0,
+        "independent_match_rate": 0.97,
+        "duplicate_rate": 0.288,
+        "semantic_grounding": 0.513,
+        "inter_question_similarity": 0.908,
+        "effective_accept_rate": 0.712,
+        "validator_judge_f1": {
+          "precision": 1.0,
+          "recall": 0.727,
+          "f1": 0.842,
+          "accuracy": 0.727,
+          "tp": 48,
+          "fp": 0,
+          "fn": 18,
+          "tn": 0,
+          "n": 66
+        }
+      },
+      "nonagentic": {
+        "n": 66,
+        "mean_overall": 4.788,
+        "mean_correctness": 5.0,
+        "mean_clarity": 4.97,
+        "mean_difficulty_match": 4.015,
+        "accept_rate": 1.0,
+        "verified_correct_rate": 1.0,
+        "independent_match_rate": 0.985,
+        "duplicate_rate": 0.182,
+        "semantic_grounding": 0.616,
+        "inter_question_similarity": 0.825,
+        "effective_accept_rate": 0.818
+      }
+    },
+    "overall": {
+      "agentic": {
+        "n": 200,
+        "mean_overall": 4.86,
+        "accept_rate": 0.995,
+        "verified_correct_rate": 0.995,
+        "independent_match_rate": 0.94,
+        "duplicate_rate": 0.385,
+        "effective_accept_rate": 0.612,
+        "semantic_grounding": 0.557,
+        "inter_question_similarity": 0.932
+      },
+      "nonagentic": {
+        "n": 200,
+        "mean_overall": 4.93,
+        "accept_rate": 1.0,
+        "verified_correct_rate": 0.995,
+        "independent_match_rate": 0.97,
+        "duplicate_rate": 0.28,
+        "effective_accept_rate": 0.72,
+        "semantic_grounding": 0.624,
+        "inter_question_similarity": 0.894
+      }
+    }
+  },
+  "gold_calibration": {
+    "ok": true,
+    "n": 20,
+    "agentic_model": "gemma3:4b",
+    "nonagentic_model": "gemma3:12b",
+    "per_model": {
+      "gemma3:4b": {
+        "accuracy": 0.3,
+        "by_difficulty": {
+          "easy": 0.429,
+          "medium": 0.143,
+          "hard": 0.333
+        },
+        "rows": [
+          {
+            "question": "lim (x→0) sin(x)/x = ?",
+            "gold": "A",
+            "choice": "D",
+            "correct": false,
+            "difficulty": "easy"
+          },
+          {
+            "question": "lim (x→3) (x² − 9)/(x − 3) = ?",
+            "gold": "B",
+            "choice": "B",
+            "correct": true,
+            "difficulty": "easy"
+          },
+          {
+            "question": "lim (x→2) (3x + 1) = ?",
+            "gold": "C",
+            "choice": "A",
+            "correct": false,
+            "difficulty": "easy"
+          },
+          {
+            "question": "lim (x→∞) 1/x = ?",
+            "gold": "D",
+            "choice": "B",
+            "correct": false,
+            "difficulty": "easy"
+          },
+          {
+            "question": "lim (x→4) √x = ?",
+            "gold": "A",
+            "choice": "D",
+            "correct": false,
+            "difficulty": "easy"
+          },
+          {
+            "question": "lim (x→0⁺) 1/x = ?",
+            "gold": "B",
+            "choice": "B",
+            "correct": true,
+            "difficulty": "easy"
+          },
+          {
+            "question": "lim (x→0) (x² + 2x) = ?",
+            "gold": "C",
+            "choice": "C",
+            "correct": true,
+            "difficulty": "easy"
+          },
+          {
+            "question": "lim (x→∞) (2x² + 3)/(x² − 1) = ?",
+            "gold": "D",
+            "choice": "C",
+            "correct": false,
+            "difficulty": "medium"
+          },
+          {
+            "question": "lim (x→0) (1 − cos x)/x² = ?",
+            "gold": "A",
+            "choice": "D",
+            "correct": false,
+            "difficulty": "medium"
+          },
+          {
+            "question": "lim (x→∞) (3x + 2)/(2x − 5) = ?",
+            "gold": "B",
+            "choice": "A",
+            "correct": false,
+            "difficulty": "medium"
+          },
+          {
+            "question": "lim (x→0) tan(x)/x = ?",
+            "gold": "C",
+            "choice": "D",
+            "correct": false,
+            "difficulty": "medium"
+          },
+          {
+            "question": "lim (x→2) (x − 2)/(x² − 4) = ?",
+            "gold": "D",
+            "choice": "A",
+            "correct": false,
+            "difficulty": "medium"
+          },
+          {
+            "question": "lim (x→0) |x|/x = ?",
+            "gold": "A",
+            "choice": "A",
+            "correct": true,
+            "difficulty": "medium"
+          },
+          {
+            "question": "lim (x→0) (eˣ − 1)/x = ?",
+            "gold": "B",
+            "choice": "D",
+            "correct": false,
+            "difficulty": "medium"
+          },
+          {
+            "question": "lim (x→0) sin(3x)/sin(5x) = ?",
+            "gold": "C",
+            "choice": "D",
+            "correct": false,
+            "difficulty": "hard"
+          },
+          {
+            "question": "lim (x→∞) (√(x² + x) − x) = ?",
+            "gold": "D",
+            "choice": "C",
+            "correct": false,
+            "difficulty": "hard"
+          },
+          {
+            "question": "lim (x→0) (sin x − x)/x³ = ?",
+            "gold": "A",
+            "choice": "A",
+            "correct": true,
+            "difficulty": "hard"
+          },
+          {
+            "question": "lim (x→1) (x⁵ − 1)/(x − 1) = ?",
+            "gold": "B",
+            "choice": "B",
+            "correct": true,
+            "difficulty": "hard"
+          },
+          {
+            "question": "lim (x→∞) (1 + 1/x)ˣ = ?",
+            "gold": "C",
+            "choice": "D",
+            "correct": false,
+            "difficulty": "hard"
+          },
+          {
+            "question": "lim (x→0⁺) x·ln(x) = ?",
+            "gold": "D",
+            "choice": "C",
+            "correct": false,
+            "difficulty": "hard"
+          }
+        ]
+      },
+      "gemma3:12b": {
+        "accuracy": 0.55,
+        "by_difficulty": {
+          "easy": 0.571,
+          "medium": 0.429,
+          "hard": 0.667
+        },
+        "rows": [
+          {
+            "question": "lim (x→0) sin(x)/x = ?",
+            "gold": "A",
+            "choice": "A",
+            "correct": true,
+            "difficulty": "easy"
+          },
+          {
+            "question": "lim (x→3) (x² − 9)/(x − 3) = ?",
+            "gold": "B",
+            "choice": "B",
+            "correct": true,
+            "difficulty": "easy"
+          },
+          {
+            "question": "lim (x→2) (3x + 1) = ?",
+            "gold": "C",
+            "choice": "A",
+            "correct": false,
+            "difficulty": "easy"
+          },
+          {
+            "question": "lim (x→∞) 1/x = ?",
+            "gold": "D",
+            "choice": "D",
+            "correct": true,
+            "difficulty": "easy"
+          },
+          {
+            "question": "lim (x→4) √x = ?",
+            "gold": "A",
+            "choice": "B",
+            "correct": false,
+            "difficulty": "easy"
+          },
+          {
+            "question": "lim (x→0⁺) 1/x = ?",
+            "gold": "B",
+            "choice": "B",
+            "correct": true,
+            "difficulty": "easy"
+          },
+          {
+            "question": "lim (x→0) (x² + 2x) = ?",
+            "gold": "C",
+            "choice": "A",
+            "correct": false,
+            "difficulty": "easy"
+          },
+          {
+            "question": "lim (x→∞) (2x² + 3)/(x² − 1) = ?",
+            "gold": "D",
+            "choice": "B",
+            "correct": false,
+            "difficulty": "medium"
+          },
+          {
+            "question": "lim (x→0) (1 − cos x)/x² = ?",
+            "gold": "A",
+            "choice": "B",
+            "correct": false,
+            "difficulty": "medium"
+          },
+          {
+            "question": "lim (x→∞) (3x + 2)/(2x − 5) = ?",
+            "gold": "B",
+            "choice": "B",
+            "correct": true,
+            "difficulty": "medium"
+          },
+          {
+            "question": "lim (x→0) tan(x)/x = ?",
+            "gold": "C",
+            "choice": "B",
+            "correct": false,
+            "difficulty": "medium"
+          },
+          {
+            "question": "lim (x→2) (x − 2)/(x² − 4) = ?",
+            "gold": "D",
+            "choice": "A",
+            "correct": false,
+            "difficulty": "medium"
+          },
+          {
+            "question": "lim (x→0) |x|/x = ?",
+            "gold": "A",
+            "choice": "A",
+            "correct": true,
+            "difficulty": "medium"
+          },
+          {
+            "question": "lim (x→0) (eˣ − 1)/x = ?",
+            "gold": "B",
+            "choice": "B",
+            "correct": true,
+            "difficulty": "medium"
+          },
+          {
+            "question": "lim (x→0) sin(3x)/sin(5x) = ?",
+            "gold": "C",
+            "choice": "B",
+            "correct": false,
+            "difficulty": "hard"
+          },
+          {
+            "question": "lim (x→∞) (√(x² + x) − x) = ?",
+            "gold": "D",
+            "choice": "D",
+            "correct": true,
+            "difficulty": "hard"
+          },
+          {
+            "question": "lim (x→0) (sin x − x)/x³ = ?",
+            "gold": "A",
+            "choice": "A",
+            "correct": true,
+            "difficulty": "hard"
+          },
+          {
+            "question": "lim (x→1) (x⁵ − 1)/(x − 1) = ?",
+            "gold": "B",
+            "choice": "B",
+            "correct": true,
+            "difficulty": "hard"
+          },
+          {
+            "question": "lim (x→∞) (1 + 1/x)ˣ = ?",
+            "gold": "C",
+            "choice": "C",
+            "correct": true,
+            "difficulty": "hard"
+          },
+          {
+            "question": "lim (x→0⁺) x·ln(x) = ?",
+            "gold": "D",
+            "choice": "A",
+            "correct": false,
+            "difficulty": "hard"
+          }
+        ]
+      }
+    },
+    "generated_at": "2026-07-02T19:35:38.984879"
+  },
+  "n_rows": 400
+}

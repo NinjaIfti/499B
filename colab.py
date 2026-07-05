@@ -3970,10 +3970,16 @@ def run_quiz_comparison(quiz_type, judge_model=None, target_difficulty="medium",
 # gold-answer calibration. Resumable background run.
 # ══════════════════════════════════════════════════════════════
 
-BULK_ROWS_PATH      = os.path.join(OUTPUT_DIR, "bulk_eval_rows.jsonl")
-BULK_QUESTIONS_PATH = os.path.join(OUTPUT_DIR, "bulk_eval_questions.json")
-BULK_RESULTS_PATH   = os.path.join(OUTPUT_DIR, "bulk_eval_results.json")
-BULK_CSV_PATH       = os.path.join(OUTPUT_DIR, "bulk_eval.csv")
+# Bulk-eval artifacts persist on Google Drive so a Colab runtime death does NOT
+# lose them — run_bulk_evaluation(fresh=False) then resumes from bulk_eval_rows.jsonl
+# and bulk_eval_questions.json. Falls back to OUTPUT_DIR if Drive isn't mounted.
+BULK_DIR = os.path.join(DRIVE_DIR, "bulk") if os.path.isdir(DRIVE_DIR) else OUTPUT_DIR
+os.makedirs(BULK_DIR, exist_ok=True)
+BULK_ROWS_PATH      = os.path.join(BULK_DIR, "bulk_eval_rows.jsonl")
+BULK_QUESTIONS_PATH = os.path.join(BULK_DIR, "bulk_eval_questions.json")
+BULK_RESULTS_PATH   = os.path.join(BULK_DIR, "bulk_eval_results.json")
+BULK_CSV_PATH       = os.path.join(BULK_DIR, "bulk_eval.csv")
+BULK_GOLD_PATH      = os.path.join(BULK_DIR, "gold_calibration.json")
 
 
 def solve_mcq_independently(question, content_snip, judge_model=None):
@@ -4063,7 +4069,8 @@ def evaluate_solver_on_gold(gold, models=None, progress_cb=None):
         "agentic_model": QUIZ_MODEL, "nonagentic_model": OLLAMA_MODEL,
         "per_model": per_model, "generated_at": datetime.now().isoformat(),
     }
-    save_json("gold_calibration.json", result)
+    with open(BULK_GOLD_PATH, "w", encoding="utf-8") as f:
+        json.dump(result, f, indent=2, ensure_ascii=False)
     return result
 
 
@@ -4146,7 +4153,8 @@ def run_bulk_evaluation(total=200, difficulties=("easy", "medium", "hard"),
             questions, verdicts = {}, {}
 
     def _save_questions():
-        save_json("bulk_eval_questions.json", {"questions": questions, "verdicts": verdicts})
+        with open(BULK_QUESTIONS_PATH, "w", encoding="utf-8") as f:
+            json.dump({"questions": questions, "verdicts": verdicts}, f, ensure_ascii=False)
 
     for d in difficulties:
         k = counts[d]
@@ -4280,10 +4288,11 @@ def run_bulk_evaluation(total=200, difficulties=("easy", "medium", "hard"),
         "gold_calibration": gold_result,
         "n_rows": len(rows),
     }
-    save_json("bulk_eval_results.json", results)
+    with open(BULK_RESULTS_PATH, "w", encoding="utf-8") as f:
+        json.dump(results, f, indent=2, ensure_ascii=False)
     _write_bulk_csv(rows)
     try:
-        _render_bulk_charts(results, OUTPUT_DIR)
+        _render_bulk_charts(results, BULK_DIR)
     except Exception as e:
         print(f"  [bulk] chart render skipped: {e}")
 
@@ -6113,9 +6122,9 @@ DOWNLOAD_MAP = {
     "board":      f"{OUTPUT_DIR}/board_text.txt",
     "timeline":   f"{OUTPUT_DIR}/lecture_timeline.txt",
     "eval":       f"{OUTPUT_DIR}/eval_results.json",   # evaluation harness results + metrics
-    "bulk_eval":  f"{OUTPUT_DIR}/bulk_eval_results.json",  # bulk evaluation aggregates
-    "bulk_csv":   f"{OUTPUT_DIR}/bulk_eval.csv",           # bulk eval, one row per question
-    "gold":       f"{OUTPUT_DIR}/gold_calibration.json",   # solver-vs-gold calibration
+    "bulk_eval":  BULK_RESULTS_PATH,  # bulk evaluation aggregates (on Drive)
+    "bulk_csv":   BULK_CSV_PATH,      # bulk eval, one row per question (on Drive)
+    "gold":       BULK_GOLD_PATH,     # solver-vs-gold calibration (on Drive)
 }
 
 

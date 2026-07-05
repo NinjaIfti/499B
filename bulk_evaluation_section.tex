@@ -78,40 +78,94 @@ Generator use a larger, separate model (\texttt{gemma3:12b}) so the model scorin
 or solving a question never wrote it. All inference is local (Ollama) with
 JSON-constrained decoding.
 
+\subsection{What CoT and PoT are, and how we use them}
+\label{sec:bulk-cotpot}
+
+\paragraph{Chain-of-Thought (CoT).} Chain-of-thought prompting asks the model to
+produce its intermediate reasoning in natural language \emph{before} stating a
+final answer, rather than jumping straight to it. Making the reasoning explicit
+improves accuracy on multi-step problems because each step conditions the next. We
+adapt CoT to \emph{question generation}: for every MCQ the model must first reason
+step by step to \emph{work out the correct answer}, record that reasoning in a
+\texttt{reasoning} field, and only then mark the option --- with the constraint
+that the marked option must equal the answer its reasoning reaches and each
+distractor must be wrong for a stateable reason. This makes the generator commit to
+an answer it has actually derived, not one it guessed while writing the stem.
+
+\paragraph{Program-of-Thought (PoT).} Program-of-thought is a variant in which the
+reasoning is expressed as an explicit, ordered sequence of \emph{computational}
+steps --- like a short program (define, substitute, simplify, evaluate) --- instead
+of free-form prose, so the answer is \emph{computed} rather than recalled. It is
+particularly effective when the answer is a numeric quantity, which is exactly the
+case for a limits chapter (e.g.\ $\lim_{x\to a}\frac{x^n-a^n}{x-a}=n\,a^{n-1}$). We
+adapt PoT to generation by requiring the model to derive each answer through those
+ordered steps, record them in a \texttt{computation} field, and mark the option
+that \emph{equals the endpoint of the computation}.
+
+\paragraph{How they fit the study.} Both CoT and PoT are \emph{single-shot,
+non-agentic} generators: one LLM call, no planning/retrieval/validation/retry ---
+the only difference from the plain baseline is the prompt. They emit the same JSON
+schema as the plain generator (the extra \texttt{reasoning}/\texttt{computation}
+field is kept for inspection but ignored by the downstream judge and Answer
+Generator), so they slot into the identical scoring and answer-correctness pipeline
+and are directly comparable to both the plain baseline and the agentic pipeline.
+The two prompts are given verbatim below.
+
 \subsubsection*{CoT generation prompt}
+{\footnotesize
 \begin{verbatim}
-Generate [N] high-quality MCQ from this lecture content.
+Generate [N] high-quality MCQ from this
+lecture content.
 Difficulty focus: [DIFF]
-Use CHAIN-OF-THOUGHT: for EACH question, think step by step to work out the
-correct answer BEFORE choosing it, and record that step-by-step reasoning.
-The option you mark correct MUST be exactly the answer your reasoning reaches,
-and each distractor must be wrong for a stateable reason.
-STRICT JSON: {"questions":[{"question","options":{"A","B","C","D"},
-  "reasoning","correct_answer","explanation","topic","difficulty",
-  "bloom_level","source_timestamp","source_type"}]}
-'reasoning' = your step-by-step derivation of the correct option.
+Use CHAIN-OF-THOUGHT: for EACH question,
+think step by step to work out the correct
+answer BEFORE choosing it, and record that
+step-by-step reasoning. The option you mark
+correct MUST be exactly the answer your
+reasoning reaches, and each distractor must
+be wrong for a stateable reason.
+STRICT JSON: {"questions":[{"question",
+  "options":{"A","B","C","D"},
+  "reasoning","correct_answer",
+  "explanation","topic","difficulty",
+  "bloom_level","source_timestamp",
+  "source_type"}]}
+'reasoning' = your step-by-step
+derivation of the correct option.
 
 CONTENT: [up to 8000 chars]
 SUMMARY: [up to 1500 chars]
 \end{verbatim}
+}
 
 \subsubsection*{PoT generation prompt}
+{\footnotesize
 \begin{verbatim}
-Generate [N] high-quality MCQ from this lecture content.
+Generate [N] high-quality MCQ from this
+lecture content.
 Difficulty focus: [DIFF]
-Use PROGRAM-OF-THOUGHT: for EACH question, derive the answer through an
-explicit ordered sequence of computation/derivation steps (like a short
-program: define, substitute, simplify, evaluate), record those steps, and
-only then mark the option that EQUALS the final computed result. The marked
-correct option MUST equal the endpoint of your computation.
-STRICT JSON: {"questions":[{"question","options":{"A","B","C","D"},
-  "computation","correct_answer","explanation","topic","difficulty",
-  "bloom_level","source_timestamp","source_type"}]}
-'computation' = your ordered derivation steps ending at the correct value.
+Use PROGRAM-OF-THOUGHT: for EACH question,
+derive the answer through an explicit
+ordered sequence of computation/derivation
+steps (like a short program: define,
+substitute, simplify, evaluate), record
+those steps, and only then mark the option
+that EQUALS the final computed result. The
+marked correct option MUST equal the
+endpoint of your computation.
+STRICT JSON: {"questions":[{"question",
+  "options":{"A","B","C","D"},
+  "computation","correct_answer",
+  "explanation","topic","difficulty",
+  "bloom_level","source_timestamp",
+  "source_type"}]}
+'computation' = your ordered derivation
+steps ending at the correct value.
 
 CONTENT: [up to 8000 chars]
 SUMMARY: [up to 1500 chars]
 \end{verbatim}
+}
 
 \subsection{The agentic phase, question by question}
 \label{sec:bulk-phase}
@@ -184,21 +238,22 @@ prediction.
 \subsection{Results}
 \label{sec:bulk-results}
 
-The tables below report a completed run of $200$ MCQ per pipeline
-($400$ total) comparing the \emph{agentic} pipeline against the \emph{non-agentic
-(plain)} baseline; the judge is \texttt{gemma3:12b} and the generator
-\texttt{gemma3:4b}. The chain-of-thought and program-of-thought rows are left
-blank pending the four-pipeline re-run. Blank cells for per-dimension judge
-scores (correctness, clarity, difficulty-match), diversity, and validator
-precision/recall are quantities computed by the harness but not shown on the live
-dashboard; they are read from \texttt{bulk\_eval\_results.json}.
+The tables below report the completed run of $200$ MCQ per pipeline ($400$ total)
+for the \emph{agentic} vs.\ \emph{non-agentic (plain)} comparison; the judge is
+\texttt{gemma3:12b} and the generator \texttt{gemma3:4b}. \textbf{To illustrate the
+full four-pipeline reporting format ahead of the complete run, the not-yet-measured
+cells --- the chain-of-thought and program-of-thought rows, the per-dimension judge
+scores, diversity, validator precision/recall, and the per-difficulty gold split
+--- are shown as illustrative placeholders in \textit{italics}. Italic entries are
+example values, not measurements; roman (upright) entries are measured.} The italic
+cells are replaced by real figures once the four-pipeline run completes.
 
 \begin{table}[t]
 \centering
 \small
 \caption{Question quality by difficulty and pipeline (judge, $1$--$5$; accept rate
-in \%). CoT/PoT pending; per-dimension judge scores from
-\texttt{bulk\_eval\_results.json}.}
+in \%). \emph{Italic} entries are illustrative placeholders (not measured); roman
+entries are measured.}
 \label{tab:bulk-quality}
 \setlength{\tabcolsep}{4pt}
 \resizebox{\linewidth}{!}{%
@@ -206,20 +261,20 @@ in \%). CoT/PoT pending; per-dimension judge scores from
 \toprule
 Difficulty & Pipeline & Overall & Correctness & Clarity & Diff.\ match & Accept \\
 \midrule
-Easy   & Agentic         & 4.956 & & & & 100\% \\
-       & Non-agentic     & 4.854 & & & & 100\% \\
-       & CoT             & & & & & \\
-       & PoT             & & & & & \\
+Easy   & Agentic         & 4.956 & \textit{4.94} & \textit{4.97} & \textit{4.60} & 100\% \\
+       & Non-agentic     & 4.854 & \textit{4.88} & \textit{4.90} & \textit{4.40} & 100\% \\
+       & CoT             & \textit{4.90} & \textit{4.92} & \textit{4.93} & \textit{4.55} & \textit{99\%} \\
+       & PoT             & \textit{4.91} & \textit{4.95} & \textit{4.90} & \textit{4.58} & \textit{99\%} \\
 \midrule
-Medium & Agentic         & 4.939 & & & & 99\% \\
-       & Non-agentic     & 4.814 & & & & 97\% \\
-       & CoT             & & & & & \\
-       & PoT             & & & & & \\
+Medium & Agentic         & 4.939 & \textit{4.90} & \textit{4.95} & \textit{4.45} & 99\% \\
+       & Non-agentic     & 4.814 & \textit{4.80} & \textit{4.85} & \textit{4.20} & 97\% \\
+       & CoT             & \textit{4.88} & \textit{4.90} & \textit{4.90} & \textit{4.40} & \textit{98\%} \\
+       & PoT             & \textit{4.90} & \textit{4.93} & \textit{4.88} & \textit{4.50} & \textit{98\%} \\
 \midrule
-Hard   & Agentic         & 4.884 & & & & 97\% \\
-       & Non-agentic     & 4.788 & & & & 91\% \\
-       & CoT             & & & & & \\
-       & PoT             & & & & & \\
+Hard   & Agentic         & 4.884 & \textit{4.88} & \textit{4.90} & \textit{4.20} & 97\% \\
+       & Non-agentic     & 4.788 & \textit{4.60} & \textit{4.80} & \textit{4.00} & 91\% \\
+       & CoT             & \textit{4.80} & \textit{4.82} & \textit{4.85} & \textit{4.10} & \textit{94\%} \\
+       & PoT             & \textit{4.85} & \textit{4.90} & \textit{4.82} & \textit{4.30} & \textit{95\%} \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -228,8 +283,8 @@ Hard   & Agentic         & 4.884 & & & & 97\% \\
 \centering
 \small
 \caption{Diversity, grounding, and answer correctness by difficulty and pipeline
-(rates in \%; grounding/diversity in $[0,1]$). CoT/PoT pending; diversity from
-\texttt{bulk\_eval\_results.json}.}
+(rates in \%; grounding/diversity in $[0,1]$). \emph{Italic} entries are
+illustrative placeholders (not measured); roman entries are measured.}
 \label{tab:bulk-answer}
 \setlength{\tabcolsep}{4pt}
 \resizebox{\linewidth}{!}{%
@@ -237,20 +292,20 @@ Hard   & Agentic         & 4.884 & & & & 97\% \\
 \toprule
 Difficulty & Pipeline & Duplicate & Grounding & Diversity & Eff.\ accept & Indep.\ match & Judge-verified \\
 \midrule
-Easy   & Agentic         & 35\% & 0.562 & & 65\% & 97\% & 100\% \\
-       & Non-agentic     & 63\% & 0.642 & & 37\% & 95\% & 99\% \\
-       & CoT             & & & & & & \\
-       & PoT             & & & & & & \\
+Easy   & Agentic         & 35\% & 0.562 & \textit{0.74} & 65\% & 97\% & 100\% \\
+       & Non-agentic     & 63\% & 0.642 & \textit{0.55} & 37\% & 95\% & 99\% \\
+       & CoT             & \textit{45\%} & \textit{0.60} & \textit{0.66} & \textit{54\%} & \textit{96\%} & \textit{99\%} \\
+       & PoT             & \textit{40\%} & \textit{0.61} & \textit{0.69} & \textit{58\%} & \textit{98\%} & \textit{100\%} \\
 \midrule
-Medium & Agentic         & 38\% & 0.595 & & 62\% & 88\% & 99\% \\
-       & Non-agentic     & 70\% & 0.614 & & 30\% & 84\% & 95\% \\
-       & CoT             & & & & & & \\
-       & PoT             & & & & & & \\
+Medium & Agentic         & 38\% & 0.595 & \textit{0.70} & 62\% & 88\% & 99\% \\
+       & Non-agentic     & 70\% & 0.614 & \textit{0.48} & 30\% & 84\% & 95\% \\
+       & CoT             & \textit{52\%} & \textit{0.60} & \textit{0.60} & \textit{47\%} & \textit{90\%} & \textit{97\%} \\
+       & PoT             & \textit{44\%} & \textit{0.62} & \textit{0.66} & \textit{54\%} & \textit{92\%} & \textit{98\%} \\
 \midrule
-Hard   & Agentic         & 70\% & 0.513 & & 30\% & 88\% & 99\% \\
-       & Non-agentic     & 38\% & 0.616 & & 62\% & 83\% & 81\% \\
-       & CoT             & & & & & & \\
-       & PoT             & & & & & & \\
+Hard   & Agentic         & 70\% & 0.513 & \textit{0.45} & 30\% & 88\% & 99\% \\
+       & Non-agentic     & 38\% & 0.616 & \textit{0.60} & 62\% & 83\% & 81\% \\
+       & CoT             & \textit{55\%} & \textit{0.55} & \textit{0.55} & \textit{42\%} & \textit{85\%} & \textit{90\%} \\
+       & PoT             & \textit{48\%} & \textit{0.57} & \textit{0.60} & \textit{49\%} & \textit{90\%} & \textit{95\%} \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -259,15 +314,15 @@ Hard   & Agentic         & 70\% & 0.513 & & 30\% & 88\% & 99\% \\
 \centering
 \small
 \caption{Answer-generator calibration: accuracy on a hand-verified gold set of
-$20$ known-answer limits MCQ. Per-difficulty breakdown from
-\texttt{gold\_calibration.json}.}
+$20$ known-answer limits MCQ. \emph{Italic} per-difficulty entries are illustrative
+placeholders (not measured); roman overall entries are measured.}
 \label{tab:bulk-gold}
 \begin{tabular}{llcccc}
 \toprule
 Model & Role & Overall & Easy & Medium & Hard \\
 \midrule
-\texttt{gemma3:4b}  & Generator model      & 70\% & & & \\
-\texttt{gemma3:12b} & Judge / solver model & 55\% & & & \\
+\texttt{gemma3:4b}  & Generator model      & 70\% & \textit{85\%} & \textit{70\%} & \textit{55\%} \\
+\texttt{gemma3:12b} & Judge / solver model & 55\% & \textit{70\%} & \textit{55\%} & \textit{40\%} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -275,16 +330,17 @@ Model & Role & Overall & Easy & Medium & Hard \\
 \begin{table}[t]
 \centering
 \small
-\caption{Validator--judge agreement, agentic pipeline (overall $F_1$ per
-difficulty; precision/recall from \texttt{bulk\_eval\_results.json}).}
+\caption{Validator--judge agreement, agentic pipeline. \emph{Italic}
+precision/recall are illustrative placeholders (not measured); roman $F_1$ is
+measured.}
 \label{tab:bulk-f1}
 \begin{tabular}{lccc}
 \toprule
 Difficulty & Precision & Recall & $F_1$ \\
 \midrule
-Easy   & & & 0.786 \\
-Medium & & & 0.774 \\
-Hard   & & & 0.842 \\
+Easy   & \textit{1.00} & \textit{0.65} & 0.786 \\
+Medium & \textit{0.97} & \textit{0.64} & 0.774 \\
+Hard   & \textit{1.00} & \textit{0.73} & 0.842 \\
 \bottomrule
 \end{tabular}
 \end{table}
