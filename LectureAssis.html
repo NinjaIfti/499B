@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>LectureForge — Local UI</title>
+<title>LectureAssist — Local UI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cabinet+Grotesk:wght@400;500;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
@@ -1074,7 +1074,7 @@ body{
 <div id="setupModal">
   <div class="setup-box">
     <div class="setup-logo">🎓</div>
-    <div class="setup-title">Connect to LectureForge Backend</div>
+    <div class="setup-title">Connect to LectureAssist Backend</div>
     <div class="setup-sub">Paste your <b>ngrok URL</b> from Google Colab to connect the UI to your backend.</div>
     <label class="setup-label">Colab ngrok URL</label>
     <input class="setup-inp" id="ngrokInp" placeholder="https://xxxx-xx-xx.ngrok-free.app" autocomplete="off"/>
@@ -1091,7 +1091,7 @@ body{
 <header class="topbar">
   <a class="logo" href="#">
     <div class="logo-mark">🎓</div>
-    <div class="logo-text">LectureForge <span class="logo-v">v1</span></div>
+    <div class="logo-text">LectureAssist <span class="logo-v">v1</span></div>
   </a>
   <div class="topbar-gap"></div>
   <div class="api-badge disconnected" id="apiBadge" onclick="document.getElementById('setupModal').style.display='flex'">
@@ -1248,7 +1248,9 @@ body{
       </div>
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <span style="font-weight:600;font-size:13px;color:var(--ink2)">Generated Summary</span>
+          <span style="font-weight:600;font-size:13px;color:var(--ink2)">Generated Summary
+            <span id="docChars" style="font-weight:500;color:var(--muted);margin-left:8px"></span>
+          </span>
           <button class="btn btn-ghost btn-sm" onclick="dl('summary')">⬇ Download</button>
         </div>
         <div class="prose" id="summaryContent">
@@ -1638,14 +1640,17 @@ body{
       <div style="margin-bottom:14px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px">
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <span style="font-size:12px;font-weight:700;color:var(--ink2)">Bulk evaluation (MCQ, easy/medium/hard, with answer-correctness):</span>
-          <label style="font-size:12px;color:var(--ink2)">Total
-            <input id="bulkTotal" type="number" value="200" min="6" max="400" style="width:64px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--ink)"/>
+          <label style="font-size:12px;color:var(--ink2)">Total <span style="color:var(--muted)">(per pipeline)</span>
+            <input id="bulkTotal" type="number" value="150" min="6" max="600" oninput="updateBulkHint()" style="width:64px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--ink)"/>
           </label>
+          <span id="bulkHint" style="font-size:11.5px;color:var(--muted)"></span>
           <label style="font-size:12px;color:var(--ink2)"><input id="bulkResume" type="checkbox" checked/> resume</label>
+          <label style="font-size:12px;color:var(--ink2)" title="Generate the MCQ only and stop. Judge them afterwards with evaluate.py on the downloaded JSON."><input id="bulkGenOnly" type="checkbox"/> generate only (judge later with evaluate.py)</label>
           <label style="font-size:12px;color:var(--ink2)">Gold file
             <input id="bulkGold" type="text" placeholder="(optional) /workspace/.../gold.json" style="width:220px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--ink)"/>
           </label>
           <button class="btn btn-grad btn-sm" id="runBulkBtn" onclick="runBulkEvaluation()">Run Bulk Evaluation</button>
+          <button class="btn btn-outline btn-sm" onclick="dl('bulk_questions')">Download Questions (JSON)</button>
           <button class="btn btn-outline btn-sm" onclick="dl('bulk_csv')">Download CSV</button>
           <button class="btn btn-outline btn-sm" onclick="dl('bulk_eval')">Download JSON</button>
           <span id="bulkStatus" style="font-size:12px;color:var(--muted)"></span>
@@ -1966,6 +1971,16 @@ function onDone(d) {
     var dot=document.getElementById('dot-'+k);if(dot){dot.classList.add('on');}
   });
   if(d.summary)document.getElementById('summaryContent').innerHTML=marked.parse(d.summary);
+  // Show how much text was actually extracted. A full textbook chapter should be
+  // ~80-150k chars; if this reads ~12k you uploaded (or extracted) only a slice.
+  var dcEl=document.getElementById('docChars');
+  if(dcEl && d.doc_chars){
+    var kc=Math.round(d.doc_chars/1000);
+    var warn=d.doc_chars<30000;
+    dcEl.innerHTML='· extracted <strong>'+d.doc_chars.toLocaleString()+'</strong> chars'+
+      (d.doc_blocks?(' from '+d.doc_blocks+' pages'):'')+
+      (warn?' <span style="color:var(--amber)">(looks like a slice, not a full chapter)</span>':'');
+  }
   if(d.lecture_timeline)document.getElementById('timelineContent').textContent=d.lecture_timeline;
   if(d.transcript)document.getElementById('transcriptContent').textContent=d.transcript;
   if(d.board_text)document.getElementById('boardContent').textContent=d.board_text;
@@ -3519,7 +3534,7 @@ function downloadAgentLog(fmt) {
   // readable text: timing summary first, then full timeline
   var timed=lastAgentLog.filter(function(e){return typeof e.duration_sec==='number';});
   var lines=[];
-  lines.push('LectureForge — Agent Log');
+  lines.push('LectureAssist — Agent Log');
   lines.push('Generated: '+new Date().toLocaleString());
   lines.push('Total entries: '+lastAgentLog.length);
   lines.push('');
@@ -3641,21 +3656,39 @@ function pollEvalStatus() {
 
 // ── Bulk evaluation (N MCQ x difficulties, agentic vs non-agentic) ──
 var _bulkPoll=null;
+// "Total" is PER PIPELINE and there are 4 pipelines (agentic, plain, CoT, PoT),
+// so the grand total is total x 4 and each difficulty gets total/3 per pipeline.
+// Show that arithmetic live so nobody has to guess what "Total" means.
+var BULK_PIPELINES = 4;
+function updateBulkHint(){
+  var el=document.getElementById('bulkHint'); if(!el) return;
+  var t=parseInt(document.getElementById('bulkTotal').value)||0;
+  if(t<=0){ el.textContent=''; return; }
+  var perDiff=Math.round(t/3);
+  el.textContent='= '+perDiff+'/difficulty x '+BULK_PIPELINES+' pipelines = '+(t*BULK_PIPELINES)+' MCQ total ('+(perDiff*BULK_PIPELINES)+' per difficulty)';
+}
+try{ updateBulkHint(); }catch(e){}
+
 function runBulkEvaluation(){
   if(!API_BASE){toast('Connect to backend first!','er');return;}
   var btn=document.getElementById('runBulkBtn');
-  var total=parseInt(document.getElementById('bulkTotal').value)||200;
+  var total=parseInt(document.getElementById('bulkTotal').value)||150;
   var resume=document.getElementById('bulkResume').checked;
+  var genOnly=document.getElementById('bulkGenOnly').checked;
   var goldPath=(document.getElementById('bulkGold').value||'').trim();
-  apiPost('/eval/bulk_async', {total:total, compare:true, fresh:!resume, gold_path:goldPath}).then(function(r){return r.json();}).then(function(d){
+  var grand=total*BULK_PIPELINES;
+  apiPost('/eval/bulk_async', {total:total, compare:true, fresh:!resume,
+                               gold_path:goldPath, generate_only:genOnly})
+  .then(function(r){return r.json();}).then(function(d){
     if(!d.ok){ toast(d.error||'Could not start.','er'); document.getElementById('bulkStatus').textContent=d.error||''; return; }
-    if(btn){ btn.disabled=true; btn.textContent='Running…'; }
+    if(btn){ btn.disabled=true; btn.textContent=genOnly?'Generating…':'Running…'; }
     document.getElementById('bulkLive').style.display='block';
     document.getElementById('bulkBar').style.width='0%';
     document.getElementById('bulkFeed').innerHTML='starting…';
     document.getElementById('bulkResult').innerHTML='';
-    document.getElementById('bulkStatus').textContent='running ('+total+' MCQ) — this takes a while';
-    toast('Bulk evaluation started ('+total+' MCQ)…','info');
+    var what=genOnly?'generating '+grand+' MCQ (no judging)':'running ('+grand+' MCQ)';
+    document.getElementById('bulkStatus').textContent=what+' — this takes a while';
+    toast((genOnly?'Generation':'Bulk evaluation')+' started — '+grand+' MCQ…','info');
     if(_bulkPoll) clearInterval(_bulkPoll);
     _bulkPoll=setInterval(pollBulk,2000);
   }).catch(function(){ toast('Could not start bulk evaluation.','er'); });
@@ -3692,6 +3725,19 @@ function renderEvalFeedInto(elId, log){
 }
 function renderBulkResult(res){
   var el=document.getElementById('bulkResult'); if(!el) return;
+  // generate-only run: no judging happened, so show what was produced + next step
+  if(res.generate_only){
+    var bp=res.by_pipeline||{};
+    var chips=Object.keys(bp).map(function(p){
+      return '<span class="sess-counts" style="margin:0 4px 4px 0"><span>'+esc(p)+': '+bp[p]+'</span></span>';
+    }).join('');
+    el.innerHTML='<div style="font-family:Cabinet Grotesk,sans-serif;font-weight:800;font-size:1.05rem;margin-bottom:6px">Generated '+(res.n_questions||0)+' MCQ — not judged</div>'+
+      '<div style="display:flex;flex-wrap:wrap;margin-bottom:8px">'+chips+'</div>'+
+      '<div style="font-size:12px;color:var(--ink2);margin-bottom:6px">Now click <strong>Download Questions (JSON)</strong>, then judge them locally:</div>'+
+      '<div style="font-size:11.5px;font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;overflow:auto">'+
+      'python evaluate.py --from-bulk bulk_eval_questions.json \\<br/>&nbsp;&nbsp;--content chapter.txt --gold gold_limits_100.json --out eval_out</div>';
+    return;
+  }
   var agg=res.aggregated||{}, cfg=res.config||{};
   var diffs=(cfg.difficulties||['easy','medium','hard']);
   var PLBL={agentic:'agen.',nonagentic:'plain',cot:'cot',pot:'pot'};

@@ -1,0 +1,1926 @@
+[
+  {
+    "question": "The squeeze theorem is classically used to establish which limit?",
+    "options": {
+      "A": "lim (x→1) x = 1",
+      "B": "lim (x→∞) 1/x = 0",
+      "C": "lim (x→0) 1/x = ∞",
+      "D": "lim (x→0) sin(x)/x = 1"
+    },
+    "answer": "D",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) sin(5x)/tan(2x) = ?",
+    "options": {
+      "A": "7/2",
+      "B": "-5/2",
+      "C": "3/2",
+      "D": "5/2"
+    },
+    "answer": "D",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→5) (x^3 - 125)/(x - 5) = ?",
+    "options": {
+      "A": "-75",
+      "B": "75",
+      "C": "74",
+      "D": "76"
+    },
+    "answer": "B",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "If the left-hand limit at a is 2 and the right-hand limit at a is 3, then lim (x→a) f(x):",
+    "options": {
+      "A": "equals 2",
+      "B": "equals 2.5",
+      "C": "does not exist",
+      "D": "equals 3"
+    },
+    "answer": "C",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "A function may have a limit at a point where it is not defined. This is:",
+    "options": {
+      "A": "false for all continuous functions",
+      "B": "true only for rational functions",
+      "C": "true — the limit ignores the value at the point",
+      "D": "false — the limit requires the function value"
+    },
+    "answer": "C",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "The area problem in calculus leads directly to the concept of the:",
+    "options": {
+      "A": "secant line",
+      "B": "tangent line",
+      "C": "derivative",
+      "D": "integral"
+    },
+    "answer": "D",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "The Intermediate Value Theorem requires that f be:",
+    "options": {
+      "A": "a polynomial",
+      "B": "increasing on [a, b]",
+      "C": "continuous on the closed interval [a, b]",
+      "D": "differentiable on (a, b)"
+    },
+    "answer": "C",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→3) (x^2 + 3x + 1) = ?",
+    "options": {
+      "A": "20",
+      "B": "-19",
+      "C": "18",
+      "D": "19"
+    },
+    "answer": "D",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) sin(3x)/tan(5x) = ?",
+    "options": {
+      "A": "-2/5",
+      "B": "3/5",
+      "C": "8/5",
+      "D": "-3/5"
+    },
+    "answer": "B",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "The three conditions for f to be continuous at a are: f(a) is defined, the limit at a exists, and:",
+    "options": {
+      "A": "f is increasing at a",
+      "B": "the limit at a equals f(a)",
+      "C": "f is differentiable at a",
+      "D": "f(a) = 0"
+    },
+    "answer": "B",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "Continuity of f on a closed interval [a, b] requires, at the endpoints:",
+    "options": {
+      "A": "one-sided continuity",
+      "B": "differentiability",
+      "C": "two-sided continuity",
+      "D": "that f be zero there"
+    },
+    "answer": "A",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (sqrt(x + 25) - 5)/x = ?",
+    "options": {
+      "A": "1/10",
+      "B": "11/10",
+      "C": "-1/10",
+      "D": "-9/10"
+    },
+    "answer": "A",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→∞) (sqrt(x^2 + 4x) - x) = ?",
+    "options": {
+      "A": "2",
+      "B": "3",
+      "C": "-2",
+      "D": "1"
+    },
+    "answer": "A",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→1) (x^2 - 2x - 1) = ?",
+    "options": {
+      "A": "-3",
+      "B": "-1",
+      "C": "2",
+      "D": "-2"
+    },
+    "answer": "D",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (1 - cos(1x))/x^2 = ?",
+    "options": {
+      "A": "3/2",
+      "B": "-1/2",
+      "C": "1/2",
+      "D": "1"
+    },
+    "answer": "C",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→1) (2x - 1) = ?",
+    "options": {
+      "A": "0",
+      "B": "2",
+      "C": "-1",
+      "D": "1"
+    },
+    "answer": "D",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→∞) (1 + 2/x)^x = ?",
+    "options": {
+      "A": "0",
+      "B": "does not exist",
+      "C": "e^2",
+      "D": "2"
+    },
+    "answer": "C",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "A tangent line at a point can be understood as the limit of:",
+    "options": {
+      "A": "secant lines as the second point approaches the first",
+      "B": "normal lines at the point",
+      "C": "vertical lines through the point",
+      "D": "horizontal lines through the point"
+    },
+    "answer": "A",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "A vertical asymptote of f occurs at x = a when:",
+    "options": {
+      "A": "f(a) = 0",
+      "B": "the limit at a equals 0",
+      "C": "a one-sided limit at a is +∞ or −∞",
+      "D": "f is continuous at a"
+    },
+    "answer": "C",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→-2) (x^2 + 3x + 1) = ?",
+    "options": {
+      "A": "1",
+      "B": "0",
+      "C": "-1",
+      "D": "-2"
+    },
+    "answer": "C",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (sqrt(x + 4) - 2)/x = ?",
+    "options": {
+      "A": "1/4",
+      "B": "-3/4",
+      "C": "-1/4",
+      "D": "5/4"
+    },
+    "answer": "A",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→a⁺) 1/(x − a) equals:",
+    "options": {
+      "A": "−∞",
+      "B": "0",
+      "C": "+∞",
+      "D": "1"
+    },
+    "answer": "C",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "As the time interval Δt shrinks toward 0, the average velocity over [t, t+Δt] approaches the:",
+    "options": {
+      "A": "maximum velocity",
+      "B": "total displacement",
+      "C": "instantaneous velocity at t",
+      "D": "average acceleration"
+    },
+    "answer": "C",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→3) (x^4 - 81)/(x - 3) = ?",
+    "options": {
+      "A": "108",
+      "B": "109",
+      "C": "-108",
+      "D": "107"
+    },
+    "answer": "A",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "Which statement is correct?",
+    "options": {
+      "A": "Neither implies the other",
+      "B": "Continuity at a implies the limit exists at a, but not conversely",
+      "C": "The limit existing at a implies continuity at a",
+      "D": "Continuity and the existence of the limit are equivalent"
+    },
+    "answer": "B",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→-1) (x^2 + x) = ?",
+    "options": {
+      "A": "-1",
+      "B": "1/2",
+      "C": "1",
+      "D": "0"
+    },
+    "answer": "D",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (1 - cos x)/x^2 = ?",
+    "options": {
+      "A": "-1/2",
+      "B": "3/2",
+      "C": "1",
+      "D": "1/2"
+    },
+    "answer": "D",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (1 - cos(3x))/x^2 = ?",
+    "options": {
+      "A": "7/2",
+      "B": "-9/2",
+      "C": "11/2",
+      "D": "9/2"
+    },
+    "answer": "D",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (x^2 - 2x) = ?",
+    "options": {
+      "A": "1",
+      "B": "1/2",
+      "C": "0",
+      "D": "-1"
+    },
+    "answer": "C",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→4) (x^3 - 64)/(x - 4) = ?",
+    "options": {
+      "A": "47",
+      "B": "-48",
+      "C": "49",
+      "D": "48"
+    },
+    "answer": "D",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) sin(3x)/sin(5x) = ?",
+    "options": {
+      "A": "8/5",
+      "B": "3/5",
+      "C": "-2/5",
+      "D": "-3/5"
+    },
+    "answer": "B",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "If lim (x→a) f(x) = L and lim (x→a) g(x) = M, then lim (x→a) [f(x) + g(x)] equals:",
+    "options": {
+      "A": "L + M",
+      "B": "L / M",
+      "C": "L · M",
+      "D": "L − M"
+    },
+    "answer": "A",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) tan(5x)/x = ?",
+    "options": {
+      "A": "6",
+      "B": "-5",
+      "C": "5",
+      "D": "4"
+    },
+    "answer": "C",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→∞) (3x + 2)/(2x - 5) = ?",
+    "options": {
+      "A": "5/2",
+      "B": "-3/2",
+      "C": "3/2",
+      "D": "1/2"
+    },
+    "answer": "C",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (e^(2x) - 1)/x = ?",
+    "options": {
+      "A": "1",
+      "B": "-2",
+      "C": "3",
+      "D": "2"
+    },
+    "answer": "D",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→∞) (x + 2)/(4x - 5) = ?",
+    "options": {
+      "A": "5/4",
+      "B": "-3/4",
+      "C": "1/4",
+      "D": "-1/4"
+    },
+    "answer": "C",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→3) (x^5 - 243)/(x - 3) = ?",
+    "options": {
+      "A": "406",
+      "B": "405",
+      "C": "-405",
+      "D": "404"
+    },
+    "answer": "B",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (5^x - 1)/x = ?",
+    "options": {
+      "A": "ln 10",
+      "B": "ln 2",
+      "C": "ln 7",
+      "D": "ln 5"
+    },
+    "answer": "D",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (sqrt(x + 16) - 4)/x = ?",
+    "options": {
+      "A": "1/8",
+      "B": "9/8",
+      "C": "-1/8",
+      "D": "-7/8"
+    },
+    "answer": "A",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "Every polynomial function is continuous:",
+    "options": {
+      "A": "except at its roots",
+      "B": "only where its derivative exists",
+      "C": "on the entire set of real numbers",
+      "D": "only on closed intervals"
+    },
+    "answer": "C",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→4) sqrt(x) = ?",
+    "options": {
+      "A": "3",
+      "B": "2",
+      "C": "1",
+      "D": "-2"
+    },
+    "answer": "B",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→5) (x^2 - 25)/(x - 5) = ?",
+    "options": {
+      "A": "10",
+      "B": "11",
+      "C": "-10",
+      "D": "9"
+    },
+    "answer": "A",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "A jump discontinuity at a occurs when:",
+    "options": {
+      "A": "both one-sided limits are infinite",
+      "B": "f is continuous from the left only",
+      "C": "the limit exists but f(a) is undefined",
+      "D": "both one-sided limits exist but are not equal"
+    },
+    "answer": "D",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "If f is continuous on [a,b] and N lies between f(a) and f(b), the IVT guarantees:",
+    "options": {
+      "A": "f(a) = f(b)",
+      "B": "f is differentiable at N",
+      "C": "f has a maximum at N",
+      "D": "there is a c in (a, b) with f(c) = N"
+    },
+    "answer": "D",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (x^2 - 2x + 1) = ?",
+    "options": {
+      "A": "1",
+      "B": "0",
+      "C": "2",
+      "D": "-1"
+    },
+    "answer": "A",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→2) (x^2 + 3x - 1) = ?",
+    "options": {
+      "A": "-9",
+      "B": "9",
+      "C": "10",
+      "D": "8"
+    },
+    "answer": "B",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "Instantaneous velocity is defined as the limit of:",
+    "options": {
+      "A": "acceleration as time approaches zero",
+      "B": "displacement as distance approaches zero",
+      "C": "average velocity as the time interval approaches zero",
+      "D": "position as time approaches zero"
+    },
+    "answer": "C",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) sin(1/x) does not exist because the function:",
+    "options": {
+      "A": "is undefined for all x near 0",
+      "B": "approaches two different finite values from each side",
+      "C": "oscillates infinitely without approaching a single value",
+      "D": "grows without bound"
+    },
+    "answer": "C",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→1) (x^5 - 1)/(x - 1) = ?",
+    "options": {
+      "A": "5",
+      "B": "4",
+      "C": "-5",
+      "D": "6"
+    },
+    "answer": "A",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→∞) (sqrt(x^2 + 2x) - x) = ?",
+    "options": {
+      "A": "-1",
+      "B": "0",
+      "C": "1",
+      "D": "2"
+    },
+    "answer": "C",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (1 - cos(2x))/x^2 = ?",
+    "options": {
+      "A": "-2",
+      "B": "2",
+      "C": "3",
+      "D": "1"
+    },
+    "answer": "B",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "If c is a constant, then lim (x→a) c equals:",
+    "options": {
+      "A": "a",
+      "B": "0",
+      "C": "c",
+      "D": "does not exist"
+    },
+    "answer": "C",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "If f(a) is undefined but lim (x→a) f(x) exists, the discontinuity at a is:",
+    "options": {
+      "A": "not a discontinuity",
+      "B": "an infinite discontinuity",
+      "C": "a jump discontinuity",
+      "D": "removable"
+    },
+    "answer": "D",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "The notation lim (x→a⁻) f(x) means x approaches a:",
+    "options": {
+      "A": "through integer values only",
+      "B": "from the left",
+      "C": "from both sides",
+      "D": "from the right"
+    },
+    "answer": "B",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "The slope of a secant line through two points on a curve gives the:",
+    "options": {
+      "A": "area under the curve",
+      "B": "second derivative",
+      "C": "instantaneous rate of change",
+      "D": "average rate of change between those points"
+    },
+    "answer": "D",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) |x|/x = ?",
+    "options": {
+      "A": "-∞",
+      "B": "+∞",
+      "C": "does not exist",
+      "D": "-1"
+    },
+    "answer": "C",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0+) 1/x = ?",
+    "options": {
+      "A": "does not exist",
+      "B": "+∞",
+      "C": "1",
+      "D": "2"
+    },
+    "answer": "B",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (1 + 1x)^(1/x) = ?",
+    "options": {
+      "A": "1",
+      "B": "+∞",
+      "C": "e",
+      "D": "1/e^2"
+    },
+    "answer": "C",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→-1) (x^2 - 2x) = ?",
+    "options": {
+      "A": "2",
+      "B": "-3",
+      "C": "4",
+      "D": "3"
+    },
+    "answer": "D",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→2) (-2x + 4) = ?",
+    "options": {
+      "A": "1",
+      "B": "1/2",
+      "C": "0",
+      "D": "-1"
+    },
+    "answer": "C",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) sin(2x)/tan(7x) = ?",
+    "options": {
+      "A": "2/7",
+      "B": "-2/7",
+      "C": "-5/7",
+      "D": "9/7"
+    },
+    "answer": "A",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→-1) (x^2 + 3x) = ?",
+    "options": {
+      "A": "2",
+      "B": "-2",
+      "C": "-3",
+      "D": "-1"
+    },
+    "answer": "B",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→2) (x^5 - 32)/(x - 2) = ?",
+    "options": {
+      "A": "80",
+      "B": "79",
+      "C": "-80",
+      "D": "81"
+    },
+    "answer": "A",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (e^(1x) - 1)/x = ?",
+    "options": {
+      "A": "1",
+      "B": "-1",
+      "C": "2",
+      "D": "0"
+    },
+    "answer": "A",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→∞) (3x^2 + 3)/(2x^2 - 1) = ?",
+    "options": {
+      "A": "5/2",
+      "B": "3/2",
+      "C": "-3/2",
+      "D": "1/2"
+    },
+    "answer": "B",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (x^2 + 3x - 1) = ?",
+    "options": {
+      "A": "-2",
+      "B": "1",
+      "C": "0",
+      "D": "-1"
+    },
+    "answer": "D",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→2) (3x - 1) = ?",
+    "options": {
+      "A": "6",
+      "B": "4",
+      "C": "-5",
+      "D": "5"
+    },
+    "answer": "D",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→1) (x^2 + x + 1) = ?",
+    "options": {
+      "A": "4",
+      "B": "3",
+      "C": "2",
+      "D": "-3"
+    },
+    "answer": "B",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→2) (2x - 1) = ?",
+    "options": {
+      "A": "2",
+      "B": "4",
+      "C": "3",
+      "D": "-3"
+    },
+    "answer": "C",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "The slope of the tangent line to a curve at a point is called the:",
+    "options": {
+      "A": "integral",
+      "B": "derivative",
+      "C": "secant slope",
+      "D": "average rate of change"
+    },
+    "answer": "B",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→∞) 7/x^2 = ?",
+    "options": {
+      "A": "1",
+      "B": "-1",
+      "C": "0",
+      "D": "1/2"
+    },
+    "answer": "C",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→-2) (x^2 + x) = ?",
+    "options": {
+      "A": "2",
+      "B": "3",
+      "C": "1",
+      "D": "-2"
+    },
+    "answer": "A",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (e^(3x) - 1)/x = ?",
+    "options": {
+      "A": "2",
+      "B": "-3",
+      "C": "4",
+      "D": "3"
+    },
+    "answer": "D",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "If f is a polynomial, then lim (x→a) f(x) can be found by:",
+    "options": {
+      "A": "direct substitution of a into f",
+      "B": "multiplying by the conjugate",
+      "C": "applying the squeeze theorem",
+      "D": "factoring the denominator"
+    },
+    "answer": "A",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "The squeeze theorem requires that, near a, g(x) ≤ f(x) ≤ h(x) and:",
+    "options": {
+      "A": "lim g(x) = 0",
+      "B": "f is continuous at a",
+      "C": "lim g(x) = lim h(x) = L",
+      "D": "g and h are polynomials"
+    },
+    "answer": "C",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "Integral calculus is primarily concerned with:",
+    "options": {
+      "A": "instantaneous rates of change",
+      "B": "derivatives",
+      "C": "tangent slopes",
+      "D": "integrals and accumulation"
+    },
+    "answer": "D",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) sin(2x)/x = ?",
+    "options": {
+      "A": "3",
+      "B": "2",
+      "C": "-2",
+      "D": "1"
+    },
+    "answer": "B",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "Differential calculus is primarily concerned with:",
+    "options": {
+      "A": "derivatives",
+      "B": "areas under curves",
+      "C": "integrals",
+      "D": "infinite series"
+    },
+    "answer": "A",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (10^x - 1)/x = ?",
+    "options": {
+      "A": "2",
+      "B": "1",
+      "C": "ln 5",
+      "D": "ln 10"
+    },
+    "answer": "D",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→-1) (3x + 4) = ?",
+    "options": {
+      "A": "0",
+      "B": "1",
+      "C": "2",
+      "D": "-1"
+    },
+    "answer": "B",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→3) (2x + 4) = ?",
+    "options": {
+      "A": "9",
+      "B": "10",
+      "C": "11",
+      "D": "-10"
+    },
+    "answer": "B",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→2) (x^6 - 64)/(x - 2) = ?",
+    "options": {
+      "A": "192",
+      "B": "-192",
+      "C": "193",
+      "D": "191"
+    },
+    "answer": "A",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→1) (x^4 - 1)/(x - 1) = ?",
+    "options": {
+      "A": "-4",
+      "B": "3",
+      "C": "4",
+      "D": "5"
+    },
+    "answer": "C",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "An infinite discontinuity at a occurs when:",
+    "options": {
+      "A": "at least one one-sided limit at a is +∞ or −∞",
+      "B": "f(a) is defined but the limit is not",
+      "C": "the limit equals f(a)",
+      "D": "the one-sided limits are finite but unequal"
+    },
+    "answer": "A",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "The precise definition of a limit is needed because the intuitive description:",
+    "options": {
+      "A": "cannot be used to rigorously prove that a limit equals a particular value",
+      "B": "gives the wrong answer for polynomials",
+      "C": "only works for continuous functions",
+      "D": "cannot handle one-sided limits"
+    },
+    "answer": "A",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "A rational function is continuous:",
+    "options": {
+      "A": "only where its numerator is zero",
+      "B": "everywhere",
+      "C": "nowhere",
+      "D": "everywhere except where its denominator is zero"
+    },
+    "answer": "D",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→∞) (1 + 3/x)^x = ?",
+    "options": {
+      "A": "2",
+      "B": "e^3",
+      "C": "does not exist",
+      "D": "e"
+    },
+    "answer": "B",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (cos(1x) - cos(3x))/x^2 = ?",
+    "options": {
+      "A": "4",
+      "B": "3",
+      "C": "-4",
+      "D": "5"
+    },
+    "answer": "A",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→3) (x^2 + x) = ?",
+    "options": {
+      "A": "13",
+      "B": "-12",
+      "C": "12",
+      "D": "11"
+    },
+    "answer": "C",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "If lim (x→a) f(x) exists, must f(a) be defined?",
+    "options": {
+      "A": "Yes — the limit requires f(a)",
+      "B": "No — the limit does not depend on the value at a",
+      "C": "Yes, and it must equal the limit",
+      "D": "Only if f is a polynomial"
+    },
+    "answer": "B",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→∞) 1/x^3 = ?",
+    "options": {
+      "A": "1",
+      "B": "1/2",
+      "C": "-1",
+      "D": "0"
+    },
+    "answer": "D",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→-3) (-2x + 4) = ?",
+    "options": {
+      "A": "9",
+      "B": "10",
+      "C": "-10",
+      "D": "11"
+    },
+    "answer": "B",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) sin(4x)/sin(3x) = ?",
+    "options": {
+      "A": "7/3",
+      "B": "4/3",
+      "C": "-4/3",
+      "D": "1/3"
+    },
+    "answer": "B",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (x - sin x)/x^3 = ?",
+    "options": {
+      "A": "1/6",
+      "B": "7/6",
+      "C": "-5/6",
+      "D": "-1/6"
+    },
+    "answer": "A",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) sin(x)/x equals:",
+    "options": {
+      "A": "∞",
+      "B": "1",
+      "C": "0",
+      "D": "does not exist"
+    },
+    "answer": "B",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (1 + 2x)^(1/x) = ?",
+    "options": {
+      "A": "e^2",
+      "B": "1",
+      "C": "0",
+      "D": "2"
+    },
+    "answer": "A",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) |x|/x fails to exist because:",
+    "options": {
+      "A": "both one-sided limits are infinite",
+      "B": "the function is undefined everywhere",
+      "C": "the function oscillates",
+      "D": "the left-hand limit is −1 and the right-hand limit is +1"
+    },
+    "answer": "D",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "For lim (x→a) f(x) to exist, the left-hand and right-hand limits must:",
+    "options": {
+      "A": "exist but may differ",
+      "B": "both exist and be equal",
+      "C": "both be infinite",
+      "D": "both be zero"
+    },
+    "answer": "B",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→1) (x^2 + x - 1) = ?",
+    "options": {
+      "A": "-1",
+      "B": "0",
+      "C": "1",
+      "D": "2"
+    },
+    "answer": "C",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→2) (x^3 - 8)/(x - 2) = ?",
+    "options": {
+      "A": "11",
+      "B": "13",
+      "C": "12",
+      "D": "-12"
+    },
+    "answer": "C",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→∞) (sqrt(x^2 + 3x) - x) = ?",
+    "options": {
+      "A": "3/2",
+      "B": "-3/2",
+      "C": "1/2",
+      "D": "5/2"
+    },
+    "answer": "A",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (sqrt(x + 9) - 3)/x = ?",
+    "options": {
+      "A": "-5/6",
+      "B": "1/6",
+      "C": "7/6",
+      "D": "-1/6"
+    },
+    "answer": "B",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (cos(2x) - cos(4x))/x^2 = ?",
+    "options": {
+      "A": "6",
+      "B": "7",
+      "C": "-6",
+      "D": "5"
+    },
+    "answer": "A",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→2) (x^2 - 2x) = ?",
+    "options": {
+      "A": "1",
+      "B": "1/2",
+      "C": "0",
+      "D": "-1"
+    },
+    "answer": "C",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "To evaluate a rational limit that gives the indeterminate form 0/0, the standard first step is to:",
+    "options": {
+      "A": "factor and cancel the common factor",
+      "B": "apply the squeeze theorem",
+      "C": "substitute a directly",
+      "D": "differentiate numerator and denominator"
+    },
+    "answer": "A",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "In the precise (ε–δ) definition, lim (x→a) f(x) = L means: for every ε > 0 there exists δ > 0 such that:",
+    "options": {
+      "A": "if 0 < |x − a| < δ then |f(x) − L| < ε",
+      "B": "if |x − a| < δ then |f(x) − L| > ε",
+      "C": "if 0 < |f(x) − L| < δ then |x − a| < ε",
+      "D": "if |x − a| < ε then |f(x) − L| < δ"
+    },
+    "answer": "A",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0+) x*ln(x) = ?",
+    "options": {
+      "A": "-1",
+      "B": "1",
+      "C": "0",
+      "D": "1/2"
+    },
+    "answer": "C",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→3) (3x + 4) = ?",
+    "options": {
+      "A": "-13",
+      "B": "12",
+      "C": "14",
+      "D": "13"
+    },
+    "answer": "D",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→∞) (2x + 2)/(5x - 5) = ?",
+    "options": {
+      "A": "2/5",
+      "B": "-2/5",
+      "C": "7/5",
+      "D": "-3/5"
+    },
+    "answer": "A",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) sin(2x)/sin(7x) = ?",
+    "options": {
+      "A": "9/7",
+      "B": "2/7",
+      "C": "-5/7",
+      "D": "-2/7"
+    },
+    "answer": "B",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (x^2 + x + 1) = ?",
+    "options": {
+      "A": "2",
+      "B": "0",
+      "C": "-1",
+      "D": "1"
+    },
+    "answer": "D",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→∞) (1 - 1/x)^x = ?",
+    "options": {
+      "A": "e^2",
+      "B": "+∞",
+      "C": "0",
+      "D": "1/e"
+    },
+    "answer": "D",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→∞) 1/x^2 = ?",
+    "options": {
+      "A": "0",
+      "B": "1",
+      "C": "-1",
+      "D": "1/2"
+    },
+    "answer": "A",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→16) sqrt(x) = ?",
+    "options": {
+      "A": "5",
+      "B": "3",
+      "C": "4",
+      "D": "-4"
+    },
+    "answer": "C",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (sin x - x)/x^3 = ?",
+    "options": {
+      "A": "1/6",
+      "B": "-1/6",
+      "C": "-7/6",
+      "D": "5/6"
+    },
+    "answer": "B",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→3) (x^3 - 27)/(x - 3) = ?",
+    "options": {
+      "A": "26",
+      "B": "-27",
+      "C": "28",
+      "D": "27"
+    },
+    "answer": "D",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (1 + 3x)^(1/x) = ?",
+    "options": {
+      "A": "1/e^2",
+      "B": "does not exist",
+      "C": "0",
+      "D": "e^3"
+    },
+    "answer": "D",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→3) (x^6 - 729)/(x - 3) = ?",
+    "options": {
+      "A": "1459",
+      "B": "1458",
+      "C": "1457",
+      "D": "-1458"
+    },
+    "answer": "B",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) sin(1x)/x = ?",
+    "options": {
+      "A": "1",
+      "B": "2",
+      "C": "-1",
+      "D": "0"
+    },
+    "answer": "A",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) sin(3x)/x = ?",
+    "options": {
+      "A": "4",
+      "B": "-3",
+      "C": "3",
+      "D": "2"
+    },
+    "answer": "C",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (3^x - 1)/x = ?",
+    "options": {
+      "A": "ln 3",
+      "B": "ln 2",
+      "C": "2",
+      "D": "e"
+    },
+    "answer": "A",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (cos(2x) - cos(3x))/x^2 = ?",
+    "options": {
+      "A": "-5/2",
+      "B": "3/2",
+      "C": "5/2",
+      "D": "7/2"
+    },
+    "answer": "C",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→-1) (3x - 1) = ?",
+    "options": {
+      "A": "-5",
+      "B": "-3",
+      "C": "4",
+      "D": "-4"
+    },
+    "answer": "D",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "Which of the following is NOT one of the three conditions for continuity of f at a?",
+    "options": {
+      "A": "lim (x→a) f(x) must equal f(a)",
+      "B": "f must be differentiable at a",
+      "C": "lim (x→a) f(x) must exist",
+      "D": "f(a) must be defined"
+    },
+    "answer": "B",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "If lim (x→a) f(x) = L exists, then it follows that:",
+    "options": {
+      "A": "both one-sided limits at a exist and equal L",
+      "B": "f(a) = L",
+      "C": "f is continuous at a",
+      "D": "f is differentiable at a"
+    },
+    "answer": "A",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "The quotient law, lim (f/g) = L/M, may only be applied when:",
+    "options": {
+      "A": "both L and M are positive",
+      "B": "M ≠ 0",
+      "C": "L ≠ 0",
+      "D": "f and g are polynomials"
+    },
+    "answer": "B",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "An 'infinite limit' and a 'limit at infinity' differ in that:",
+    "options": {
+      "A": "an infinite limit has f → ±∞ as x → a; a limit at infinity has x → ±∞",
+      "B": "an infinite limit requires continuity",
+      "C": "a limit at infinity is always zero",
+      "D": "they are two names for the same thing"
+    },
+    "answer": "A",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→∞) (1 + 1/x)^x = ?",
+    "options": {
+      "A": "1/e^2",
+      "B": "2",
+      "C": "0",
+      "D": "e"
+    },
+    "answer": "D",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) tan(3x)/x = ?",
+    "options": {
+      "A": "-3",
+      "B": "4",
+      "C": "3",
+      "D": "2"
+    },
+    "answer": "C",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (1 − cos x)/x equals:",
+    "options": {
+      "A": "1",
+      "B": "1/2",
+      "C": "0",
+      "D": "does not exist"
+    },
+    "answer": "C",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (cos(1x) - cos(2x))/x^2 = ?",
+    "options": {
+      "A": "-3/2",
+      "B": "1/2",
+      "C": "3/2",
+      "D": "5/2"
+    },
+    "answer": "C",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→-2) (x^2 + x - 1) = ?",
+    "options": {
+      "A": "1",
+      "B": "2",
+      "C": "-1",
+      "D": "0"
+    },
+    "answer": "A",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (cos(1x) - cos(4x))/x^2 = ?",
+    "options": {
+      "A": "17/2",
+      "B": "15/2",
+      "C": "-15/2",
+      "D": "13/2"
+    },
+    "answer": "B",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) (1 - 2x)^(1/x) = ?",
+    "options": {
+      "A": "1/e^2",
+      "B": "e^3",
+      "C": "does not exist",
+      "D": "e^2"
+    },
+    "answer": "A",
+    "difficulty": "hard",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "In the ε–δ definition, the condition 0 < |x − a| is included in order to:",
+    "options": {
+      "A": "ensure f is continuous at a",
+      "B": "exclude x = a, so the value f(a) is irrelevant",
+      "C": "guarantee δ is smaller than ε",
+      "D": "force the limit to be positive"
+    },
+    "answer": "B",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→1) (x^6 - 1)/(x - 1) = ?",
+    "options": {
+      "A": "-6",
+      "B": "5",
+      "C": "7",
+      "D": "6"
+    },
+    "answer": "D",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "For a limit involving a square root that yields 0/0, a common technique is to multiply by:",
+    "options": {
+      "A": "the reciprocal",
+      "B": "the conjugate",
+      "C": "zero",
+      "D": "the derivative"
+    },
+    "answer": "B",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "Removing a removable discontinuity at a is done by:",
+    "options": {
+      "A": "taking the derivative at a",
+      "B": "multiplying by the conjugate",
+      "C": "deleting the point from the domain",
+      "D": "redefining f(a) to equal the limit"
+    },
+    "answer": "D",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "If f is continuous at a and g is continuous at f(a), then the composition g∘f is:",
+    "options": {
+      "A": "discontinuous at a",
+      "B": "continuous at a",
+      "C": "continuous only if g is linear",
+      "D": "continuous only if f is a polynomial"
+    },
+    "answer": "B",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "A secant line is a line that passes through:",
+    "options": {
+      "A": "two points on the graph of a function",
+      "B": "exactly one point on the graph",
+      "C": "the origin and one point on the graph",
+      "D": "a point where the function is undefined"
+    },
+    "answer": "A",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→∞) (x^2 + 3)/(3x^2 - 1) = ?",
+    "options": {
+      "A": "4/3",
+      "B": "1/3",
+      "C": "-1/3",
+      "D": "-2/3"
+    },
+    "answer": "B",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→1) (x^3 - 1)/(x - 1) = ?",
+    "options": {
+      "A": "4",
+      "B": "3",
+      "C": "2",
+      "D": "-3"
+    },
+    "answer": "B",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "Estimating the area under a curve with rectangles improves as the:",
+    "options": {
+      "A": "curve becomes steeper",
+      "B": "height of the rectangles increases",
+      "C": "number of rectangles decreases",
+      "D": "width of the rectangles approaches zero"
+    },
+    "answer": "D",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→0) tan(2x)/x = ?",
+    "options": {
+      "A": "1",
+      "B": "2",
+      "C": "-2",
+      "D": "3"
+    },
+    "answer": "B",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→2) (2x + 4) = ?",
+    "options": {
+      "A": "9",
+      "B": "7",
+      "C": "-8",
+      "D": "8"
+    },
+    "answer": "D",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→2) (x^2 + x + 1) = ?",
+    "options": {
+      "A": "8",
+      "B": "6",
+      "C": "7",
+      "D": "-7"
+    },
+    "answer": "C",
+    "difficulty": "easy",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→∞) (2x^2 + 3)/(x^2 - 1) = ?",
+    "options": {
+      "A": "2",
+      "B": "-2",
+      "C": "1",
+      "D": "3"
+    },
+    "answer": "A",
+    "difficulty": "medium",
+    "type": "computational",
+    "topic": "Limits"
+  },
+  {
+    "question": "lim (x→a) x equals:",
+    "options": {
+      "A": "0",
+      "B": "does not exist",
+      "C": "1",
+      "D": "a"
+    },
+    "answer": "D",
+    "difficulty": "easy",
+    "type": "conceptual",
+    "topic": "Limits"
+  }
+]
