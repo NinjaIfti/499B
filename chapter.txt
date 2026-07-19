@@ -1,0 +1,5028 @@
+2
+
+LIMITS
+
+2 · Introduction 105
+
+Figure 2.1 The vision of human exploration by the National Aeronautics and Space Administration (NASA) to distant parts of the universe illustrates the idea of space travel at high speeds. But, is there a limit to how fast a spacecraft can go? (credit: NASA)
+Chapter Outline
+2.1 A Preview of Calculus 2.2 The Limit of a Function 2.3 The Limit Laws 2.4 Continuity 2.5 The Precise Definition of a Limit
+Introduction
+Science fiction writers often imagine spaceships that can travel to far-off planets in distant galaxies. However, back in 1905, Albert Einstein showed that a limit exists to how fast any object can travel. The problem is that the faster an object moves, the more mass it attains (in the form of energy), according to the equation
+where m0 is the object's mass at rest, v is its speed, and c is the speed of light. What is this speed limit? (We explore this problem further in Example 2.12.) The idea of a limit is central to all of calculus. We begin this chapter by examining why limits are so important. Then, we
+
+106 2 · Limits
+
+go on to describe how to find the limit of a function at a given point. Not all functions have limits at all points, and we discuss what this means and how we can tell if a function does or does not have a limit at a particular value. This chapter has been created in an informal, intuitive fashion, but this is not always enough if we need to prove a mathematical statement involving limits. The last section of this chapter presents the more precise definition of a limit and shows how to prove whether a function has a limit.
+
+2.1 A Preview of Calculus
+
+Learning Objectives
+2.1.1 Describe the tangent problem and how it led to the idea of a derivative. 2.1.2 Explain how the idea of a limit is involved in solving the tangent problem. 2.1.3 Recognize a tangent to a curve at a point as the limit of secant lines. 2.1.4 Identify instantaneous velocity as the limit of average velocity over a small time interval. 2.1.5 Describe the area problem and how it was solved by the integral. 2.1.6 Explain how the idea of a limit is involved in solving the area problem. 2.1.7 Recognize how the ideas of limit, derivative, and integral led to the studies of infinite series and
+multivariable calculus.
+
+As we embark on our study of calculus, we shall see how its development arose from common solutions to practical problems in areas such as engineering physics--like the space travel problem posed in the chapter opener. Two key problems led to the initial formulation of calculus: (1) the tangent problem, or how to determine the slope of a line tangent to a curve at a point; and (2) the area problem, or how to determine the area under a curve.
+
+The Tangent Problem and Differential Calculus
+
+Rate of change is one of the most critical concepts in calculus. We begin our investigation of rates of change by looking
+
+at the graphs of the three lines
+
+and
+
+shown in Figure 2.2.
+
+Figure 2.2 The rate of change of a linear function is constant in each of these three graphs, with the constant determined by the slope.
+
+As we move from left to right along the graph of
+
+we see that the graph decreases at a constant rate.
+
+For every 1 unit we move to the right along the x-axis, the y-coordinate decreases by 2 units. This rate of change is
+
+determined by the slope (-2) of the line. Similarly, the slope of 1/2 in the function
+
+tells us that for every change in x
+
+of 1 unit there is a corresponding change in y of 1/2 unit. The function
+
+has a slope of zero, indicating that the
+
+values of the function remain constant. We see that the slope of each linear function indicates the rate of change of the
+
+function.
+
+Compare the graphs of these three functions with the graph of
+
+(Figure 2.3). The graph of
+
+starts
+
+from the left by decreasing rapidly, then begins to decrease more slowly and level off, and then finally begins to
+
+increase--slowly at first, followed by an increasing rate of increase as it moves toward the right. Unlike a linear function,
+
+no single number represents the rate of change for this function. We quite naturally ask: How do we measure the rate of
+
+change of a nonlinear function?
+
+Access for free at openstax.org
+
+2.1 · A Preview of Calculus 107
+
+Figure 2.3 The function
+
+does not have a constant rate of change.
+
+We can approximate the rate of change of a function
+
+at a point
+
+on its graph by taking another point
+
+on the graph of
+
+drawing a line through the two points, and calculating the slope of the resulting line.
+
+Such a line is called a secant line. Figure 2.4 shows a secant line to a function
+
+at a point
+
+Figure 2.4 The slope of a secant line through a point
+
+We formally define a secant line as follows:
+
+Definition
+
+The secant to the function Its slope is given by
+
+through the points
+
+estimates the rate of change of the function at the point
+
+and
+
+is the line passing through these points.
+
+(2.1)
+
+The accuracy of approximating the rate of change of the function with a secant line depends on how close x is to a. As we
+
+see in Figure 2.5, if x is closer to a, the slope of the secant line is a better measure of the rate of change of
+
+at a.
+
+108 2 · Limits
+
+Figure 2.5 As x gets closer to a, the slope of the secant line becomes a better approximation to the rate of change of the
+
+function
+
+at a.
+
+The secant lines themselves approach a line that is called the tangent to the function
+
+at a (Figure 2.6). The slope of
+
+the tangent line to the graph at a measures the rate of change of the function at a. This value also represents the
+
+derivative of the function
+
+at a, or the rate of change of the function at a. This derivative is denoted by
+
+Differential calculus is the field of calculus concerned with the study of derivatives and their applications.
+
+MEDIA
+
+For an interactive demonstration of the slope of a secant line that you can manipulate yourself, visit this applet (Note: this site requires a Java browser plugin): Math Insight (http://www.openstax.org/l/20_mathinsight).
+
+Figure 2.6 Solving the Tangent Problem: As x approaches a, the secant lines approach the tangent line.
+Example 2.1 illustrates how to find slopes of secant lines. These slopes estimate the slope of the tangent line or, equivalently, the rate of change of the function at the point at which the slopes are calculated.
+
+EXAMPLE 2.1
+
+Finding Slopes of Secant Lines
+
+Estimate the slope of the tangent line (rate of change) to
+
+at
+
+and each of the following points on the graph of
+
+a. b.
+
+Solution Use the formula for the slope of a secant line from the definition.
+
+by finding slopes of secant lines through
+
+Access for free at openstax.org
+
+2.1 · A Preview of Calculus 109
+
+a. b.
+
+The point in part b. is closer to the point
+
+so the slope of 2.5 is closer to the slope of the tangent line. A good
+
+estimate for the slope of the tangent would be in the range of 2 to 2.5 (Figure 2.7).
+
+Figure 2.7 The secant lines to
+
+at
+
+approximations to the tangent line to
+
+through (a) at
+
+and (b)
+
+provide successively closer
+
+2.1 Estimate the slope of the tangent line (rate of change) to
+
+at
+
+secant line through
+
+and the point
+
+on the graph of
+
+by finding the slope of the
+
+We continue our investigation by exploring a related question. Keeping in mind that velocity may be thought of as the
+
+rate of change of position, suppose that we have a function,
+
+that gives the position of an object along a coordinate
+
+axis at any given time t. Can we use these same ideas to create a reasonable definition of the instantaneous velocity at a
+
+given time
+
+We start by approximating the instantaneous velocity with an average velocity. First, recall that the
+
+speed of an object traveling at a constant rate is the ratio of the distance traveled to the length of time it has traveled.
+
+We define the average velocity of an object over a time period to be the change in its position divided by the length of
+
+the time period.
+
+Definition
+
+Let be the position of an object moving along a coordinate axis at time t. The average velocity of the object over
+
+a time interval
+
+where
+
+(or
+
+if
+
+is
+
+(2.2)
+
+As t is chosen closer to a, the average velocity becomes closer to the instantaneous velocity. Note that finding the average velocity of a position function over a time interval is essentially the same as finding the slope of a secant line to a function. Furthermore, to find the slope of a tangent line at a point a, we let the x-values approach a in the slope of the secant line. Similarly, to find the instantaneous velocity at time a, we let the t-values approach a in the average velocity. This process of letting x or t approach a in an expression is called taking a limit. Thus, we may define the instantaneous velocity as follows.
+
+110 2 · Limits
+
+Definition
+
+For a position function
+
+the instantaneous velocity at a time
+
+is the value that the average velocities
+
+approach on intervals of the form
+
+and
+
+as the values of t become closer to a, provided such a value exists.
+
+Example 2.2 illustrates this concept of limits and average velocity.
+
+EXAMPLE 2.2
+
+Finding Average Velocity
+
+A rock is dropped from a height of 64 ft. It is determined that its height (in feet) above ground t seconds later (for
+
+is given by
+
+Find the average velocity of the rock over each of the given time intervals. Use
+
+this information to guess the instantaneous velocity of the rock at time
+
+a. b.
+
+Solution Substitute the data into the formula for the definition of average velocity.
+
+a. b.
+
+The instantaneous velocity is somewhere between -15.84 and -16.16 ft/sec. A good guess might be -16 ft/sec.
+
+2.2 An object moves along a coordinate axis so that its position at time t is given by
+
+Estimate its
+
+instantaneous velocity at time
+
+by computing its average velocity over the time interval
+
+The Area Problem and Integral Calculus
+We now turn our attention to a classic question from calculus. Many quantities in physics--for example, quantities of work--may be interpreted as the area under a curve. This leads us to ask the question: How can we find the area between the graph of a function and the x-axis over an interval (Figure 2.8)?
+
+Figure 2.8 The Area Problem: How do we find the area of the shaded region?
+
+As in the answer to our previous questions on velocity, we first try to approximate the solution. We approximate the area
+
+by dividing up the interval
+
+into smaller intervals in the shape of rectangles. The approximation of the area comes
+
+from adding up the areas of these rectangles (Figure 2.9).
+
+Access for free at openstax.org
+
+2.1 · A Preview of Calculus 111
+
+Figure 2.9 The area of the region under the curve is approximated by summing the areas of thin rectangles.
+
+As the widths of the rectangles become smaller (approach zero), the sums of the areas of the rectangles approach the
+
+area between the graph of
+
+and the x-axis over the interval
+
+Once again, we find ourselves taking a limit.
+
+Limits of this type serve as a basis for the definition of the definite integral. Integral calculus is the study of integrals
+
+and their applications.
+
+EXAMPLE 2.3
+
+Estimation Using Rectangles Estimate the area between the x-axis and the graph of rectangles shown in Figure 2.10.
+
+over the interval
+
+by using the three
+
+Figure 2.10 The area of the region under the curve of
+
+can be estimated using rectangles.
+
+Solution The areas of the three rectangles are 1 unit2, 2 unit2, and 5 unit2. Using these rectangles, our area estimate is 8 unit2.
+
+2.3 Estimate the area between the x-axis and the graph of three rectangles shown here:
+
+over the interval
+
+by using the
+
+112 2 · Limits
+Other Aspects of Calculus
+So far, we have studied functions of one variable only. Such functions can be represented visually using graphs in two dimensions; however, there is no good reason to restrict our investigation to two dimensions. Suppose, for example, that instead of determining the velocity of an object moving along a coordinate axis, we want to determine the velocity of a rock fired from a catapult at a given time, or of an airplane moving in three dimensions. We might want to graph realvalue functions of two variables or determine volumes of solids of the type shown in Figure 2.11. These are only a few of the types of questions that can be asked and answered using multivariable calculus. Informally, multivariable calculus can be characterized as the study of the calculus of functions of two or more variables. However, before exploring these and other ideas, we must first lay a foundation for the study of calculus in one variable by exploring the concept of a limit.
+Figure 2.11 We can use multivariable calculus to find the volume between a surface defined by a function of two variables and a plane.
+Access for free at openstax.org
+
+2.1 · A Preview of Calculus 113
+
+SECTION 2.1 EXERCISES
+
+For the following exercises, points
+
+and
+
+are on the graph of the function
+
+1. [T] Complete the following table with the appropriate values: y-coordinate of Q, the point and the slope of the secant line passing through points P and Q. Round your answer to eight significant digits.
+
+2. Use the values in the right column of the table in the preceding exercise to guess the value of the slope of the line tangent to f at
+
+3. Use the value in the preceding exercise to find an equation of the tangent line at point P. Graph and the tangent line.
+
+x
+
+y
+
+1.1
+
+a. e.
+
+msec i.
+
+1.01
+
+b. f.
+
+j.
+
+1.001 c. g.
+
+k.
+
+1.0001 d. h.
+
+l.
+
+For the following exercises, points
+4. [T] Complete the following table with the appropriate values: y-coordinate of Q, the point and the slope of the secant line passing through points P and Q. Round your answer to eight significant digits.
+
+and
+
+are on the graph of the function
+
+5. Use the values in the right column of the table in the preceding exercise to guess the value of the slope of the tangent line to f at
+
+6. Use the value in the preceding exercise to find an equation of the tangent line at point P. Graph and the tangent line.
+
+x
+
+y
+
+1.1
+
+a. e.
+
+msec i.
+
+1.01
+
+b. f.
+
+j.
+
+1.001 c. g.
+
+k.
+
+1.0001 d. h.
+
+l.
+
+114 2 · Limits
+
+For the following exercises, points
+7. [T] Complete the following table with the appropriate values: y-coordinate of Q, the point and the slope of the secant line passing through points P and Q. Round your answer to eight significant digits.
+
+and
+
+are on the graph of the function
+
+8. Use the values in the right column of the table in the preceding exercise to guess the value of the slope of the tangent line to f at
+
+9. Use the value in the preceding exercise to find an equation of the tangent line at point P.
+
+x
+
+y
+
+4.1
+
+a. e.
+
+msec i.
+
+4.01
+
+b. f.
+
+j.
+
+4.001 c. g.
+
+k.
+
+4.0001 d. h.
+
+l.
+
+For the following exercises, points
+10. [T] Complete the following table with the appropriate values: y-coordinate of Q, the point and the slope of the secant line passing through points P and Q. Round your answer to eight significant digits.
+
+and
+
+are on the graph of the function
+
+11. Use the values in the right column of the table in the preceding exercise to guess the value of the slope of the tangent line to f at
+
+12. Use the value in the preceding exercise to find an equation of the tangent line at point P.
+
+
+
+y
+
+1.4
+
+a. e.
+
+msec i.
+
+1.49
+
+b. f.
+
+j.
+
+1.499 c. g.
+
+k.
+
+1.4999 d. h.
+
+l.
+
+Access for free at openstax.org
+
+2.1 · A Preview of Calculus 115
+
+For the following exercises, points
+13. [T] Complete the following table with the appropriate values: y-coordinate of Q, the point and the slope of the secant line passing through points P and Q. Round your answer to eight significant digits.
+
+and
+
+are on the graph of the function
+
+14. Use the values in the right column of the table in the preceding exercise to guess the value of the slope of the line tangent to f at
+
+15. Use the value in the preceding exercise to find an equation of the tangent line at point P.
+
+x
+
+y
+
+-1.05 a. e.
+
+msec i.
+
+-1.01 b. f.
+
+j.
+
+-1.005 c. g.
+
+k.
+
+-1.001 d. h.
+
+l.
+
+For the following exercises, the position function of a ball dropped from the top of a 200-meter tall building is given by where position s is measured in meters and time t is measured in seconds. Round your answer to
+eight significant digits.
+
+16. [T] Compute the average velocity of the ball over the given time intervals. a. b. c. d.
+
+17. Use the preceding exercise to guess the instantaneous velocity of the ball at sec.
+
+For the following exercises, consider a stone tossed into the air from ground level with an initial velocity of 15 m/sec. Its height in meters at time t seconds is
+
+18. [T] Compute the average velocity of the stone over the given time intervals. a. b. c. d.
+
+19. Use the preceding exercise to guess the instantaneous velocity of the stone at sec.
+
+For the following exercises, consider a rocket shot into the air that then returns to Earth. The height of the rocket in
+
+meters is given by
+
+where t is measured in seconds.
+
+20. [T] Compute the average velocity of the rocket over the given time intervals. a. b. c. d.
+
+21. Use the preceding exercise to guess the instantaneous velocity of the rocket at sec.
+
+116 2 · Limits
+
+For the following exercises, consider an athlete running a 40-m dash. The position of the athlete is given by where d is the position in meters and t is the time elapsed, measured in seconds.
+
+22. [T] Compute the average velocity of the runner over the given time intervals. a. b. c. d.
+
+23. Use the preceding exercise to guess the instantaneous velocity of the runner at sec.
+
+For the following exercises, consider the function
+
+24. Sketch the graph of f over
+
+the interval
+
+and
+
+shade the region above the
+
+x-axis.
+
+25. Use the preceding exercise to find the aproximate value of the area between the x-axis and the graph of f over the interval using rectangles. For the rectangles, use the square units, and approximate both above and below the lines. Use geometry to find the exact answer.
+
+For the following exercises, consider the function positioned at
+
+(Hint: This is the upper half of a circle of radius 1
+
+26. Sketch the graph of f over the interval
+
+27. Use the preceding exercise to find the aproximate area between the x-axis and the graph of f over the interval using rectangles. For the rectangles, use squares 0.4 by 0.4 units, and approximate both above and below the lines. Use geometry to find the exact answer.
+
+For the following exercises, consider the function
+
+28. Sketch the graph of f over the interval
+
+29. Approximate the area of the region between the x-axis and the graph of f over the interval
+
+2.2 The Limit of a Function
+Learning Objectives
+2.2.1 Using correct notation, describe the limit of a function. 2.2.2 Use a table of values to estimate the limit of a function or to identify when the limit does not exist. 2.2.3 Use a graph to estimate the limit of a function or to identify when the limit does not exist. 2.2.4 Define one-sided limits and provide examples. 2.2.5 Explain the relationship between one-sided and two-sided limits. 2.2.6 Using correct notation, describe an infinite limit. 2.2.7 Define a vertical asymptote.
+
+The concept of a limit or limiting process, essential to the understanding of calculus, has been around for thousands of years. In fact, early mathematicians used a limiting process to obtain better and better approximations of areas of
+
+Access for free at openstax.org
+
+2.2 · The Limit of a Function 117
+circles. Yet, the formal definition of a limit--as we know and understand it today--did not appear until the late 19th century. We therefore begin our quest to understand limits, as our mathematical ancestors did, by using an intuitive approach. At the end of this chapter, armed with a conceptual understanding of limits, we examine the formal definition of a limit. We begin our exploration of limits by taking a look at the graphs of the functions
+which are shown in Figure 2.12. In particular, let's focus our attention on the behavior of each graph at and around
+
+Figure 2.12 These graphs show the behavior of three different functions around
+
+Each of the three functions is undefined at
+
+but if we make this statement and no other, we give a very incomplete
+
+picture of how each function behaves in the vicinity of
+
+To express the behavior of each graph in the vicinity of 2
+
+more completely, we need to introduce the concept of a limit.
+
+Intuitive Definition of a Limit
+
+Let's first take a closer look at how the function values of x approach 2 from either side of 2, the values of
+as x approaches 2 is 4. Symbolically, we express this limit as
+
+behaves around
+
+in Figure 2.12. As the
+
+approach 4. Mathematically, we say that the limit of
+
+From this very brief informal look at one limit, let's start to develop an intuitive definition of the limit. We can think of the limit of a function at a number a as being the one real number L that the functional values approach as the x-values approach a, provided such a real number L exists. Stated more carefully, we have the following definition:
+
+Definition
+
+Let
+
+be a function defined at all values in an open interval containing a, with the possible exception of a itself, and
+
+let L be a real number. If all values of the function
+
+approach the real number L as the values of
+
+approach
+
+the number a, then we say that the limit of
+
+as x approaches a is L. (More succinct, as x gets closer to a,
+
+gets
+
+closer and stays close to L.) Symbolically, we express this idea as
+
+(2.3)
+
+We can estimate limits by constructing tables of functional values and by looking at their graphs. This process is described in the following Problem-Solving Strategy.
+
+118 2 · Limits
+
+Problem-Solving Strategy
+
+Evaluating a Limit Using a Table of Functional Values
+
+1. To evaluate
+
+we begin by completing a table of functional values. We should choose two sets of
+
+x-values--one set of values approaching a and less than a, and another set of values approaching a and greater than a. Table 2.1 demonstrates what your tables might look like.
+
+x
+
+x
+
+Use additional values as necessary.
+
+Use additional values as necessary.
+
+Table 2.1 Table of Functional Values for
+
+2. Next, let's look at the values in each of the
+
+columns and determine whether the values seem to be
+
+approaching a single value as we move down each column. In our columns, we look at the sequence
+
+and so on, and
+
+and so on. (Note: Although we have chosen the x-values
+
+and so forth, and these values will probably work nearly every time, on
+
+very rare occasions we may need to modify our choices.)
+
+3. If both columns approach a common y-value L, we state
+
+We can use the following strategy to
+
+confirm the result obtained from the table or as an alternative method for estimating a limit.
+
+4. Using a graphing calculator or computer software that allows us to graph functions, we can plot the function
+
+making sure the functional values of
+
+for x-values near a are in our window. We can use the trace
+
+feature to move along the graph of the function and watch the y-value readout as the x-values approach a. If the
+
+y-values approach L as our x-values approach a from both directions, then
+
+We may need to zoom
+
+in on our graph and repeat this process several times.
+
+We apply this Problem-Solving Strategy to compute a limit in Example 2.4.
+
+EXAMPLE 2.4
+
+Evaluating a Limit Using a Table of Functional Values 1
+
+Evaluate
+
+using a table of functional values.
+
+Solution We have calculated the values of
+
+for the values of x listed in Table 2.2.
+
+Access for free at openstax.org
+
+2.2 · The Limit of a Function 119
+
+x
+
+x
+
+-0.1
+
+0.998334166468
+
+0.1
+
+0.998334166468
+
+-0.01
+
+0.999983333417
+
+0.01
+
+0.999983333417
+
+-0.001 0.999999833333
+
+0.001 0.999999833333
+
+-0.0001 0.999999998333
+
+0.0001 0.999999998333
+
+Table 2.2 Table of Functional Values for
+
+Note: The values in this table were obtained using a calculator and using all the places given in the calculator output.
+
+As we read down each
+
+column, we see that the values in each column appear to be approaching one. Thus, it is
+
+fairly reasonable to conclude that
+
+A calculator or computer-generated graph of
+
+would be
+
+similar to that shown in Figure 2.13, and it confirms our estimate.
+
+Figure 2.13 The graph of
+
+confirms the estimate from Table 2.2.
+
+EXAMPLE 2.5
+
+Evaluating a Limit Using a Table of Functional Values 2
+
+Evaluate
+
+using a table of functional values.
+
+Solution As before, we use a table--in this case, Table 2.3--to list the values of the function for the given values of x.
+
+x
+
+x
+
+3.9 3.99 3.999
+
+0.251582341869 0.25015644562 0.250015627
+
+4.1 4.01 4.001
+
+0.248456731317 0.24984394501 0.249984377
+
+Table 2.3 Table of Functional Values for
+
+120 2 · Limits
+
+x
+
+x
+
+3.9999 0.250001563 3.99999 0.25000016
+
+4.0001 0.249998438 4.00001 0.24999984
+
+Table 2.3 Table of Functional Values for
+
+After inspecting this table, we see that the functional values less than 4 appear to be decreasing toward 0.25 whereas
+
+the functional values greater than 4 appear to be increasing toward 0.25. We conclude that
+
+We
+
+confirm this estimate using the graph of
+
+shown in Figure 2.14.
+
+Figure 2.14 The graph of
+
+confirms the estimate from Table 2.3.
+
+2.4 Estimate
+
+using a table of functional values. Use a graph to confirm your estimate.
+
+At this point, we see from Example 2.4 and Example 2.5 that it may be just as easy, if not easier, to estimate a limit of a function by inspecting its graph as it is to estimate the limit by using a table of functional values. In Example 2.6, we evaluate a limit exclusively by looking at a graph rather than by using a table of functional values.
+
+EXAMPLE 2.6
+
+Evaluating a Limit Using a Graph
+
+For
+
+shown in Figure 2.15, evaluate
+
+Access for free at openstax.org
+
+2.2 · The Limit of a Function 121
+
+Figure 2.15 The graph of
+
+includes one value not on a smooth curve.
+
+Solution
+
+Despite the fact that
+
+as the x-values approach -1 from either side, the
+
+values approach 3. Therefore,
+
+Note that we can determine this limit without even knowing the algebraic expression of the function.
+
+Based on Example 2.6, we make the following observation: It is possible for the limit of a function to exist at a point, and for the function to be defined at this point, but the limit of the function and the value of the function at the point may be different.
+
+2.5 Use the graph of
+
+in Figure 2.16 to evaluate
+
+if possible.
+
+Figure 2.16
+Looking at a table of functional values or looking at the graph of a function provides us with useful insight into the value of the limit of a function at a given point. However, these techniques rely too much on guesswork. We eventually need to develop alternative methods of evaluating limits. These new methods are more algebraic in nature and we explore them in the next section; however, at this point we introduce two special limits that are foundational to the techniques to come.
+
+122 2 · Limits
+
+Theorem 2.1
+Two Important Limits Let a be a real number and c be a constant.
+i. ii.
+
+(2.4) (2.5)
+
+We can make the following observations about these two limits. i. For the first limit, observe that as x approaches a, so does ii. For the second limit, consider Table 2.4.
+x
+
+because x
+
+c
+
+c
+
+c
+
+c
+
+c
+
+c
+
+c
+
+c
+
+Table 2.4 Table of Functional Values for
+
+Consequently,
+
+Observe that for all values of x (regardless of whether they are approaching a), the values have no choice but to conclude
+
+remain constant at c. We
+
+The Existence of a Limit
+As we consider the limit in the next example, keep in mind that for the limit of a function to exist at a point, the functional values must approach a single real-number value at that point. If the functional values do not approach a single value, then the limit does not exist.
+
+EXAMPLE 2.7
+
+Evaluating a Limit That Fails to Exist
+
+Evaluate
+
+using a table of values.
+
+Solution Table 2.5 lists values for the function
+
+for the given values of x.
+
+x
+
+x
+
+-0.1
+
+0.544021110889
+
+0.1
+
+-0.544021110889
+
+-0.01
+
+0.50636564111
+
+0.01
+
+-0.50636564111
+
+-0.001
+
+-0.8268795405312
+
+0.001
+
+0.826879540532
+
+-0.0001
+
+0.305614388888
+
+0.0001
+
+-0.305614388888
+
+Table 2.5 Table of Functional Values for
+
+Access for free at openstax.org
+
+2.2 · The Limit of a Function 123
+
+x
+
+x
+
+-0.00001 -0.035748797987
+
+0.00001 0.035748797987
+
+-0.000001 0.349993504187
+
+0.000001 -0.349993504187
+
+Table 2.5 Table of Functional Values for
+
+After examining the table of functional values, we can see that the y-values do not seem to approach any one single value. It appears the limit does not exist. Before drawing this conclusion, let's take a more systematic approach. Take the following sequence of x-values approaching 0:
+
+The corresponding y-values are
+
+At this point we can indeed conclude that
+
+does not exist. (Mathematicians frequently abbreviate "does not
+
+exist" as DNE. Thus, we would write
+
+DNE.) The graph of
+
+is shown in Figure 2.17 and it gives
+
+a clearer picture of the behavior of between -1 and 1 as x approaches 0.
+
+as x approaches 0. You can see that
+
+oscillates ever more wildly
+
+Figure 2.17 The graph of
+
+oscillates rapidly between -1 and 1 as x approaches 0.
+
+2.6 Use a table of functional values to evaluate
+
+if possible.
+
+One-Sided Limits
+
+Sometimes indicating that the limit of a function fails to exist at a point does not provide us with enough information
+
+about the behavior of the function at that particular point. To see this, we now revisit the function
+
+introduced at the beginning of the section (see Figure 2.12(b)). As we pick values of x close to 2,
+
+does not approach a single value, so the limit as x approaches 2 does not exist--that is,
+
+DNE. However, this
+
+statement alone does not give us a complete picture of the behavior of the function around the x-value 2. To provide a
+
+more accurate description, we introduce the idea of a one-sided limit. For all values to the left of 2 (or the negative side
+
+of 2),
+
+Thus, as x approaches 2 from the left,
+
+approaches -1. Mathematically, we say that the limit as x
+
+approaches 2 from the left is -1. Symbolically, we express this idea as
+
+124 2 · Limits
+
+Similarly, as x approaches 2 from the right (or from the positive side), idea as
+
+approaches 1. Symbolically, we express this
+
+We can now present an informal definition of one-sided limits.
+
+Definition
+
+We define two types of one-sided limits.
+
+Limit from the left: Let
+
+be a function defined at all values in an open interval of the form (c, a), and let L be a real
+
+number. If the values of the function
+
+approach the real number L as the values of x (where
+
+approach the
+
+number a, then we say that L is the limit of
+
+as x approaches a from the left. Symbolically, we express this idea as
+
+(2.6)
+
+Limit from the right: Let
+
+be a function defined at all values in an open interval of the form
+
+and let L be a
+
+real number. If the values of the function
+
+approach the real number L as the values of x (where
+
+approach
+
+the number a, then we say that L is the limit of
+
+as x approaches a from the right. Symbolically, we express this
+
+idea as
+
+(2.7)
+
+EXAMPLE 2.8 Evaluating One-Sided Limits For the function
+
+evaluate each of the following limits.
+
+a. b.
+
+Solution
+
+We can use tables of functional values again Table 2.6. Observe that for values of x less than 2, we use
+
+and
+
+for values of x greater than 2, we use
+
+x
+
+x
+
+1.9
+
+2.9
+
+2.1
+
+0.41
+
+1.99
+
+2.99
+
+2.01
+
+0.0401
+
+1.999
+
+2.999
+
+2.001
+
+0.004001
+
+1.9999 2.9999
+
+2.0001 0.00040001
+
+1.99999 2.99999
+
+2.00001 0.0000400001
+
+Table 2.6 Table of Functional Values for
+
+Based on this table, we can conclude that a.
+
+and b.
+
+Therefore, the (two-sided) limit of
+
+Access for free at openstax.org
+
+2.2 · The Limit of a Function 125
+
+does not exist at
+
+Figure 2.18 shows a graph of
+
+and reinforces our conclusion about these limits.
+
+Figure 2.18 The graph of
+
+has a break at
+
+2.7 Use a table of functional values to estimate the following limits, if possible. a. b.
+
+Let us now consider the relationship between the limit of a function at a point and the limits from the right and left at that point. It seems clear that if the limit from the right and the limit from the left have a common value, then that common value is the limit of the function at that point. Similarly, if the limit from the left and the limit from the right take on different values, the limit of the function does not exist. These conclusions are summarized in Relating One-Sided and Two-Sided Limits.
+
+Theorem 2.2
+
+Relating One-Sided and Two-Sided Limits
+
+Let
+
+be a function defined at all values in an open interval containing a, with the possible exception of a itself, and
+
+let L be a real number. Then,
+
+Infinite Limits
+
+Evaluating the limit of a function at a point or evaluating the limit of a function from the right and left at a point helps us to characterize the behavior of a function around a given value. As we shall see, we can also describe the behavior of functions that do not have finite limits.
+
+We now turn our attention to
+
+the third and final function introduced at the beginning of this section
+
+(see Figure 2.12(c)). From its graph we see that as the values of x approach 2, the values of
+
+become
+
+larger and larger and, in fact, become infinite. Mathematically, we say that the limit of
+
+as x approaches 2 is positive
+
+infinity. Symbolically, we express this idea as
+
+126 2 · Limits
+
+
+
+More generally, we define infinite limits as follows:
+
+Definition
+
+We define three types of infinite limits.
+
+Infinite limits from the left: Let
+
+be a function defined at all values in an open interval of the form
+
+i. If the values of
+
+increase without bound as the values of x (where
+
+approach the number a, then we
+
+say that the limit as x approaches a from the left is positive infinity and we write
+
+
+
+(2.8)
+
+ii. If the values of
+
+decrease without bound as the values of x (where
+
+approach the number a, then we
+
+say that the limit as x approaches a from the left is negative infinity and we write
+
+
+
+(2.9)
+
+Infinite limits from the right: Let
+
+be a function defined at all values in an open interval of the form
+
+i. If the values of
+
+increase without bound as the values of x (where
+
+approach the number a, then we
+
+say that the limit as x approaches a from the right is positive infinity and we write
+
+
+
+(2.10)
+
+ii. If the values of
+
+decrease without bound as the values of x (where
+
+approach the number a, then we
+
+say that the limit as x approaches a from the right is negative infinity and we write
+
+
+
+(2.11)
+
+Two-sided infinite limit: Let
+
+be defined for all
+
+in an open interval containing a.
+
+i. If the values of
+
+increase without bound as the values of x (where
+
+say that the limit as x approaches a is positive infinity and we write
+
+
+
+approach the number a, then we (2.12)
+
+ii. If the values of
+
+decrease without bound as the values of x (where
+
+say that the limit as x approaches a is negative infinity and we write
+
+
+
+approach the number a, then we (2.13)
+
+It is important to understand that when we write statements such as
+
+ or
+
+ we are
+
+describing the behavior of the function, as we have just defined it. We are not asserting that a limit exists. For the limit of
+
+a function
+
+to exist at a, it must approach a real number L as x approaches a. That said, if, for example,
+
+ we always write
+
+ rather than
+
+DNE.
+
+EXAMPLE 2.9
+Recognizing an Infinite Limit Evaluate each of the following limits, if possible. Use a table of functional values and graph conclusion. a.
+b.
+c.
+
+to confirm your
+
+Access for free at openstax.org
+
+2.2 · The Limit of a Function 127
+
+Solution Begin by constructing a table of functional values.
+
+x
+
+x
+
+-0.1
+
+-10
+
+0.1
+
+10
+
+-0.01
+
+-100
+
+0.01
+
+100
+
+-0.001
+
+-1000
+
+0.001
+
+1000
+
+-0.0001
+
+-10,000
+
+0.0001
+
+10,000
+
+-0.00001 -100,000
+
+0.00001 100,000
+
+-0.000001 -1,000,000
+
+0.000001 1,000,000
+
+Table 2.7 Table of Functional Values for
+
+a. The values of
+
+decrease without bound as x approaches 0 from the left. We conclude that
+
+
+b. The values of
+
+increase without bound as x approaches 0 from the right. We conclude that
+
+
+c. Since
+
+ and
+
+ have different values, we conclude that
+
+The graph of
+
+in Figure 2.19 confirms these conclusions.
+
+Figure 2.19 The graph of
+
+confirms that the limit as x approaches 0 does not exist.
+
+2.8 Evaluate each of the following limits, if possible. Use a table of functional values and graph
+
+to
+
+confirm your conclusion.
+
+128 2 · Limits
+
+a. b. c.
+
+It is useful to point out that functions of the form
+
+where n is a positive integer, have infinite limits as x
+
+approaches a from either the left or right (Figure 2.20). These limits are summarized in Infinite Limits from Positive
+
+Integers.
+
+Figure 2.20 The function Theorem 2.3 Infinite Limits from Positive Integers If n is a positive even integer, then
+If n is a positive odd integer, then
+and
+
+has infinite limits at a.
+  
+
+We should also point out that in the graphs of
+
+points on the graph having x-coordinates very near to
+
+a are very close to the vertical line
+
+That is, as x approaches a, the points on the graph of
+
+are closer to the line
+
+The line
+
+is called a vertical asymptote of the graph. We formally define a vertical asymptote as follows:
+
+Definition
+
+Let
+
+be a function. If any of the following conditions hold, then the line
+
+is a vertical asymptote of
+
+Access for free at openstax.org
+
+2.2 · The Limit of a Function 129
+  
+
+EXAMPLE 2.10
+Finding a Vertical Asymptote Evaluate each of the following limits using Infinite Limits from Positive Integers. Identify any vertical asymptotes of the function a.
+b.
+c.
+
+Solution We can use Infinite Limits from Positive Integers directly.
+
+a.
+
+
+
+b.
+
+
+
+c.
+
+
+
+The function
+
+has a vertical asymptote of
+
+2.9 Evaluate each of the following limits. Identify any vertical asymptotes of the function a. b. c.
+
+In the next example we put our knowledge of various types of limits to use to analyze the behavior of a function at several different points.
+
+EXAMPLE 2.11
+
+Behavior of a Function at Different Points
+
+Use the graph of
+
+in Figure 2.21 to determine each of the following values:
+
+a.
+
+b.
+
+c.
+
+d.
+
+130 2 · Limits
+
+Figure 2.21 The graph shows
+
+Solution Using Infinite Limits from Positive Integers and the graph for reference, we arrive at the following values:
+a.
+
+b.
+
+is undefined
+
+c.
+
+DNE;
+
+d.
+
+
+
+
+
+
+
+is undefined
+
+2.10 Evaluate
+
+for
+
+shown here:
+
+Access for free at openstax.org
+
+EXAMPLE 2.12 Chapter Opener: Einstein's Equation
+
+2.2 · The Limit of a Function 131
+
+Figure 2.22 (credit: NASA)
+In the chapter opener we mentioned briefly how Albert Einstein showed that a limit exists to how fast any object can travel. Given Einstein's equation for the mass of a moving object, what is the value of this bound?
+Solution Our starting point is Einstein's equation for the mass of a moving object,
+
+where is the object's mass at rest, v is its speed, and c is the speed of light. To see how the mass changes at high
+
+speeds, we can graph the ratio of masses
+
+as a function of the ratio of speeds, (Figure 2.23).
+
+Figure 2.23 This graph shows the ratio of masses as a function of the ratio of speeds in Einstein's equation for the mass of a moving object.
+
+We can see that as the ratio of speeds approaches 1--that is, as the speed of the object approaches the speed of
+
+light--the ratio of masses increases without bound. In other words, the function has a vertical asymptote at
+
+We
+
+can try a few values of this ratio to test this idea.
+
+0.99
+
+0.1411
+
+7.089
+
+0.999 0.0447
+
+22.37
+
+0.9999 0.0141
+
+70.71
+
+Table 2.8 Ratio of Masses and Speeds for a Moving Object
+
+132 2 · Limits
+Thus, according to Table 2.8, if an object with mass 100 kg is traveling at 0.9999c, its mass becomes 7071 kg. Since no object can have an infinite mass, we conclude that no object can travel at or more than the speed of light.
+
+SECTION 2.2 EXERCISES
+
+For the following exercises, consider the function
+
+30. [T] Complete the following table for the function. Round your solutions to four decimal places.
+
+x
+
+x
+
+31. What do your results in the preceding exercise indicate about the two-sided limit Explain your
+response.
+
+0.9
+
+a.
+
+1.1
+
+e.
+
+0.99
+
+b.
+
+1.01
+
+f.
+
+0.999 c.
+
+1.001 g.
+
+0.9999 d.
+
+1.0001 h.
+
+For the following exercises, consider the function
+
+32. [T] Make a table showing the values of f for
+and for Round your solutions to five decimal places.
+
+33. What does the table of values in the preceding exercise indicate about the function
+
+34. To which mathematical constant does the limit in the preceding exercise appear to be getting closer?
+
+x
+
+x
+
+-0.01
+
+a.
+
+0.01
+
+e.
+
+-0.001
+
+b.
+
+0.001
+
+f.
+
+-0.0001 c.
+
+0.0001 g.
+
+-0.00001 d.
+
+0.00001 h.
+
+Access for free at openstax.org
+
+2.2 · The Limit of a Function 133
+
+In the following exercises, use the given values to set up a table to evaluate the limits. Round your solutions to eight decimal places.
+
+35. [T]
+
+36. [T]
+
+±0.1, ±0.01, ±0.001,
+
+±0.0001
+
+x
+
+-0.1
+
+a.
+
+-0.01
+
+b.
+
+-0.001 c.
+
+-0.0001 d.
+
+x
+
+0.1
+
+e.
+
+0.01
+
+f.
+
+0.001 g.
+
+0.0001 h.
+
+X
+
+-0.1
+
+a.
+
+-0.01
+
+b.
+
+-0.001 c.
+
+-0.0001 d.
+
+x
+
+0.1
+
+e.
+
+0.01
+
+f.
+
+0.001 g.
+
+0.0001 h.
+
+37. Use the preceding two exercises to conjecture (guess) the value of the following limit:
+for a, a positive real value.
+
+[T] In the following exercises, set up a table of values to find the indicated limit. Round to eight digits.
+
+38.
+
+39.
+
+x
+
+1.9
+
+a.
+
+1.99
+
+b.
+
+1.999 c.
+
+1.9999 d.
+
+x
+
+2.1
+
+e.
+
+2.01
+
+f.
+
+2.001 g.
+
+2.0001 h.
+
+x
+
+0.9
+
+a.
+
+0.99
+
+b.
+
+0.999 c.
+
+0.9999 d.
+
+x
+
+1.1
+
+e.
+
+1.01
+
+f.
+
+1.001 g.
+
+1.0001 h.
+
+40.
+
+x
+
+-0.1
+
+a.
+
+-0.01
+
+b.
+
+-0.001 c.
+
+-0.0001 d.
+
+x
+
+0.1
+
+e.
+
+0.01
+
+f.
+
+0.001 g.
+
+0.0001 h.
+
+41.
+
+z
+
+-0.1
+
+a.
+
+-0.01
+
+b.
+
+-0.001 c.
+
+-0.0001 d.
+
+z
+
+0.1
+
+e.
+
+0.01
+
+f.
+
+0.001 g.
+
+0.0001 h.
+
+134 2 · Limits
+
+42.
+
+t
+
+0.1
+
+a.
+
+0.01
+
+b.
+
+0.001 c.
+
+0.0001 d.
+
+43.
+
+x
+
+1.9
+
+a.
+
+1.99
+
+b.
+
+1.999 c.
+
+1.9999 d.
+
+x
+
+2.1
+
+e.
+
+2.01
+
+f.
+
+2.001 g.
+
+2.0001 h.
+
+[T] In the following exercises, set up a table of values and round to eight significant digits. Based on the table of values, make a guess about what the limit is. Then, use a calculator to graph the function and determine the limit. Was the conjecture correct? If not, why does the method of tables fail?
+
+44.
+
+45.
+
+
+
+-0.1
+
+a.
+
+-0.01
+
+b.
+
+-0.001 c.
+
+-0.0001 d.
+
+
+
+0.1
+
+e.
+
+0.01
+
+f.
+
+0.001 g.
+
+0.0001 h.
+
+0.1
+
+a.
+
+0.01
+
+b.
+
+0.001 c.
+
+0.0001 d.
+
+Access for free at openstax.org
+
+2.2 · The Limit of a Function 135
+
+In the following exercises, consider the graph of the function
+
+shown here. Which of the statements about
+
+are true and which are false? Explain why a statement is false.
+
+46.
+
+47.
+
+48.
+
+49.
+
+In the following exercises, use the following graph of the function necessary.
+
+to find the values, if possible. Estimate when
+
+50.
+
+51.
+
+52.
+
+53.
+
+54.
+
+136 2 · Limits
+In the following exercises, use the graph of the function when necessary.
+
+shown here to find the values, if possible. Estimate
+
+55.
+
+56.
+
+57.
+
+In the following exercises, use the graph of the function when necessary.
+
+58. shown here to find the values, if possible. Estimate
+
+59.
+
+60.
+
+61.
+
+62.
+
+63.
+
+64.
+
+Access for free at openstax.org
+
+In the following exercises, use the graph of the function when necessary.
+
+2.2 · The Limit of a Function 137
+shown here to find the values, if possible. Estimate
+
+65.
+
+66.
+
+67.
+
+In the following exercises, use the graph of the function when necessary.
+
+shown here to find the values, if possible. Estimate
+
+68.
+
+69.
+
+70.
+
+138 2 · Limits
+In the following exercises, use the graph of the function when necessary.
+
+shown here to find the values, if possible. Estimate
+
+71.
+
+72.
+
+73.
+
+74.
+
+75.
+
+In the following exercises, sketch the graph of a function with the given properties.
+
+76.
+
+is not defined.
+
+77.
+
+
+
+
+
+
+
+
+
+
+
+78.
+
+
+
+
+
+79.
+
+
+
+
+
+
+
+
+
+
+
+Access for free at openstax.org
+
+80.
+
+
+
+
+
+
+
+
+
+
+
+
+
+2.2 · The Limit of a Function 139
+81. Shock waves arise in many physical applications, ranging from supernovas to detonation waves. A graph of the density of a shock wave with respect to distance, x, is shown here. We are mainly interested in the location of the front of the shock, labeled in the diagram.
+
+a. Evaluate
+b. Evaluate
+c. Evaluate Explain the physical meanings behind your answers.
+
+140 2 · Limits
+82. A track coach uses a camera with a fast shutter to estimate the position of a runner with respect to time. A table of the values of position of the athlete versus time is given here, where x is the position in meters of the runner and t is time in seconds. What is What does it mean physically?
+t (sec) x (m)
+1.75 4.5
+1.95 6.1
+1.99 6.42
+2.01 6.58
+2.05 6.9
+2.25 8.5
+
+2.3 The Limit Laws
+Learning Objectives
+2.3.1 Recognize the basic limit laws. 2.3.2 Use the limit laws to evaluate the limit of a function. 2.3.3 Evaluate the limit of a function by factoring. 2.3.4 Use the limit laws to evaluate the limit of a polynomial or rational function. 2.3.5 Evaluate the limit of a function by factoring or by using conjugates. 2.3.6 Evaluate the limit of a function by using the squeeze theorem.
+In the previous section, we evaluated limits by looking at graphs or by constructing a table of values. In this section, we establish laws for calculating limits and learn how to apply these laws. In the Student Project at the end of this section, you have the opportunity to apply these limit laws to derive the formula for the area of a circle by adapting a method devised by the Greek mathematician Archimedes. We begin by restating two useful limit results from the previous section. These two results, together with the limit laws, serve as a foundation for calculating many limits.
+Evaluating Limits with the Limit Laws
+The first two limit laws were stated in Two Important Limits and we repeat them here. These basic results, together with the other limit laws, allow us to evaluate limits of many algebraic functions.
+
+Theorem 2.4
+
+Basic Limit Results For any real number a and any constant c,
+i. ii.
+
+(2.14) (2.15)
+
+Access for free at openstax.org
+
+EXAMPLE 2.13
+Evaluating a Basic Limit Evaluate each of the following limits using Basic Limit Results. a. b.
+Solution a. The limit of x as x approaches a is a: b. The limit of a constant is that constant:
+
+2.3 · The Limit Laws 141
+
+We now take a look at the limit laws, the individual properties of limits. The proofs that these laws hold are omitted here.
+
+Theorem 2.5
+
+Limit Laws
+
+Let
+
+and
+
+be defined for all
+
+numbers such that
+
+and
+
+holds:
+
+Sum law for limits:
+
+Difference law for limits:
+
+Constant multiple law for limits:
+
+Product law for limits:
+
+over some open interval containing a. Assume that L and M are real Let c be a constant. Then, each of the following statements
+
+Quotient law for limits:
+
+for
+
+Power law for limits: Root law for limits:
+
+for every positive integer n.
+
+for all L if n is odd and for
+
+if n is even and
+
+.
+
+We now practice applying these limit laws to evaluate a limit.
+EXAMPLE 2.14
+Evaluating a Limit Using Limit Laws Use the limit laws to evaluate
+Solution Let's apply the limit laws one step at a time to be sure we understand how they work. We need to keep in mind the requirement that, at each application of a limit law, the new limits must exist for the limit law to be applied.
+
+142 2 · Limits
+EXAMPLE 2.15 Using Limit Laws Repeatedly Use the limit laws to evaluate
+Solution To find this limit, we need to apply the limit laws several times. Again, we need to keep in mind that as we rewrite the limit in terms of other limits, each new limit must exist for the limit law to be applied.
+
+2.11 Use the limit laws to evaluate
+
+In each step, indicate the limit law applied.
+
+Limits of Polynomial and Rational Functions
+By now you have probably noticed that, in each of the previous examples, it has been the case that
+This is not always true, but it does hold for all polynomials for any choice of a and for all rational functions at all values of a for which the rational function is defined.
+
+Theorem 2.6
+
+Limits of Polynomial and Rational Functions
+
+Let
+
+and
+
+be polynomial functions. Let a be a real number. Then,
+
+To see that this theorem holds, consider the polynomial constant multiple, and power laws, we end up with
+
+By applying the sum,
+
+It now follows from the quotient law that if
+
+and
+
+are polynomials for which
+
+then
+
+Access for free at openstax.org
+
+Example 2.16 applies this result.
+EXAMPLE 2.16
+Evaluating a Limit of a Rational Function Evaluate the
+Solution Since 3 is in the domain of the rational function the function. Thus,
+
+2.3 · The Limit Laws 143
+we can calculate the limit by substituting 3 for x into
+
+2.12 Evaluate
+
+Additional Limit Evaluation Techniques
+
+As we have seen, we may evaluate easily the limits of polynomials and limits of some (but not all) rational functions by
+
+direct substitution. However, as we saw in the introductory section on limits, it is certainly possible for
+
+to exist
+
+when
+
+is undefined. The following observation allows us to evaluate many limits of this type:
+
+If for all
+
+over some open interval containing a, then
+
+To understand this idea better, consider the limit The function
+
+and the function 2.24.
+
+are identical for all values of
+
+The graphs of these two functions are shown in Figure
+
+Figure 2.24 The graphs of
+
+and
+
+are identical for all
+
+We see that
+
+Their limits at 1 are equal.
+
+144 2 · Limits
+
+The limit has the form
+indeterminate form type.
+
+where
+
+and
+
+(In this case, we say that
+
+has the
+
+The following Problem-Solving Strategy provides a general outline for evaluating limits of this
+
+Problem-Solving Strategy
+
+Calculating a Limit When
+
+has the Indeterminate Form 0/0
+
+1. First, we need to make sure that our function has the appropriate form and cannot be evaluated immediately
+
+using the limit laws.
+
+2. We then need to find a function that is equal to
+
+for all
+
+over some interval containing a. To
+
+do this, we may need to try one or more of the following steps:
+
+a. If
+
+and
+
+are polynomials, we should factor each function and cancel out any common factors.
+
+b. If the numerator or denominator contains a difference involving a square root, we should try multiplying the
+
+numerator and denominator by the conjugate of the expression involving the square root.
+
+c. If
+
+is a complex fraction, we begin by simplifying it.
+
+3. Last, we apply the limit laws.
+
+The next examples demonstrate the use of this Problem-Solving Strategy. Example 2.17 illustrates the factor-and-cancel technique; Example 2.18 shows multiplying by a conjugate. In Example 2.19, we look at simplifying a complex fraction.
+
+EXAMPLE 2.17
+Evaluating a Limit by Factoring and Canceling Evaluate
+
+Solution
+
+Step 1. The function
+
+is undefined for
+
+In fact, if we substitute 3 into the function we get
+
+which is indeterminate. Factoring and canceling is a good strategy:
+
+Step 2. For all
+
+Therefore,
+
+Step 3. Evaluate using the limit laws:
+
+2.13 Evaluate
+
+Access for free at openstax.org
+
+EXAMPLE 2.18 Evaluating a Limit by Multiplying by a Conjugate Evaluate
+
+Solution
+
+Step 1.
+
+has the form
+
+numerator and denominator:
+
+at -1. Let's begin by multiplying by
+
+2.3 · The Limit Laws 145
+
+the conjugate of
+
+on the
+
+Step 2. We then multiply out the numerator. We don't multiply out the denominator because we are hoping that the in the denominator cancels out in the end:
+
+Step 3. Then we cancel: Step 4. Last, we apply the limit laws:
+
+2.14 Evaluate
+
+EXAMPLE 2.19
+
+Evaluating a Limit by Simplifying a Complex Fraction Evaluate
+
+Solution Step 1.
+
+has the form
+
+at 1. We simplify the algebraic fraction by multiplying by
+
+Step 2. Next, we multiply through the numerators. Do not multiply the denominators because we want to be able to cancel the factor
+Step 3. Then, we simplify the numerator:
+Step 4. Now we factor out -1 from the numerator:
+
+146 2 · Limits
+Step 5. Then, we cancel the common factors of Step 6. Last, we evaluate using the limit laws:
+
+2.15 Evaluate
+
+Example 2.20 does not fall neatly into any of the patterns established in the previous examples. However, with a little creativity, we can still use these same techniques.
+
+EXAMPLE 2.20
+
+Evaluating a Limit When the Limit Laws Do Not Apply Evaluate
+
+Solution
+
+Both and
+
+fail to have a limit at zero. Since neither of the two functions has a limit at zero, we cannot apply
+
+the sum law for limits; we must use a different strategy. In this case, we find the limit by performing addition and then
+
+applying one of our previous strategies. Observe that
+
+Thus,
+
+2.16 Evaluate
+
+Let's now revisit one-sided limits. Simple modifications in the limit laws allow us to apply them to one-sided limits. For
+
+example, to apply the limit laws to a limit of the form
+
+we require the function
+
+to be defined over an
+
+open interval of the form
+
+for a limit of the form
+
+we require the function
+
+to be defined over an
+
+open interval of the form
+
+Example 2.21 illustrates this point.
+
+EXAMPLE 2.21
+
+Evaluating a One-Sided Limit Using the Limit Laws Evaluate each of the following limits, if possible. a.
+b.
+
+Access for free at openstax.org
+
+Solution Figure 2.25 illustrates the function
+
+2.3 · The Limit Laws 147
+and aids in our understanding of these limits.
+
+Figure 2.25 The graph shows the function
+
+a. The function
+
+is defined over the interval
+
+ Since this function is not defined to the left of 3,
+
+we cannot apply the limit laws to compute
+
+In fact, since
+
+is undefined to the left of 3,
+
+does not exist.
+
+b. Since
+
+is defined to the right of 3, the limit laws do apply to
+
+By applying these limit
+
+laws we obtain
+
+In Example 2.22 we look at one-sided limits of a piecewise-defined function and use these limits to draw a conclusion about a two-sided limit of the same function.
+
+EXAMPLE 2.22
+
+Evaluating a Two-Sided Limit Using the Limit Laws
+
+For
+
+evaluate each of the following limits:
+
+a. b. c.
+Solution Figure 2.26 illustrates the function
+
+and aids in our understanding of these limits.
+
+a. Since
+
+Figure 2.26 This graph shows a function
+
+for all x in 
+
+replace
+
+in the limit with
+
+and apply the limit laws:
+
+148 2 · Limits
+
+b. Since c. Since
+
+for all x in
+
+ replace
+
+in the limit with
+
+and apply the limit laws:
+
+and
+
+we conclude that
+
+does not exist.
+
+2.17 Graph
+
+and evaluate
+
+We now turn our attention to evaluating a limit of the form
+
+That is,
+
+has the form
+
+at a.
+
+where
+
+where
+
+and
+
+EXAMPLE 2.23
+Evaluating a Limit of the Form Evaluate
+
+Using the Limit Laws
+
+Solution
+
+Step 1. After substituting in
+
+we see that this limit has the form
+
+That is, as x approaches 2 from the left, the
+
+numerator approaches -1; and the denominator approaches 0. Consequently, the magnitude of
+
+becomes infinite.
+
+To get a better idea of what the limit is, we need to factor the denominator:
+
+Step 2. Since
+
+is the only part of the denominator that is zero when 2 is substituted, we then separate
+
+from the rest of the function:
+
+Step 3.
+
+and
+
+ Therefore, the product of
+
+and
+
+has a limit of
+
+
+
+2.18 Evaluate
+The Squeeze Theorem
+The techniques we have developed thus far work very well for algebraic functions, but we are still unable to evaluate limits of very basic trigonometric functions. The next theorem, called the squeeze theorem, proves very useful for establishing basic trigonometric limits. This theorem allows us to calculate limits by "squeezing" a function, with a limit at a point a that is unknown, between two functions having a common known limit at a. Figure 2.27 illustrates this idea.
+
+Access for free at openstax.org
+
+2.3 · The Limit Laws 149
+
+Figure 2.27 The Squeeze Theorem applies when
+
+and
+
+Theorem 2.7
+
+The Squeeze Theorem
+
+Let
+
+and
+
+be defined for all
+
+over an open interval containing a. If
+
+for all
+
+in an open interval containing a and
+
+where L is a real number, then
+
+EXAMPLE 2.24
+
+Applying the Squeeze Theorem Apply the squeeze theorem to evaluate
+
+Solution Because
+theorem, we obtain
+
+for all x, we have The graphs of
+
+. Since and
+
+from the squeeze are shown in Figure 2.28.
+
+150 2 · Limits
+
+Figure 2.28 The graphs of
+
+and
+
+are shown around the point
+
+2.19 Use the squeeze theorem to evaluate
+
+We now use the squeeze theorem to tackle several very important limits. Although this discussion is somewhat lengthy,
+
+these limits prove invaluable for the development of the material in both the next section and the next chapter. The first
+
+of these limits is
+
+Consider the unit circle shown in Figure 2.29. In the figure, we see that
+
+is the y-coordinate
+
+on the unit circle and it corresponds to the line segment shown in blue. The radian measure of angle  is the length of the arc it subtends on the unit circle. Therefore, we see that for
+
+Because
+
+Figure 2.29 The sine function is shown as a line on the unit circle.
+
+and
+
+by using the squeeze theorem we conclude that
+
+To see that
+
+as well, observe that for
+
+Consequently, desired limit. Thus, since
+
+It follows that and
+
+Next, using the identity
+
+for
+
+and hence, An application of the squeeze theorem produces the
+
+we see that
+
+(2.16)
+
+Access for free at openstax.org
+
+2.3 · The Limit Laws 151
+
+(2.17)
+
+We now take a look at a limit that plays an important role in later chapters--namely,
+
+To evaluate this limit, we
+
+use the unit circle in Figure 2.30. Notice that this figure adds one additional triangle to Figure 2.30. We see that the
+
+length of the side opposite angle  in this new triangle is
+
+Thus, we see that for
+
+By dividing by
+
+Figure 2.30 The sine and tangent functions are shown as lines on the unit circle. in all parts of the inequality, we obtain
+
+Equivalently, we have
+
+Since demonstrating that
+
+we conclude that we can show that
+
+By applying a manipulation similar to that used in Thus,
+
+In Example 2.25 we use this limit to establish
+
+This limit also proves useful in later chapters.
+
+(2.18)
+
+EXAMPLE 2.25
+Evaluating an Important Trigonometric Limit Evaluate
+Solution In the first step, we multiply by the conjugate so that we can use a trigonometric identity to convert the cosine in the numerator to a sine:
+
+152 2 · Limits
+
+Therefore,
+
+(2.19)
+
+2.20 Evaluate
+
+STUDENT PROJECT
+Deriving the Formula for the Area of a Circle Some of the geometric formulas we take for granted today were first derived by methods that anticipate some of the methods of calculus. The Greek mathematician Archimedes (ca. 287-212; BCE) was particularly inventive, using polygons inscribed within circles to approximate the area of the circle as the number of sides of the polygon increased. He never came up with the idea of a limit, but we can use this idea to see what his geometric constructions could have predicted about the limit.
+We can estimate the area of a circle by computing the area of an inscribed regular polygon. Think of the regular polygon as being made up of n triangles. By taking the limit as the vertex angle of these triangles goes to zero, you can obtain the area of the circle. To see this, carry out the following steps:
+1. Express the height h and the base b of the isosceles triangle in Figure 2.31 in terms of and r.
+
+Figure 2.31
+
+2. Using the expressions that you obtained in step 1, express the area of the isosceles triangle in terms of  and r.
+
+(Substitute
+
+for
+
+in your expression.)
+
+3. If an n-sided regular polygon is inscribed in a circle of radius r, find a relationship between  and n. Solve this for
+
+n. Keep in mind there are 2 radians in a circle. (Use radians, not degrees.)
+
+4. Find an expression for the area of the n-sided polygon in terms of r and .
+
+5. To find a formula for the area of the circle, find the limit of the expression in step 4 as  goes to zero. (Hint:
+
+Access for free at openstax.org
+
+2.3 · The Limit Laws 153
+The technique of estimating areas of regions by using polygons is revisited in Introduction to Integration.
+
+SECTION 2.3 EXERCISES
+In the following exercises, use the limit laws to evaluate each limit. Justify each step by indicating the appropriate limit law(s).
+
+83.
+
+84.
+
+85.
+
+86.
+
+In the following exercises, use direct substitution to evaluate each limit.
+
+87.
+
+88.
+
+89.
+
+90.
+
+91.
+
+92.
+
+In the following exercises, use direct substitution to show that each limit leads to the indeterminate form evaluate the limit.
+
+93.
+
+94.
+
+95.
+
+Then,
+
+96.
+
+97.
+
+98.
+
+where a is a
+
+non-zero real-valued constant
+
+99.
+
+100.
+
+101.
+
+102.
+
+In the following exercises, use direct substitution to obtain an undefined expression. Then, use the method of Example 2.23 to simplify the function to help determine the limit.
+
+103.
+
+104.
+
+105.
+
+106.
+
+In the following exercises, assume that laws to evaluate each limit.
+
+107.
+
+108.
+
+110. 113.
+
+111. 114.
+
+and 109. 112.
+
+Use these three facts and the limit
+
+154 2 · Limits
+
+[T] In the following exercises, use a calculator to draw the graph of each piecewise-defined function and study the graph to evaluate the given limits.
+
+115. a. b.
+
+116. a. b.
+
+117. a. b.
+
+In the following exercises, use the following graphs and the limit laws to evaluate each limit.
+
+119. 122. 125.
+
+120. 123.
+
+Access for free at openstax.org
+
+118.
+
+121. 124.
+
+2.4 · Continuity 155
+
+For the following problems, evaluate the limit using the squeeze theorem. Use a calculator to graph the functions
+
+and
+
+when possible.
+
+126. [T] True or False? If
+
+127. [T]
+
+128.
+
+where
+
+then
+
+129. [T] In physics, the magnitude of an electric field generated by a point charge at a distance r in vacuum is governed by Coulomb's law: where E
+
+represents the magnitude
+
+of the electric field, q is
+
+the charge of the particle,
+
+r is the distance between
+
+the particle and where
+
+the strength of the field is
+
+measured, and
+
+is
+
+Coulomb's constant:
+
+130. [T] The density of an object is given by its mass divided by its volume:
+a. Use a calculator to plot the volume as a function of density assuming you are examining something of mass 8 kg (
+b. Evaluate
+and explain the physical meaning.
+
+a. Use a graphing calculator to graph given that the charge of the particle is
+b. Evaluate
+What is the physical meaning of this quantity? Is it physically relevant? Why are you evaluating from the right?
+2.4 Continuity
+Learning Objectives
+2.4.1 Explain the three conditions for continuity at a point. 2.4.2 Describe three kinds of discontinuities. 2.4.3 Define continuity on an interval. 2.4.4 State the theorem for limits of composite functions. 2.4.5 Provide an example of the intermediate value theorem.
+Many functions have the property that their graphs can be traced with a pencil without lifting the pencil from the page. Such functions are called continuous. Other functions have points at which a break in the graph occurs, but satisfy this property over intervals contained in their domains. They are continuous on these intervals and are said to have a discontinuity at a point where a break occurs.
+We begin our investigation of continuity by exploring what it means for a function to have continuity at a point. Intuitively, a function is continuous at a particular point if there is no break in its graph at that point.
+Continuity at a Point
+Before we look at a formal definition of what it means for a function to be continuous at a point, let's consider various functions that fail to meet our intuitive notion of what it means to be continuous at a point. We then create a list of conditions that prevent such failures.
+
+156 2 · Limits
+
+Our first function of interest is shown in Figure 2.32. We see that the graph of
+
+has a hole at a. In fact,
+
+is
+
+undefined. At the very least, for
+
+to be continuous at a, we need the following condition:
+
+Figure 2.32 The function
+
+is not continuous at a because
+
+is undefined.
+
+However, as we see in Figure 2.33, this condition alone is insufficient to guarantee continuity at the point a. Although
+
+is defined, the function has a gap at a. In this example, the gap exists because
+
+does not exist. We must
+
+add another condition for continuity at a--namely,
+
+Figure 2.33 The function
+
+is not continuous at a because
+
+does not exist.
+
+However, as we see in Figure 2.34, these two conditions by themselves do not guarantee continuity at a point. The function in this figure satisfies both of our first two conditions, but is still not continuous at a. We must add a third condition to our list:
+
+Figure 2.34 The function
+
+is not continuous at a because
+
+Now we put our list of conditions together and form a definition of continuity at a point.
+
+Access for free at openstax.org
+
+2.4 · Continuity 157
+
+Definition
+
+A function
+
+is continuous at a point a if and only if the following three conditions are satisfied:
+
+i.
+
+is defined
+
+ii.
+
+exists
+
+iii.
+
+A function is discontinuous at a point a if it fails to be continuous at a.
+
+The following procedure can be used to analyze the continuity of a function at a point using this definition.
+
+Problem-Solving Strategy
+
+Determining Continuity at a Point
+
+1. Check to see if
+
+is defined. If
+
+is undefined, we need go no further. The function is not continuous at a. If
+
+is defined, continue to step 2.
+
+2. Compute
+
+In some cases, we may need to do this by first computing
+
+and
+
+If
+
+does not exist (that is, it is not a real number), then the function is not continuous at a and the problem
+
+is solved. If
+
+exists, then continue to step 3.
+
+3. Compare
+
+and
+
+If
+
+then the function is not continuous at a. If
+
+then the function is continuous at a.
+
+The next three examples demonstrate how to apply this definition to determine whether a function is continuous at a given point. These examples illustrate situations in which each of the conditions for continuity in the definition succeed or fail.
+
+EXAMPLE 2.26
+
+Determining Continuity at a Point, Condition 1 Using the definition, determine whether the function conclusion.
+
+Solution
+
+Let's begin by trying to calculate
+
+We can see that
+
+discontinuous at 2 because
+
+is undefined. The graph of
+
+is continuous at
+
+Justify the
+
+which is undefined. Therefore,
+
+is
+
+is shown in Figure 2.35.
+
+158 2 · Limits
+
+Figure 2.35 The function
+
+is discontinuous at 2 because
+
+is undefined.
+
+EXAMPLE 2.27
+Determining Continuity at a Point, Condition 2 Using the definition, determine whether the function conclusion.
+Solution Let's begin by trying to calculate
+
+is continuous at
+
+Justify the
+
+Thus,
+
+is defined. Next, we calculate
+
+To do this, we must compute
+
+and
+
+and Therefore,
+
+does not exist. Thus,
+
+is not continuous at 3. The graph of
+
+is shown in Figure 2.36.
+
+Access for free at openstax.org
+
+2.4 · Continuity 159
+
+Figure 2.36 The function
+
+is not continuous at 3 because
+
+does not exist.
+
+EXAMPLE 2.28 Determining Continuity at a Point, Condition 3 Using the definition, determine whether the function
+Solution First, observe that
+Next,
+
+is continuous at
+
+Last, compare
+
+and
+
+We see that
+
+Since all three of the conditions in the definition of continuity are satisfied,
+
+is continuous at
+
+2.21 Using the definition, determine whether the function
+
+is continuous at
+
+If
+
+the function is not continuous at 1, indicate the condition for continuity at a point that fails to hold.
+
+By applying the definition of continuity and previously established theorems concerning the evaluation of limits, we can state the following theorem.
+
+160 2 · Limits
+
+Theorem 2.8
+Continuity of Polynomials and Rational Functions Polynomials and rational functions are continuous at every point in their domains.
+
+Proof
+Previously, we showed that if
+as long as
+
+and
+
+are polynomials,
+
+for every polynomial
+
+and
+
+Therefore, polynomials and rational functions are continuous on their domains.
+
+
+We now apply Continuity of Polynomials and Rational Functions to determine the points at which a given rational function is continuous.
+
+EXAMPLE 2.29
+
+Continuity of a Rational Function
+
+For what values of x is
+
+continuous?
+
+Solution The rational function
+
+is continuous for every value of x except
+
+2.22 For what values of x is
+
+continuous?
+
+Types of Discontinuities
+As we have seen in Example 2.26 and Example 2.27, discontinuities take on several different appearances. We classify the types of discontinuities we have seen thus far as removable discontinuities, infinite discontinuities, or jump discontinuities. Intuitively, a removable discontinuity is a discontinuity for which there is a hole in the graph, a jump discontinuity is a noninfinite discontinuity for which the sections of the function do not meet up, and an infinite discontinuity is a discontinuity located at a vertical asymptote. Figure 2.37 illustrates the differences in these types of discontinuities. Although these terms provide a handy way of describing three common types of discontinuities, keep in mind that not all discontinuities fit neatly into these categories.
+
+Figure 2.37 Discontinuities are classified as (a) removable, (b) jump, or (c) infinite. These three discontinuities are formally defined as follows:
+
+Definition
+
+If
+
+is discontinuous at a, then
+
+Access for free at openstax.org
+
+2.4 · Continuity 161
+
+1. has a removable discontinuity at a if where L is a real number.)
+2. has a jump discontinuity at a if
+
+When we state that
+
+and
+
+take on the values ±.) 3. has an infinite discontinuity at a if
+
+exists. (Note: When we state that
+
+exists, we mean that
+
+and
+
+both exist, but
+
+(Note:
+
+both exist, we mean that both are real-valued and that neither
+
+ and/or
+
+
+
+EXAMPLE 2.30
+
+Classifying a Discontinuity In Example 2.26, we showed that or infinite.
+
+is discontinuous at
+
+Solution To classify the discontinuity at 2 we must evaluate
+
+Classify this discontinuity as removable, jump,
+
+Since f is discontinuous at 2 and
+
+exists, f has a removable discontinuity at
+
+EXAMPLE 2.31
+
+Classifying a Discontinuity
+
+In Example 2.27, we showed that
+
+is discontinuous at
+
+Classify this discontinuity as
+
+removable, jump, or infinite.
+
+Solution
+
+Earlier, we showed that f is discontinuous at 3 because
+
+does not exist. However, since
+
+and
+
+both exist, we conclude that the function has a jump discontinuity at 3.
+
+EXAMPLE 2.32
+
+Classifying a Discontinuity Determine whether removable, jump, or infinite.
+
+is continuous at -1. If the function is discontinuous at -1, classify the discontinuity as
+
+Solution
+
+The function value
+
+is undefined. Therefore, the function is not continuous at -1. To determine the type of
+
+discontinuity, we must determine the limit at -1. We see that
+
+ and
+
+ Therefore, the
+
+function has an infinite discontinuity at -1.
+
+162 2 · Limits
+
+2.23 For
+
+decide whether f is continuous at 1. If f is not continuous at 1, classify the
+
+discontinuity as removable, jump, or infinite.
+
+Continuity over an Interval
+Now that we have explored the concept of continuity at a point, we extend that idea to continuity over an interval. As we develop this idea for different types of intervals, it may be useful to keep in mind the intuitive idea that a function is continuous over an interval if we can use a pencil to trace the function between any two points in the interval without lifting the pencil from the paper. In preparation for defining continuity on an interval, we begin by looking at the definition of what it means for a function to be continuous from the right at a point and continuous from the left at a point.
+
+Continuity from the Right and from the Left
+
+A function
+
+is said to be continuous from the right at a if
+
+A function
+
+is said to be continuous from the left at a if
+
+A function is continuous over an open interval if it is continuous at every point in the interval. A function
+
+is
+
+continuous over a closed interval of the form
+
+if it is continuous at every point in
+
+and is continuous from the
+
+right at a and is continuous from the left at b. Analogously, a function
+
+is continuous over an interval of the form
+
+if it is continuous over
+
+and is continuous from the left at b. Continuity over other types of intervals are
+
+defined in a similar fashion.
+
+Requiring that
+
+and
+
+ensures that we can trace the graph of the function from the
+
+point
+
+to the point
+
+without lifting the pencil. If, for example,
+
+we would need to lift
+
+our pencil to jump from
+
+to the graph of the rest of the function over
+
+EXAMPLE 2.33
+
+Continuity on an Interval State the interval(s) over which the function
+
+is continuous.
+
+Solution Since
+
+
+is a rational function, it is continuous at every point in its domain. The domain of
+
+ Thus,
+
+is continuous over each of the intervals 
+
+is the set
+
+and
+
+
+
+EXAMPLE 2.34
+Continuity over an Interval State the interval(s) over which the function
+Solution From the limit laws, we know that
+exists and
+
+is continuous.
+
+for all values of a in
+
+We also know that
+
+exists. Therefore,
+
+is continuous over the interval
+
+2.24 State the interval(s) over which the function
+
+is continuous.
+
+The Composite Function Theorem allows us to expand our ability to compute limits. In particular, this theorem ultimately
+
+Access for free at openstax.org
+
+allows us to demonstrate that trigonometric functions are continuous over their domains.
+
+Theorem 2.9
+
+Composite Function Theorem
+
+If
+
+is continuous at L and
+
+then
+
+2.4 · Continuity 163
+
+Before we move on to Example 2.35, recall that earlier, in the section on limit laws, we showed
+
+Consequently, we know that composite function theorem.
+
+is continuous at 0. In Example 2.35 we see how to combine this result with the
+
+EXAMPLE 2.35
+Limit of a Composite Cosine Function Evaluate
+
+Solution
+
+The given function is a composite of
+
+and
+
+apply the composite function theorem. Thus,
+
+Since
+
+and
+
+is continuous at 0, we may
+
+2.25 Evaluate
+
+The proof of the next theorem uses the composite function theorem as well as the continuity of
+
+and
+
+at the point 0 to show that trigonometric functions are continuous over their entire domains.
+
+Theorem 2.10
+
+Continuity of Trigonometric Functions Trigonometric functions are continuous over their entire domains.
+
+Proof
+We begin by demonstrating that for all values of a.
+
+is continuous at every real number. To do this, we must show that
+
+The proof that
+
+is continuous at every real number is analogous. Because the remaining trigonometric functions
+
+may be expressed in terms of
+
+and
+
+their continuity follows from the quotient limit law.
+
+
+
+As you can see, the composite function theorem is invaluable in demonstrating the continuity of trigonometric functions.
+
+164 2 · Limits
+
+As we continue our study of calculus, we revisit this theorem many times.
+
+The Intermediate Value Theorem
+
+Functions that are continuous over intervals of the form
+
+where a and b are real numbers, exhibit many useful
+
+properties. Throughout our study of calculus, we will encounter many powerful theorems concerning such functions.
+
+The first of these theorems is the Intermediate Value Theorem.
+
+Theorem 2.11
+
+The Intermediate Value Theorem
+
+Let f be continuous over a closed, bounded interval
+
+If z is any real number between
+
+and
+
+is a number c in
+
+satisfying
+
+in Figure 2.38.
+
+then there
+
+Figure 2.38 There is a number
+
+that satisfies
+
+EXAMPLE 2.36
+
+Application of the Intermediate Value Theorem
+
+Show that
+
+has at least one zero.
+
+Solution Since
+
+is continuous over   it is continuous over any closed interval of the form
+
+If you
+
+can find an interval
+
+such that
+
+and
+
+conclude there must be a real number c in
+
+have opposite signs, you can use the Intermediate Value Theorem to
+
+that satisfies
+
+Note that
+
+and
+
+Using the Intermediate Value Theorem, we can see that there must be a real number c in
+
+Therefore,
+
+has at least one zero.
+
+that satisfies
+
+EXAMPLE 2.37
+
+When Can You Apply the Intermediate Value Theorem?
+
+If
+
+is continuous over
+
+and
+
+can we use the Intermediate Value Theorem to conclude that
+
+has no zeros in the interval
+
+Explain.
+
+Access for free at openstax.org
+
+2.4 · Continuity 165
+
+Solution
+
+No. The Intermediate Value Theorem only allows us to conclude that we can find a value between
+
+and
+
+it
+
+doesn't allow us to conclude that we can't find other values. To see this more clearly, consider the function
+
+It satisfies
+
+and
+
+EXAMPLE 2.38
+
+When Can You Apply the Intermediate Value Theorem?
+
+For
+
+and
+
+Can we conclude that
+
+has a zero in the interval
+
+Solution No. The function is not continuous over
+
+The Intermediate Value Theorem does not apply here.
+
+2.26 Show that
+
+has a zero over the interval
+
+SECTION 2.4 EXERCISES
+
+For the following exercises, determine the point(s), if any, at which each function is discontinuous. Classify any discontinuity as jump, removable, infinite, or other.
+
+131.
+
+132.
+
+133.
+
+134. 137.
+
+135. 138.
+
+136.
+
+For the following exercises, decide if the function continuous at the given point. If it is discontinuous, what type of discontinuity is it?
+
+139.
+
+at
+
+140.
+
+at
+
+141.
+
+at
+
+142.
+
+at
+
+143.
+
+at
+
+144. at
+
+In the following exercises, find the value(s) of k that makes each function continuous over the given interval.
+
+145.
+
+146.
+
+147.
+
+148.
+
+149.
+
+166 2 · Limits
+
+In the following exercises, use the Intermediate Value Theorem (IVT).
+
+150. Let
+
+Over the interval
+
+there is no value of x such
+
+that
+
+although
+
+and
+
+Explain why this does not
+
+contradict the IVT.
+
+151. A particle moving along a
+
+line has at each time t a
+
+position function
+
+which is continuous.
+
+Assume
+
+and
+
+Another particle
+
+moves such that its
+
+position is given by
+
+Explain
+
+why there must be a
+
+value c for
+
+such
+
+that
+
+152. [T] Use the statement "The cosine of t is equal to t cubed." a. Write a mathematical equation of the statement. b. Prove that the equation in part a. has at least one real solution. c. Use a calculator to find an interval of length 0.01 that contains a solution.
+
+153. Apply the IVT to determine whether has a solution in one of the intervals or Briefly explain your response for each interval.
+
+154. Consider the graph of the
+
+function
+
+shown in the
+
+following graph.
+
+155. Let
+a. Sketch the graph of f. b. Is it possible to find a
+value k such that which
+makes continuous for all real numbers? Briefly explain.
+
+a. Find all values for which the function is discontinuous.
+b. For each value in part a., state why the formal definition of continuity does not apply.
+c. Classify each discontinuity as either jump, removable, or infinite.
+
+Access for free at openstax.org
+
+2.4 · Continuity 167
+
+156. Let
+
+for
+
+a. Sketch the graph of f.
+
+b. Is it possible to find
+
+values and such
+
+that
+
+and
+
+and that
+
+makes
+
+continuous for all real
+
+numbers? Briefly
+
+explain.
+
+157. Sketch the graph of a function with properties i.
+through vi. i. The domain of f is
+
+ii. f has an infinite discontinuity at
+iii. iv.
+v. vi. f is left continuous but not
+right continuous at
+
+158. Sketch the graph of a
+
+function
+
+with
+
+properties i. through iv.
+
+i. The domain of f is
+
+ii.
+
+and
+
+exist and
+
+are equal.
+
+iii.
+
+is left continuous
+
+but not continuous at
+
+and right
+
+continuous but not
+
+continuous at
+
+iv.
+
+has a removable
+
+discontinuity at
+
+a jump discontinuity at
+
+and the
+
+following limits hold:
+
+ and
+
+In the following exercises, suppose property.
+
+is defined for all x. For each description, sketch a graph with the indicated
+
+159. Discontinuous at with
+
+160. Discontinuous at
+
+and
+
+but continuous elsewhere
+
+with
+
+Determine whether each of the given statements is true. Justify your response with an explanation or counterexample.
+
+161.
+
+is
+
+continuous everywhere.
+
+162. If the left- and right-hand
+
+limits of
+
+as
+
+exist and are equal, then f
+
+cannot be discontinuous
+
+at
+
+163. If a function is not continuous at a point, then it is not defined at that point.
+
+164. According to the IVT, has
+a solution over the interval
+
+165. If
+
+is continuous such
+
+that
+
+and
+
+have
+
+opposite signs, then
+
+has exactly one
+
+solution in
+
+166. The function is
+continuous over the interval
+
+167. If
+
+is continuous
+
+everywhere and
+
+then
+
+there is no root of
+
+in
+
+the interval
+
+168 2 · Limits
+
+[T] The following problems consider the scalar form of Coulomb's law, which describes the electrostatic force between
+
+two point charges, such as electrons. It is given by the equation
+
+where is Coulomb's constant, are
+
+the magnitudes of the charges of the two particles, and r is the distance between the two particles.
+
+168. To simplify the calculation of a
+
+model with many interacting
+
+particles, after some threshold
+
+value
+
+we approximate F as
+
+zero.
+
+a. Explain the physical reasoning
+
+behind this assumption.
+
+b. What is the force equation?
+
+c. Evaluate the force F using both
+
+Coulomb's law and our
+
+approximation, assuming two
+
+protons with a charge
+
+magnitude of
+
+169. Instead of making the force 0 at R, instead we let the force be 10-20 for Assume two protons, which have a magnitude of charge and the Coulomb constant
+Is there a value R that can make this system continuous? If so, find it.
+
+and the Coulomb constant are
+1 m apart. Also, assume How much
+inaccuracy does our approximation generate? Is our approximation reasonable? d. Is there any finite value of R for which this system remains continuous at R?
+
+Recall the discussion on spacecraft from the chapter opener. The following problems consider a rocket launch from
+
+Earth's surface. The force of gravity on the rocket is given by
+
+where m is the mass of the rocket, d is the
+
+distance of the rocket from the center of Earth, and k is a constant.
+
+170. [T] Determine the value and units of k given that the mass of the rocket is 3 million kg. (Hint: The distance from the center of Earth to its surface is 6378 km.)
+
+171. [T] After a certain distance D has passed, the gravitational effect of Earth becomes quite negligible, so we can approximate the force function by
+
+172. As the rocket travels away from Earth's surface, there is a distance D where the rocket sheds some of its mass, since it no longer needs the excess fuel storage. We can write this function as
+
+Using the value of k found in the previous exercise, find the necessary condition D such that the force function remains continuous.
+
+Is there a D value such that this function is continuous, assuming
+
+Prove the following functions are continuous everywhere
+
+173.
+
+174.
+
+175. Where is
+
+continuous?
+
+Access for free at openstax.org
+
+2.5 · The Precise Definition of a Limit 169
+
+2.5 The Precise Definition of a Limit
+
+Learning Objectives
+2.5.1 Describe the epsilon-delta definition of a limit. 2.5.2 Apply the epsilon-delta definition to find the limit of a function. 2.5.3 Describe the epsilon-delta definitions of one-sided limits and infinite limits. 2.5.4 Use the epsilon-delta definition to prove the limit laws.
+
+By now you have progressed from the very informal definition of a limit in the introduction of this chapter to the intuitive understanding of a limit. At this point, you should have a very strong intuitive sense of what the limit of a function means and how you can find it. In this section, we convert this intuitive idea of a limit into a formal definition using precise mathematical language. The formal definition of a limit is quite possibly one of the most challenging definitions you will encounter early in your study of calculus; however, it is well worth any effort you make to reconcile it with your intuitive notion of a limit. Understanding this definition is the key that opens the door to a better understanding of calculus.
+
+Quantifying Closeness
+
+Before stating the formal definition of a limit, we must introduce a few preliminary ideas. Recall that the distance between two points a and b on a number line is given by
+
+· The statement · The statement
+
+may be interpreted as: The distance between
+
+and L is less than .
+
+may be interpreted as:
+
+and the distance between x and a is less than .
+
+It is also important to look at the following equivalences for absolute value:
+
+· The statement
+
+is equivalent to the statement
+
+· The statement
+
+is equivalent to the statement
+
+and
+
+With these clarifications, we can state the formal epsilon-delta definition of the limit.
+
+Definition
+
+Let
+
+be defined for all
+
+over an open interval containing a. Let L be a real number. Then
+
+if, for every
+
+there exists a
+
+such that if
+
+then
+
+This definition may seem rather complex from a mathematical point of view, but it becomes easier to understand if we
+
+break it down phrase by phrase. The statement itself involves something called a universal quantifier (for every
+
+an existential quantifier (there exists a
+
+and, last, a conditional statement (if
+
+then
+
+Let's take a look at Table 2.9, which breaks down the definition and translates each part.
+
+Definition
+
+Translation
+
+1. For every
+
+1. For every positive distance  from L,
+
+2. there exists a
+
+2. There is a positive distance from a,
+
+3. such that
+
+3. such that
+
+4. if
+
+then
+
+4. if x is closer than to a and
+
+then
+
+is closer than  to L.
+
+Table 2.9 Translation of the Epsilon-Delta Definition of the Limit
+
+We can get a better handle on this definition by looking at the definition geometrically. Figure 2.39 shows possible values
+
+of for various choices of
+
+for a given function
+
+a number a, and a limit L at a. Notice that as we choose
+
+smaller values of  (the distance between the function and the limit), we can always find a small enough so that if we
+
+have chosen an x value within of a, then the value of
+
+is within  of the limit L.
+
+170 2 · Limits
+
+Figure 2.39 These graphs show possible values of , given successively smaller choices of . MEDIA Visit the following applet to experiment with finding values of for selected values of : The epsilon-delta definition of limit (http://www.openstax.org/l/20_epsilondelt)
+
+Example 2.39 shows how you can use this definition to prove a statement about the limit of a specific function at a specified value.
+
+EXAMPLE 2.39
+
+Proving a Statement about the Limit of a Specific Function Prove that
+
+Solution Let
+
+The first part of the definition begins "For every
+
+This means we must prove that whatever follows is true no
+
+matter what positive value of  is chosen. By stating "Let
+
+we signal our intent to do so.
+
+Choose
+
+The definition continues with "there exists a
+
+" The phrase "there exists" in a mathematical statement is always a
+
+signal for a scavenger hunt. In other words, we must go and find So, where exactly did
+
+come from? There are
+
+two basic approaches to tracking down One method is purely algebraic and the other is geometric.
+
+We begin by tackling the problem from an algebraic point of view. Since ultimately we want
+
+we begin
+
+by manipulating this expression:
+
+is equivalent to
+
+which in turn is equivalent to
+
+Last, this is equivalent to
+
+Thus, it would seem that
+
+is appropriate.
+
+We may also find through geometric methods. Figure 2.40 demonstrates how this is done.
+
+Access for free at openstax.org
+
+2.5 · The Precise Definition of a Limit 171
+
+Figure 2.40 This graph shows how we find geometrically.
+
+Assume
+
+When has been chosen, our goal is to show that if
+
+then
+
+To
+
+prove any statement of the form "If this, then that," we begin by assuming "this" and trying to get "that."
+
+Thus,
+
+Analysis
+
+In this part of the proof, we started with
+
+and used our assumption
+
+in a key part of the
+
+chain of inequalities to get
+
+to be less than . We could just as easily have manipulated the assumed
+
+inequality
+
+to arrive at
+
+as follows:
+
+Therefore,
+
+(Having completed the proof, we state what we have accomplished.)
+
+After removing all the remarks, here is a final version of the proof: Let Choose Assume Thus,
+
+172 2 · Limits
+
+Therefore,
+
+The following Problem-Solving Strategy summarizes the type of proof we worked out in Example 2.39.
+
+Problem-Solving Strategy
+
+Proving That
+
+for a Specific Function
+
+1. Let's begin the proof with the following statement: Let
+
+2. Next, we need to obtain a value for After we have obtained this value, we make the following statement, filling
+
+in the blank with our choice of : Choose
+
+3. The next statement in the proof should be (at this point, we fill in our given value for a):
+
+Assume
+
+4. Next, based on this assumption, we need to show that
+
+where
+
+and L are our function
+
+and our limit L. At some point, we need to use
+
+5. We conclude our proof with the statement: Therefore,
+
+EXAMPLE 2.40
+Proving a Statement about a Limit Complete the proof that
+
+by filling in the blanks.
+
+Let _____.
+
+Choose
+
+Assume
+
+Thus,
+
+Solution We begin by filling in the blanks where the choices are specified by the definition. Thus, we have
+
+Let
+
+Choose
+
+Assume
+
+(or equivalently,
+
+Thus,
+
+Focusing on the final line of the proof, we see that we should choose
+
+We now complete the final write-up of the proof: Let Choose
+
+Assume
+
+(or equivalently,
+
+Access for free at openstax.org
+
+2.5 · The Precise Definition of a Limit 173
+
+Thus,
+
+2.27 Complete the proof that
+Let _______. Choose Assume Thus,
+
+by filling in the blanks.
+
+Therefore,
+
+In Example 2.39 and Example 2.40, the proofs were fairly straightforward, since the functions with which we were working were linear. In Example 2.41, we see how to modify the proof to accommodate a nonlinear function.
+
+EXAMPLE 2.41
+
+Proving a Statement about the Limit of a Specific Function (Geometric Approach) Prove that
+
+Solution
+
+1. Let
+
+The first part of the definition begins "For every
+
+so we must prove that whatever follows is true no
+
+matter what positive value of  is chosen. By stating "Let
+
+we signal our intent to do so.
+
+2. Without loss of generality, assume
+
+Two questions present themselves: Why do we want
+
+and why is it
+
+okay to make this assumption? In answer to the first question: Later on, in the process of solving for we will
+
+discover that involves the quantity
+
+Consequently, we need
+
+In answer to the second question: If we
+
+can find
+
+that "works" for
+
+then it will "work" for any
+
+as well. Keep in mind that, although it is always
+
+okay to put an upper bound on , it is never okay to put a lower bound (other than zero) on .
+
+3. Choose
+
+Figure 2.41 shows how we made this choice of
+
+Figure 2.41 This graph shows how we find  geometrically for a given  for the proof in Example 2.41.
+
+4. We must show: If
+
+then
+
+so we must begin by assuming
+
+We don't really need
+
+(in other words,
+
+for this proof. Since
+
+it is
+
+okay to drop
+
+174 2 · Limits
+
+Hence,
+
+Recall that
+
+Thus,
+
+and consequently
+
+We also use
+
+here. We might ask at this point: Why did we substitute
+
+for on the left-
+
+hand side of the inequality and
+
+on the right-hand side of the inequality? If we look at Figure 2.41, we see
+
+that
+
+corresponds to the distance on the left of 2 on the x-axis and
+
+corresponds to the
+
+distance on the right. Thus,
+
+We simplify the expression on the left:
+
+Then, we add 2 to all parts of the inequality:
+
+We square all parts of the inequality. It is okay to do so, since all parts of the inequality are positive: We subtract 4 from all parts of the inequality: Last, 5. Therefore,
+
+2.28 Find  corresponding to
+
+for a proof that
+
+The geometric approach to proving that the limit of a function takes on a specific value works quite well for some functions. Also, the insight into the formal definition of the limit that this method provides is invaluable. However, we may also approach limit proofs from a purely algebraic point of view. In many cases, an algebraic approach may not only provide us with additional insight into the definition, it may prove to be simpler as well. Furthermore, an algebraic approach is the primary tool used in proofs of statements about limits. For Example 2.42, we take on a purely algebraic approach.
+
+EXAMPLE 2.42
+
+Proving a Statement about the Limit of a Specific Function (Algebraic Approach) Prove that
+
+Solution Let's use our outline from the Problem-Solving Strategy:
+
+1. Let
+
+2. Choose
+
+This choice of may appear odd at first glance, but it was obtained by taking a look at our
+
+ultimate desired inequality:
+
+This inequality is equivalent to
+
+At this
+
+point, the temptation simply to choose
+
+is very strong. Unfortunately, our choice of must depend on  only
+
+and no other variable. If we can replace
+
+by a numerical value, our problem can be resolved. This is the place
+
+Access for free at openstax.org
+
+2.5 · The Precise Definition of a Limit 175
+
+where assuming
+
+comes into play. The choice of
+
+here is arbitrary. We could have just as easily used any
+
+other positive number. In some proofs, greater care in this choice may be necessary. Now, since
+
+and
+
+we are able to show that
+
+Consequently,
+
+At this point we
+
+realize that we also need
+
+Thus, we choose
+
+3. Assume
+
+Thus,
+
+Since obtain
+
+we may conclude that Consequently,
+
+Thus, by subtracting 4 from all parts of the inequality, we This gives us
+
+Therefore,
+
+2.29 Complete the proof that
+
+Let Since
+
+choose
+
+assume
+
+we may conclude that
+
+Thus,
+
+Hence,
+
+You will find that, in general, the more complex a function, the more likely it is that the algebraic approach is the easiest to apply. The algebraic approach is also more useful in proving statements about limits.
+Proving Limit Laws
+We now demonstrate how to use the epsilon-delta definition of a limit to construct a rigorous proof of one of the limit laws. The triangle inequality is used at a key point of the proof, so we first review this key property of absolute value.
+Definition
+The triangle inequality states that if a and b are any real numbers, then
+
+Proof
+We prove the following limit law: If
+
+Let Choose Choose Choose Assume Thus,
+
+so that if so that if
+
+Hence,
+
+and
+then then
+
+then
+
+ We now explore what it means for a limit not to exist. The limit
+
+does not exist if there is no real number L for
+
+176 2 · Limits
+
+which the definition of
+
+Thus, for all real numbers L,
+
+To understand what this means, we look at each part of
+
+together with its opposite. A translation of the definition is given in Table 2.10.
+
+Definition
+
+Opposite
+
+1. For every
+
+1. There exists
+
+so that
+
+2. there exists a
+
+so that
+
+2. for every
+
+3. if
+
+then
+
+3. There is an x satisfying
+
+so that
+
+Table 2.10 Translation of the Definition of
+
+and its Opposite
+
+Finally, we may state what it means for a limit not to exist. The limit
+
+does not exist if for every real number L,
+
+there exists a real number
+
+so that for all
+
+there is an x satisfying
+
+Let's apply this in Example 2.43 to show that a limit does not exist.
+
+so that
+
+EXAMPLE 2.43
+
+Showing That a Limit Does Not Exist
+
+Show that
+
+does not exist. The graph of
+
+is shown here:
+
+Solution Suppose that L is a candidate for a limit. Choose
+
+Let
+
+Either
+
+or
+
+If
+
+then let
+
+and
+
+Thus,
+
+On the other hand, if
+
+then let
+
+Thus,
+
+and
+
+Access for free at openstax.org
+
+2.5 · The Precise Definition of a Limit 177
+
+Thus, for any value of L,
+
+One-Sided and Infinite Limits
+
+Just as we first gained an intuitive understanding of limits and then moved on to a more rigorous definition of a limit, we
+
+now revisit one-sided limits. To do this, we modify the epsilon-delta definition of a limit to give formal epsilon-delta
+
+definitions for limits from the right and left at a point. These definitions only require slight modifications from the
+
+definition of the limit. In the definition of the limit from the right, the inequality
+
+replaces
+
+which ensures that we only consider values of x that are greater than (to the right of) a. Similarly, in the definition of the
+
+limit from the left, the inequality
+
+replaces
+
+which ensures that we only consider values of
+
+x that are less than (to the left of) a.
+
+Definition
+
+Limit from the Right: Let
+
+be defined over an open interval of the form
+
+where
+
+Then,
+
+if for every
+
+there exists a
+
+such that if
+
+then
+
+Limit from the Left: Let
+
+be defined over an open interval of the form
+
+where
+
+Then,
+
+if for every
+
+there exists a
+
+such that if
+
+then
+
+EXAMPLE 2.44
+Proving a Statement about a Limit From the Right Prove that
+
+Solution Let
+
+Choose
+equivalently, 2.42.
+
+Since we ultimately want making
+
+we manipulate this inequality to get
+
+or,
+
+a clear choice. We may also determine geometrically, as shown in Figure
+
+Figure 2.42 This graph shows how we find  for the proof in Example 2.44.
+
+178 2 · Limits
+Assume Therefore,
+
+Thus,
+
+Hence,
+
+Finally,
+
+2.30 Find corresponding to  for a proof that
+
+We conclude the process of converting our intuitive ideas of various types of limits to rigorous formal definitions by
+
+pursuing a formal definition of infinite limits. To have
+
+ we want the values of the function
+
+to get
+
+larger and larger as x approaches a. Instead of the requirement that
+
+for arbitrarily small  when
+
+for small enough we want
+
+for arbitrarily large positive M when
+
+for small
+
+enough Figure 2.43 illustrates this idea by showing the value of for successively larger values of M.
+
+Figure 2.43 These graphs plot values of for M to show that
+
+
+
+Definition
+
+Let
+
+be defined for all
+
+in an open interval containing a. Then, we have an infinite limit
+
+
+if for every
+
+there exists
+
+such that if
+
+then
+
+Let
+
+be defined for all
+
+in an open interval containing a. Then, we have a negative infinite limit
+
+
+
+if for every
+
+there exists
+
+such that if
+
+then
+
+SECTION 2.5 EXERCISES
+
+In the following exercises, write the appropriate - definition for each of the given statements.
+
+176.
+
+177.
+
+178.
+
+179.
+
+Access for free at openstax.org
+
+The following graph of the function f satisfies satisfies each statement.
+
+2.5 · The Precise Definition of a Limit 179
+
+In the following exercises, determine a value of
+
+that
+
+181. If
+
+then
+
+180. If
+
+then
+
+The following graph of the function f satisfies satisfies each statement.
+
+In the following exercises, determine a value of
+
+that
+
+183. If
+
+then
+
+182. If
+
+then
+
+180 2 · Limits
+
+The following graph of the function f satisfies such that the precise definition of limit holds true.
+
+In the following exercises, for each value of , find a value of
+
+185.
+
+184.
+
+[T] In the following exercises, use a graphing calculator to find a number such that the statements hold true.
+
+186. whenever
+
+187.
+
+In the following exercises, use the precise definition of limit to prove the given limits.
+
+188.
+
+189.
+
+190.
+
+191.
+
+192.
+
+In the following exercises, use the precise definition of limit to prove the given one-sided limits.
+
+193.
+
+194.
+
+195.
+
+In the following exercises, use the precise definition of limit to prove the given infinite limits.
+
+196.
+
+
+
+197.
+
+
+
+198.
+
+
+
+199. An engineer is using a machine to cut a flat square of Aerogel of area 144 cm2. If there is a maximum error tolerance in the area of 8 cm2, how accurately must the engineer cut on the side, assuming all sides have the same length? How do these numbers relate to , a, and L?
+
+200. Use the precise definition of limit to prove that the following limit does not
+exist:
+
+201. Using precise definitions of limits, prove that does not exist,
+
+given that
+
+is the
+
+ceiling function. (Hint: Try
+
+any
+
+Access for free at openstax.org
+
+2.5 · The Precise Definition of a Limit 181
+
+202. Using precise definitions of limits, prove that
+does not exist:
+
+203. Using precise definitions of limits, determine
+for
+
+(Hint: Think about how you
+
+can always choose a rational
+
+number
+
+but
+
+(Hint: Break into two cases, x rational and x irrational.)
+
+204. Using the function from the previous exercise, use the precise definition of limits to show that does not exist
+for
+
+For the following exercises, suppose that
+
+and
+
+to prove the following limit laws:
+
+205.
+
+206.
+
+for any
+
+real constant c (Hint: Consider two cases: and
+
+207.
+
+(Hint:
+
+both exist. Use the precise definition of limits
+
+182 2 · Chapter Review
+
+Chapter Review
+
+Key Terms
+
+average velocity the change in an object's position divided by the length of a time period; the average velocity of an
+
+object over a time interval
+
+(if
+
+or
+
+if
+
+, with a position given by
+
+that is
+
+constant multiple law for limits the limit law
+
+continuity at a point A function
+
+satisfied: (1)
+
+is defined, (2)
+
+is continuous at a point a if and only if the following three conditions are exists, and (3)
+
+continuity from the left A function is continuous from the left at b if
+
+continuity from the right A function is continuous from the right at a if
+
+continuity over an interval a function that can be traced with a pencil without lifting the pencil; a function is
+
+continuous over an open interval if it is continuous at every point in the interval; a function
+
+is continuous over a
+
+closed interval of the form
+
+if it is continuous at every point in
+
+and it is continuous from the right at a and
+
+from the left at b
+
+difference law for limits the limit law
+
+differential calculus the field of calculus concerned with the study of derivatives and their applications
+
+discontinuity at a point A function is discontinuous at a point or has a discontinuity at a point if it is not continuous at
+
+the point
+
+epsilon-delta definition of the limit
+
+if for every
+
+there exists a
+
+such that if
+
+then
+
+infinite discontinuity An infinite discontinuity occurs at a point a if
+
+ or
+
+
+
+infinite limit A function has an infinite limit at a point a if it either increases or decreases without bound as it
+
+approaches a
+
+instantaneous velocity The instantaneous velocity of an object with a position function that is given by is the
+
+value that the average velocities on intervals of the form
+
+and
+
+approach as the values of t move closer to
+
+provided such a value exists
+
+integral calculus the study of integrals and their applications
+
+Intermediate Value Theorem Let f be continuous over a closed bounded interval
+
+if z is any real number
+
+between
+
+and
+
+then there is a number c in
+
+satisfying
+
+intuitive definition of the limit If all values of the function
+
+approach the real number L as the values of
+
+approach a,
+
+approaches L
+
+jump discontinuity A jump discontinuity occurs at a point a if
+
+and
+
+both exist, but
+
+limit the process of letting x or t approach a in an expression; the limit of a function
+
+as x approaches a is the
+
+value that
+
+approaches as x approaches a
+
+limit laws the individual properties of limits; for each of the individual laws, let
+
+and
+
+be defined for all
+
+over some open interval containing a; assume that L and M are real numbers so that
+
+and
+
+let c be a constant
+
+multivariable calculus the study of the calculus of functions of two or more variables one-sided limit A one-sided limit of a function is a limit taken from either the left or the right
+
+power law for limits the limit law
+
+for every positive integer n
+
+product law for limits the limit law
+
+quotient law for limits the limit law
+
+for
+
+removable discontinuity A removable discontinuity occurs at a point a if
+
+is discontinuous at a, but
+
+exists root law for limits the limit law
+
+for all L if n is odd and for
+
+if n is even
+
+secant A secant line to a function slope of the secant line is given by
+
+at a is a line through the point
+
+and another point on the function; the
+
+Access for free at openstax.org
+
+2 · Chapter Review 183
+
+squeeze theorem states that if
+
+for all
+
+where L is a real number, then
+
+over an open interval containing a and
+
+sum law for limits The limit law
+
+tangent A tangent line to the graph of a function at a point
+
+is the line that secant lines through
+
+approach as they are taken through points on the function with x-values that approach a; the slope of the tangent
+
+line to a graph at a measures the rate of change of the function at a
+
+triangle inequality If a and b are any real numbers, then
+
+vertical asymptote A function has a vertical asymptote at
+
+if the limit as x approaches a from the right or left is
+
+infinite
+
+Key Equations
+
+Slope of a Secant Line
+
+Average Velocity over Interval
+
+Intuitive Definition of the Limit
+
+Two Important Limits
+
+One-Sided Limits Infinite Limits from the Left Infinite Limits from the Right
+Two-Sided Infinite Limits
+
+
+
+
+
+
+
+
+
+
+
+ and
+
+
+
+
+
+ and
+
+
+
+Basic Limit Results
+
+Important Limits
+Key Concepts
+2.1 A Preview of Calculus
+· Differential calculus arose from trying to solve the problem of determining the slope of a line tangent to a curve at a point. The slope of the tangent line indicates the rate of change of the function, also called the derivative. Calculating a derivative requires finding a limit.
+· Integral calculus arose from trying to solve the problem of finding the area of a region between the graph of a function and the x-axis. We can approximate the area by dividing it into thin rectangles and summing the areas of these rectangles. This summation leads to the value of a function called the integral. The integral is also calculated by finding a limit and, in fact, is related to the derivative of a function.
+· Multivariable calculus enables us to solve problems in three-dimensional space, including determining motion in
+
+184 2 · Chapter Review
+
+space and finding volumes of solids.
+
+2.2 The Limit of a Function
+
+· A table of values or graph may be used to estimate a limit. · If the limit of a function at a point does not exist, it is still possible that the limits from the left and right at that point
+may exist. · If the limits of a function from the left and right exist and are equal, then the limit of the function is that common
+value. · We may use limits to describe infinite behavior of a function at a point.
+
+2.3 The Limit Laws
+
+· The limit laws allow us to evaluate limits of functions without having to go through step-by-step processes each time.
+· For polynomials and rational functions,
+
+· You can evaluate the limit of a function by factoring and canceling, by multiplying by a conjugate, or by simplifying a complex fraction.
+· The squeeze theorem allows you to find the limit of a function if the function is always greater than one function and less than another function with limits that are known.
+
+2.4 Continuity
+
+· For a function to be continuous at a point, it must be defined at that point, its limit must exist at the point, and the
+
+value of the function at that point must equal the value of the limit at that point.
+
+· Discontinuities may be classified as removable, jump, or infinite.
+
+· A function is continuous over an open interval if it is continuous at every point in the interval. It is continuous over a
+
+closed interval if it is continuous at every point in its interior and is continuous at its endpoints.
+
+· The composite function theorem states: If
+
+is continuous at L and
+
+then
+
+· The Intermediate Value Theorem guarantees that if a function is continuous over a closed interval, then the function takes on every value between the values at its endpoints.
+
+2.5 The Precise Definition of a Limit
+
+· The intuitive notion of a limit may be converted into a rigorous mathematical definition known as the epsilon-delta definition of the limit.
+· The epsilon-delta definition may be used to prove statements about limits. · The epsilon-delta definition of a limit may be modified to define one-sided limits.
+
+Review Exercises
+
+True or False. In the following exercises, justify your answer with a proof or a counterexample.
+
+208. A function has to be
+
+continuous at
+
+if the
+
+exists.
+
+209. You can use the quotient rule to evaluate
+
+210. If there is a vertical
+
+asymptote at
+
+for
+
+the function
+
+then f
+
+is undefined at the point
+
+Access for free at openstax.org
+
+211. If
+
+does not exist,
+
+then f is undefined at the point
+
+212. Using the graph, find each limit or explain why the limit does not exist. a.
+b.
+c.
+d.
+
+2 · Chapter Review 185
+
+In the following exercises, evaluate the limit algebraically or explain why the limit does not exist.
+
+213.
+
+214.
+
+215.
+
+216.
+
+217.
+
+218.
+
+219. 222.
+
+220.
+
+221.
+
+In the following exercises, use the squeeze theorem to prove the limit.
+
+223.
+
+224.
+
+225. Determine the domain such that the function is continuous over its domain.
+
+In the following exercises, determine the value of c such that the function remains continuous. Draw your resulting function to ensure it is continuous.
+
+226.
+
+227.
+
+186 2 · Chapter Review
+
+In the following exercises, use the precise definition of limit to prove the limit.
+
+228.
+
+229.
+
+230. A ball is thrown into the air and the vertical position is given by
+
+231. A particle moving along a line has a displacement according to the function where x is measured in meters and t is measured in seconds. Find the average velocity over the time period
+
+232. From the previous exercises, estimate the instantaneous velocity at by checking the average velocity within
+
+Use the Intermediate Value Theorem to show that the ball must land on the ground sometime between 5 sec and 6 sec after the throw.
+
+Access for free at openstax.org
+
+
