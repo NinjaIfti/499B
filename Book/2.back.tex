@@ -1,0 +1,217 @@
+\chapter{Background and Literature Review}
+\label{ch:background}
+
+This chapter first sets out the technical background needed to follow the rest of
+the report, then reviews the research literature and the existing applications
+closest to LectureAssist, and finally identifies the gaps that this project sets
+out to fill.
+
+\section{Preliminaries}
+\label{sec:back-prelim}
+
+\subsection{Large Language Models and Prompting}
+\label{sec:back-llm}
+
+A large language model (LLM) is an autoregressive neural network trained to predict
+the next token of a sequence; at inference it generates text by sampling from the
+distribution it has learned. Modern instruction-tuned LLMs can be steered entirely
+through the prompt, without any gradient update, which is what makes them practical
+for a student project: the same frozen model can be turned into a summariser, a
+question writer, a grader or a judge purely by changing the text it is given. This
+project uses the open-weight Gemma~3 family~\cite{gemma3}, served locally by the
+Ollama runtime~\cite{ollama}, in two sizes: a fast $4$-billion-parameter model for
+generation, and a $12$-billion-parameter model for the tasks where quality matters
+more than latency (summarisation, grading, judging and answer verification).
+
+Two prompting strategies are directly relevant, because they are used in this work
+both as baselines and as generation methods in their own right.
+
+\paragraph{Chain-of-Thought (CoT).} Chain-of-thought prompting asks the model to
+produce its intermediate reasoning in natural language \emph{before} stating a final
+answer, rather than jumping straight to it~\cite{wei2022chain}. Making the reasoning
+explicit improves accuracy on multi-step problems, because each intermediate step
+conditions the next and the model is no longer forced to commit to an answer in a
+single forward pass.
+
+\paragraph{Program-of-Thought (PoT).} Program-of-thought is a variant in which the
+reasoning is expressed as an explicit, ordered sequence of \emph{computational}
+steps --- in the original formulation, as executable code --- rather than as
+free-form prose, so that the answer is \emph{computed} rather than
+recalled~\cite{chen2023program}. It is particularly effective when the answer is a
+numeric quantity, which is exactly the situation in a mathematics chapter, because
+it separates the act of reasoning about \emph{what} to compute from the act of
+performing the arithmetic.
+
+\subsection{Retrieval-Augmented Generation}
+\label{sec:back-rag}
+
+An LLM only knows what is in its weights and in its context window. Retrieval-augmented
+generation (RAG)~\cite{lewis2020rag} closes that gap: the source material is split
+into chunks, each chunk is embedded into a dense vector, and at query time the
+chunks whose embeddings are most similar to the query are retrieved and pasted into
+the prompt, so the model answers \emph{from the document} rather than from memory.
+LectureAssist embeds lecture chunks with the Sentence-BERT model
+\texttt{all-MiniLM-L6-v2}~\cite{reimers2019sbert} and indexes them with
+FAISS~\cite{johnson2019faiss} using inner-product search over $L_2$-normalised
+vectors, which makes the similarity score the cosine similarity
+
+\begin{equation}
+\label{eq:cosine}
+\mathrm{sim}(q, c) \;=\; \frac{\mathbf{e}_q \cdot \mathbf{e}_c}
+                              {\lVert \mathbf{e}_q \rVert \, \lVert \mathbf{e}_c \rVert} .
+\end{equation}
+
+The same embedding machinery is reused at evaluation time, where it supplies two
+LLM-free metrics: how well a generated question is \emph{grounded} in the lecture
+(its best cosine match against any lecture chunk), and how \emph{diverse} a question
+set is (one minus the mean nearest-neighbour cosine between its questions).
+
+\subsection{Agentic Architectures}
+\label{sec:back-agentic}
+
+An \emph{agentic} system does not treat the LLM as a single-shot text generator. It
+gives the model a goal, a set of tools it may call, and a loop in which it can act,
+observe the result, and act again. The ReAct pattern~\cite{yao2023react} interleaves
+reasoning traces with tool calls; reflection-style methods such as
+Reflexion~\cite{shinn2023reflexion} add a self-critique step whose verbal feedback
+is fed back into the next attempt. LectureAssist applies both ideas to question
+generation: the generator may call a retrieval tool when it judges its context
+insufficient, and a separate validator agent critiques each draft question and
+selects a remediation action that determines how the next attempt differs from the
+last.
+
+\subsection{Speech Recognition and Optical Character Recognition}
+\label{sec:back-asr-ocr}
+
+To generate questions from a lecture \emph{video}, the lecture must first be turned
+into text through two independent channels. Whisper~\cite{radford2023whisper} is a
+transformer-based automatic speech recognition model trained on large-scale weakly
+supervised data, robust to accents and background noise; this project uses the
+Faster-Whisper implementation of the \texttt{small} checkpoint for the audio
+channel. The visual channel is handled by optical character recognition, which
+extracts text from sampled video frames. OCR accuracy is highly sensitive to
+preprocessing, and the correct preprocessing depends on what is on screen --- white
+chalk on a dark board needs to be inverted, a bright projected slide does not ---
+which motivates the scene-adaptive design described in
+Chapter~\ref{ch:methodology}.
+
+\subsection{LLM-as-a-Judge}
+\label{sec:back-judge}
+
+Evaluating hundreds of generated questions by hand is not feasible within a
+capstone project, and $n$-gram overlap metrics such as BLEU are known to correlate
+poorly with question quality --- a question can be excellent and share almost no
+vocabulary with any reference. The now-standard alternative is
+\emph{LLM-as-a-judge}~\cite{zheng2023judging}: a strong model is given a rubric and
+scores each item. It is a useful but imperfect instrument --- judges are known to
+favour fluent and verbose text, and a judge from the same model family as the
+generator will share its blind spots --- so this project treats the judge as a
+\emph{relative} signal between pipelines, deliberately uses a larger model as the
+judge than as the generator, and cross-checks the judge against a solver calibrated
+on questions with known answers.
+
+\section{Literature Review}
+\label{sec:back-lit}
+
+\subsection{Related Research}
+\label{sec:back-related}
+
+Automatic question generation (AQG) has a long history, surveyed comprehensively by
+Kurdi et al.~\cite{kurdi2020systematic}. The earliest systems were
+\emph{rule- and template-based}: they applied syntactic transformations to a
+declarative sentence to turn it into an interrogative one, then ranked the
+candidates with a supervised model, as in the work of Heilman and
+Smith~\cite{heilman2010good}. These systems are transparent and grammatical, but
+they are fundamentally limited to questions whose answer is a span of a single
+sentence, and they cannot ask anything that requires synthesis across a passage.
+
+The neural era reframed the task as sequence-to-sequence learning. Du et
+al.~\cite{du2017learning} trained an attention-based encoder--decoder to generate
+questions directly from a sentence or paragraph, outperforming rule-based systems on
+human evaluation, and subsequent work fine-tuned pretrained transformers on
+SQuAD-style corpora. Two limitations persisted. First, these models were trained on
+extractive reading-comprehension data, so they inherited its bias toward shallow,
+factoid questions. Second, they generate a question and an answer span but have no
+mechanism to \emph{check} either one.
+
+The current wave prompts general-purpose LLMs to write questions, including
+multiple-choice questions with distractors, which sidesteps the need for
+task-specific training data entirely and produces markedly more fluent items. The
+open problem has shifted accordingly: fluency is no longer the bottleneck,
+\emph{correctness and diversity} are. An LLM will reliably produce a well-formed MCQ
+whose marked option is wrong, or whose four options are four paraphrases of the same
+idea, and it will do so with complete confidence. Evaluations in this line of work
+overwhelmingly report quality-style ratings --- fluency, relevance, answerability
+--- and rarely verify that the marked answer is the right one.
+
+Orthogonally, the prompting literature has shown that \emph{how} the model is asked
+matters as much as which model is asked. Chain-of-thought~\cite{wei2022chain} and
+program-of-thought~\cite{chen2023program} prompting substantially improve LLM
+accuracy on multi-step and numerical reasoning, and agentic
+patterns~\cite{yao2023react, shinn2023reflexion} improve it further by letting the
+model retrieve evidence and revise its own output. These techniques are well
+established for \emph{answering} questions. Their value for \emph{generating} them
+--- where the model must derive an answer it then has to mark correctly --- has
+received far less attention, and is one of the questions this project sets out to
+answer empirically.
+
+\subsection{Similar Applications}
+\label{sec:back-apps}
+
+Several commercial and open products overlap with parts of LectureAssist.
+Flashcard and quiz platforms such as Quizlet and Anki support spaced retrieval
+practice, but the questions must be authored by a human; they solve the
+\emph{practice} problem and not the \emph{supply} problem. Note-taking assistants
+such as Notion~AI and NotebookLM will summarise an uploaded document and answer
+questions about it, and NotebookLM in particular is grounded in the user's own
+sources, but their assessment support is shallow and they are cloud services.
+Lecture-capture and transcription tools such as Otter.ai produce a transcript from
+audio but stop there: they do not read the board, and they generate no assessment.
+General-purpose chatbots such as ChatGPT will happily write quiz questions from
+pasted text, but they require the student to supply clean text, they perform no
+validation of the answer they mark, they retain no per-topic model of the student
+across sessions, and they are neither free nor local.
+
+Two properties are consistently absent across all of them. None of these tools reads
+the \emph{board} --- the derivation the lecturer actually wrote out is invisible to
+a transcript-only pipeline --- and none of them runs on the student's own hardware
+without a paid API.
+
+\section{Gap Analysis}
+\label{sec:back-gap}
+
+The review above identifies four gaps, which this project addresses directly.
+
+\begin{enumerate}
+  \item \textbf{The pipeline is not closed.} Existing work operates on
+        pre-extracted, clean text. The step that is actually hardest for a student
+        --- getting the lecture out of a video, including what was written on the
+        board --- is assumed away. LectureAssist closes the loop from raw media to
+        graded assessment, treating the visual and audio channels as first-class
+        and complementary inputs.
+
+  \item \textbf{Generation is unvalidated.} Neural and LLM-based generators emit a
+        question and mark an answer, with no mechanism to check that the marked
+        answer is correct or that the question is answerable from the source.
+        LectureAssist adds a validator agent inside the generation loop, and, at
+        evaluation time, a \emph{separate} Answer Generator agent that re-solves
+        every question without seeing the marked option, so that answer correctness
+        is measured rather than assumed.
+
+  \item \textbf{Evaluation measures the wrong thing.} The field reports fluency-style
+        quality scores, which LLM judges saturate. This project reports answer
+        correctness and duplication alongside quality, and it combines them into a
+        duplicate-penalised accept rate --- a decision that turns out to matter,
+        because it reverses the ranking of the pipelines at the hard difficulty
+        level (Chapter~\ref{ch:results}).
+
+  \item \textbf{Agentic and prompting strategies are untested for generation.} CoT,
+        PoT and agentic loops are well studied for \emph{answering} questions but
+        rarely compared head-to-head for \emph{generating} them. This project runs
+        that comparison on identical content, with an identical judge, at three
+        difficulty levels.
+\end{enumerate}
+
+Finally, all of the above must hold under a hard deployment constraint: no paid API
+and a single consumer-grade GPU, so that the system is usable in exactly the
+bandwidth- and cost-limited settings where the need is greatest.

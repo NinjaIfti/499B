@@ -451,10 +451,33 @@ def call_ollama(prompt, system="You are an expert educational AI assistant.",
         "prompt":  prompt,
         "system":  system,
         "stream":  False,
-        "options": {"num_ctx": num_ctx or 32768, "temperature": 0.2},
+        # num_predict is an OUTPUT-token ceiling. Without it Ollama caps generation
+        # at ~128-256 tokens (~750 chars), which truncated batch MCQ JSON mid-object
+        # and made the pinned 4B "return no questions". 8192 is a ceiling, not a
+        # target — short calls (judge, summary) are unaffected.
+        # Default ctx 16384, not 32768: the longest prompt any caller builds is
+        # ~20k chars (≈6k tokens — summary merge caps at combined[:20000]), and a
+        # 32k KV cache for the 12B alongside the pinned 4B overflows the 16GB T4
+        # into CPU offload — the cause of 300s read-timeouts on summary/judge.
+        "options": {"num_ctx": num_ctx or 16384, "num_predict": 8192, "temperature": 0.2},
     }
     if json_mode:
-        payload["format"] = "json"
+        # Deliberately NOT sending Ollama's format="json" grammar. Gemma 4B
+        # habitually emits typographic quotes (It’s …, strings closed with ”) —
+        # under the grammar those count as still-open string CONTENT, and when
+        # the model finally emits a real " the grammar demands structure while
+        # the model wants prose: generation stalls and the reply arrives
+        # TRUNCATED (raw dumps end at “correct_answer”:" — unrepairable).
+        # Without the grammar the same reply arrives COMPLETE and the repair
+        # chain in call_ollama_json fixes the quoting after the fact.
+        # Input normalisation still helps: fewer typographic triggers copied in.
+        payload["prompt"] = re.sub(r"[‘’‚‛]", "'", re.sub(r'[“”„‟]', "'", prompt))
+        payload["system"] = system + (' In JSON output use the plain ASCII double-'
+                                      'quote character (") for JSON syntax only. '
+                                      'Never use curly/typographic quotes, and '
+                                      'never put a double quote inside a string '
+                                      "value — quote words with single quotes ' "
+                                      'instead.')
 
     for attempt in range(1, max_retries + 1):
         try:
@@ -475,16 +498,157 @@ def call_ollama(prompt, system="You are an expert educational AI assistant.",
 
 
 
+def _fix_bad_escapes(raw):
+    """Escape backslash sequences that are not valid JSON escapes.
+
+    Math-heavy MCQ text routinely contains LaTeX-ish commands (\\lim, \\epsilon,
+    \\delta, \\infty …) whose lone backslash makes json.loads reject the whole
+    reply. Doubling only the INVALID escapes fixes those without touching
+    legitimate \\n, \\", \\\\ or \\uXXXX sequences."""
+    return re.sub(r'\\(?!["\\/bfnrtu])', r'\\\\', raw)
+
+
+def _fix_smart_quotes(raw):
+    """Convert curly quotes to ASCII ONLY where they act as JSON delimiters.
+
+    Gemma sometimes "autocorrects" JSON quoting into typographic quotes —
+    observed as e.g.  ,“correct_answer”:  and values closed with  .”},  —
+    which json.loads rejects. A quote is a delimiter when it directly follows
+    { [ , : or directly precedes } ] , : (whitespace allowed). Curly quotes
+    INSIDE string content are valid JSON and are left untouched."""
+    fixed = re.sub(r'(?<=[{\[,:])(\s*)[“”]', r'\1"', raw)
+    return re.sub(r'[“”](?=\s*[}\],:])', '"', fixed)
+
+
+def _escape_inner_quotes(raw):
+    """Escape ASCII double quotes that are CONTENT, not JSON delimiters.
+
+    Observed (deterministic at temp 0.2, so re-sampling never fixes it): the
+    validator quotes section titles verbatim, e.g.
+        "reason": "... the 'Brief Explanations of "Why" Concepts' section ..."
+    The inner "Why" quotes end the JSON string early. Heuristic: a quote is a
+    DELIMITER only if its nearest non-whitespace neighbour on the left is one
+    of {[,: (opening) or on the right is one of :,}] / end-of-text (closing);
+    anything else is content and gets backslash-escaped. Already-escaped
+    quotes are left alone."""
+    out, n = [], len(raw)
+    for i, ch in enumerate(raw):
+        if ch == '"':
+            j = i - 1
+            while j >= 0 and raw[j] in ' \t\r\n':
+                j -= 1
+            prev = raw[j] if j >= 0 else ''
+            k = i + 1
+            while k < n and raw[k] in ' \t\r\n':
+                k += 1
+            nxt = raw[k] if k < n else ''
+            is_open  = prev in '{[,:' or prev == ''
+            is_close = nxt in ':,}]' or nxt == ''
+            if not is_open and not is_close and prev != '\\':
+                out.append('\\"')
+                continue
+        out.append(ch)
+    return ''.join(out)
+
+
+try:
+    # Optional last-resort repairer, purpose-built for LLM JSON output.
+    # Backend setup cell should run:  !pip install json-repair
+    from json_repair import repair_json as _json_repair
+except Exception:
+    _json_repair = None
+
+
+def _drop_stray_eol_quotes(raw):
+    """Remove a lone quote dangling after a comma at end-of-line.
+
+    Observed slip:  "bloom_level":"","<newline>"source_timestamp":""
+    A quote directly after a comma at line end can never start a legal value
+    (a JSON string cannot contain a raw newline), so it is always spurious."""
+    return re.sub(r',[ \t]*"[ \t]*(?=\r?\n)', ',', raw)
+
+
+def _close_options_object(raw):
+    """Insert the missing `}` that closes "options" before "correct_answer".
+
+    Observed slip: the model writes  "options":{"A":...,"D":"...","correct_answer":
+    without ever closing the options object, so every later key lands inside
+    options and the reply ends one `}` short. The `[^{}]*?` guard means the
+    pattern can ONLY match when no closing brace exists between the two — a
+    correctly closed options object is left untouched."""
+    return re.sub(r'("options"\s*:\s*\{[^{}]*?)(,\s*"correct_answer")',
+                  r'\1}\2', raw)
+
+
+def _slice_json_block(raw):
+    """Cut leading/trailing prose around the outermost JSON value.
+
+    Without the format="json" grammar the model occasionally wraps its JSON in
+    chatter ("Here is the quiz: {...} Hope this helps!"). Code fences are
+    already stripped in call_ollama; this removes everything outside the first
+    opening and last closing bracket."""
+    starts = [i for i in (raw.find("{"), raw.find("[")) if i != -1]
+    start  = min(starts) if starts else -1
+    end    = max(raw.rfind("}"), raw.rfind("]"))
+    if start == -1 or end <= start:
+        return raw
+    return raw[start:end + 1]
+
+
 def call_ollama_json(prompt, system="You are an expert educational AI assistant.",
                      fallback=None, model=None, num_ctx=None):
-    """call_ollama with JSON mode. Returns parsed dict/list, or *fallback* on error."""
-    try:
-        raw = call_ollama(prompt, system=system, json_mode=True,
-                          model=model, num_ctx=num_ctx)
-        return json.loads(raw)
-    except Exception as e:
-        print(f"  JSON parse error: {e}")
-        return fallback if fallback is not None else {}
+    """call_ollama with JSON mode. Returns parsed dict/list, or *fallback* on error.
+
+    The 4B generator occasionally emits one malformed reply (invalid escape or
+    an unescaped quote inside a string). Instead of dropping the whole batch on
+    the first bad parse: try an escape repair, then re-sample once — and log
+    WHERE the parse broke so the failure mode is visible in the run log."""
+    last_err, raw = None, ""
+    for attempt in (1, 2):
+        try:
+            raw = call_ollama(prompt, system=system, json_mode=True,
+                              model=model, num_ctx=num_ctx)
+        except Exception as e:
+            print(f"  LLM call failed: {e}")
+            break
+        base = _slice_json_block(raw)
+        sq   = _fix_smart_quotes(base)
+        lq   = _drop_stray_eol_quotes(sq)
+        co   = _close_options_object(lq)
+        iq   = _escape_inner_quotes(co)
+        cands = []
+        for c in (raw, base, sq, lq, co, iq):
+            for v in (c, _fix_bad_escapes(c)):
+                if v not in cands:
+                    cands.append(v)
+        for candidate in cands:
+            try:
+                # strict=False: tolerate raw newlines/control chars inside
+                # otherwise well-formed strings (multi-line explanations)
+                return json.loads(candidate, strict=False)
+            except Exception as e:
+                last_err = e
+        if _json_repair is not None:
+            try:
+                obj = _json_repair(base, return_objects=True)
+                if isinstance(obj, (dict, list)) and obj:
+                    print("  ⚠ JSON recovered by json_repair fallback")
+                    return obj
+            except Exception as e:
+                last_err = e
+        pos     = getattr(last_err, "pos", 0) or 0
+        snippet = raw[max(0, pos - 60):pos + 60].replace("\n", " ")
+        print(f"  JSON parse error (attempt {attempt}/2): {last_err} — near: …{snippet}…")
+        if attempt == 2:
+            # final give-up: dump the whole reply (capped) so the failure is
+            # diagnosable from the run log without reproducing it
+            print(f"  RAW reply (first 2000 chars): {raw[:2000]}")
+    return fallback if fallback is not None else {}
+
+
+# Prints once at backend start — if this line is missing from the run log, the
+# server process is executing STALE code and must be restarted with the new file.
+print("✅ LLM wrapper v4.3 — repair chain + agentic MCQ structural gate (no empty options)")
 
 
 
@@ -2666,6 +2830,32 @@ def _generate_one_question_with_retry(
             continue
 
         q = qs[0]
+
+        # Structural gate (MCQ): a question with missing/empty options or no
+        # A–D answer can never be judged fairly, and the keep-best-after-max-
+        # retries path below would otherwise SAVE it (observed: 44 empty-option
+        # MCQs in the tails of the 600-question bulk run). Treat it exactly
+        # like "model returned no question" so the retry machinery runs and it
+        # can never become last_question/best_question.
+        if quiz_type == "mcq":
+            _opts = q.get("options") or {}
+            _ca   = str(q.get("correct_answer", "")).strip().upper()[:1]
+            if (not isinstance(_opts, dict)
+                    or any(not str(_opts.get(k) or "").strip() for k in "ABCD")
+                    or _ca not in ("A", "B", "C", "D")):
+                last_failure_reason = "malformed MCQ: empty/missing options or no A-D answer"
+                if thinking_cb:
+                    thinking_cb({
+                        "agent":       "QuizValidatorAgent",
+                        "step":        "question_validated",
+                        "phase":       "VALIDATE",
+                        "question_id": qid,
+                        "verdict":     "FAIL",
+                        "attempt":     attempt,
+                        "reason":      last_failure_reason,
+                    })
+                continue
+
         if not q.get("topic"):      q["topic"]      = topic
         if not q.get("difficulty"): q["difficulty"] = difficulty
         last_question = q
@@ -4214,6 +4404,20 @@ def run_bulk_evaluation(total=200, difficulties=("easy", "medium", "hard"),
         "cot":        generate_mcq_cot,
         "pot":        generate_mcq_pot,
     }
+    # Questions per generation call, IDENTICAL for every baseline.
+    #  * 4 (not 10) because CoT/PoT carry a long reasoning/computation field per
+    #    question, and the pinned 4B cannot emit 10 of those as valid JSON.
+    #  * The same value for all three so they get the same number of reading windows
+    #    and therefore see the SAME share of the chapter. If plain used batches of 10
+    #    it would get 5 windows (~43% of the chapter) while CoT/PoT got 13 (~100%),
+    #    and any difference between them would be confounded by content coverage
+    #    rather than the prompt strategy — which is the only thing under test.
+    #  * 2 (not 4): smaller batches = less JSON per call for the 4B to get wrong, so
+    #    fewer dropped batches. With num_predict now lifted the length cap is gone,
+    #    but batch=2 keeps each reply short enough that a single formatting slip
+    #    costs at most 2 questions, not the whole batch. Uniform across baselines so
+    #    the window-coverage argument above still holds (identical window count).
+    baseline_batch = {"nonagentic": 2, "cot": 2, "pot": 2}
     pipelines = ["agentic"] + (list(baseline_generators) if compare else [])
     emit("bulk_start", total=total, counts=counts, pipelines=pipelines,
          judge_model=judge_model or OLLAMA_MODEL, generator_model=QUIZ_MODEL)
@@ -4260,23 +4464,30 @@ def run_bulk_evaluation(total=200, difficulties=("easy", "medium", "hard"),
                 emit("group_gen", pipeline=p, difficulty=d, count=k)
                 collected = []
                 # Slide the reading window across the whole document, one step per
-                # batch, so batch 1 covers the start of the chapter and the last
-                # batch covers the end — instead of every batch re-reading page 1.
-                n_batches = max(1, -(-k // 10))          # ceil(k / 10)
-                batch_i   = 0
-                while len(collected) < k:
-                    need   = min(10, k - len(collected))
-                    window = _doc_window(ctx.doc_text, batch_i, n_batches, 8000)
+                # batch, so successive batches cover different parts of the chapter
+                # instead of every batch re-reading page 1.
+                bsize     = baseline_batch.get(p, 10)
+                n_batches = max(1, -(-k // bsize))       # ceil(k / bsize)
+                batch_i = calls = fails = 0
+                max_calls = n_batches * 3 + 5            # room to retry empty batches
+                while len(collected) < k and calls < max_calls and fails < 6:
+                    need   = min(bsize, k - len(collected))
+                    window = _doc_window(ctx.doc_text, batch_i % n_batches, n_batches, 8000)
                     batch  = gen(ctx.board_text, ctx.transcript, summary,
                                  num_questions=need, doc_text=window,
                                  board_entries=ctx.board_entries,
                                  segment_list=ctx.segment_list, difficulty_hint=d)
+                    calls   += 1
                     batch_i += 1
                     if not batch:
-                        if batch_i >= n_batches:        # windows exhausted
-                            break
-                        continue                        # try the next window
+                        # empty batch: retry on the next window rather than giving up
+                        fails += 1
+                        continue
+                    fails = 0
                     collected.extend(batch)
+                if len(collected) < k:
+                    print(f"  ⚠ {p} ({d}): only {len(collected)}/{k} collected — "
+                          f"{QUIZ_MODEL} returned empty batches (generator pinned)")
                 questions[key] = collected[:k]
                 _save_questions()
                 emit("group_done", pipeline=p, difficulty=d, count=len(questions[key]))

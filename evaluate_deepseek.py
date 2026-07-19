@@ -1,60 +1,49 @@
 #!/usr/bin/env python3
 """
-evaluate.py — Standalone evaluation harness for LLM-generated MCQ.
+evaluate_deepseek.py — DeepSeek-backed twin of evaluate.py.
 
-Evaluates one or more question sets (e.g. agentic / non-agentic / CoT / PoT)
-along two axes:
+Identical evaluation logic to evaluate.py (same judge rubric, same solver, same
+metrics, same outputs) EXCEPT the LLM backend: instead of a local Ollama model,
+the judge and the independent Answer Generator run on the DeepSeek API
+(OpenAI-compatible /chat/completions). This is the SAME judge model family used by
+EQGBench (DeepSeek-R1), so results here are aligned with that benchmark's protocol.
 
-  A. QUESTION QUALITY  — an independent "LLM-as-judge" scores every question
-     1-5 on correctness, clarity, difficulty-match and overall, and returns an
-     accept/reject decision. Set-level metrics add a duplicate rate, an
-     embedding-based grounding and diversity score, and a duplicate-penalised
-     "effective accept rate".
+WHY A SEPARATE SCRIPT (not a flag on evaluate.py): so the local-Ollama run and the
+DeepSeek run stay side by side and directly comparable, and neither can silently
+change the other. Point BOTH at the same questions and you can report cross-family
+agreement between a Gemma judge and a DeepSeek judge.
 
-  B. ANSWER CORRECTNESS — three independent checks that the option the generator
-     MARKED as correct actually is:
-       1. judge-verify      : the judge confirms the marked answer (sees content).
-       2. independent solve : a separate "Answer Generator" solves the question
-                              WITHOUT seeing the marked answer; we compare.
-       3. gold calibration  : both models solve a set of KNOWN-answer MCQ, so we
-                              know how much to trust check (2) in the first place.
-
-Everything runs locally against Ollama. The run is resumable: each judged row is
-appended to rows.jsonl immediately, and re-running skips completed work.
+IMPORTANT — this does NOT change the system being evaluated. The QUESTION GENERATOR
+is still the local gemma3:4b (that is the project's contribution). The judge/solver
+here is only a MEASUREMENT INSTRUMENT; using a cloud API for measurement does not
+make the deployed system non-local.
 
 --------------------------------------------------------------------------------
-USAGE
+SETUP
 --------------------------------------------------------------------------------
-  # Compare four pipelines, with grounding content and a gold calibration set:
-  python evaluate.py \
-      --set agentic=out/agentic.json \
-      --set nonagentic=out/nonagentic.json \
-      --set cot=cot_limits_200.json \
-      --set pot=pot_limits_200.json \
-      --content limits_chapter.txt \
-      --gold gold_limits_100.json \
-      --out eval_out
+  1. Get a key: https://platform.deepseek.com  (free tier: ~5M tokens, no card)
+  2. Put it in the environment (NEVER hard-code it):
+       PowerShell:  $env:DEEPSEEK_API_KEY = "sk-..."
+       bash:        export DEEPSEEK_API_KEY="sk-..."
+  3. pip install requests   (matplotlib + sentence-transformers optional, as before)
 
-  # Quick smoke test (5 questions per set):
-  python evaluate.py --set cot=cot_limits_200.json --limit 5 --out eval_out
+  # Same CLI as evaluate.py:
+  python evaluate_deepseek.py --from-bulk bulk_eval_questions.json \
+      --content chapter.txt --gold gold_limits_full.json --out eval_out_deepseek
 
-  # Gold calibration only (how well can the models actually solve limits?):
-  python evaluate.py --gold gold_limits_100.json --out eval_out
+MODELS (DeepSeek API):
+  deepseek-reasoner  = DeepSeek-R1  (reasoning model; slow, strongest — DEFAULT,
+                       matches EQGBench's judge)
+  deepseek-chat      = DeepSeek-V3  (faster, cheaper, no long reasoning trace)
 
-INPUT FORMAT — each question set is a JSON list of:
-  {"question": "...", "options": {"A":"..","B":"..","C":"..","D":".."},
-   "correct_answer": "B", "difficulty": "easy|medium|hard", "topic": "..."}
-  ("answer" is accepted as an alias for "correct_answer".)
+WORKS WITH ANY OpenAI-COMPATIBLE ENDPOINT: pass --base-url / --api-key-env to point
+at Groq (https://api.groq.com/openai/v1) or OpenRouter instead, e.g. to run the
+faster R1-distill-70B on Groq's free tier. The <think>…</think> stripping below
+makes reasoning-distill outputs on those proxies parse correctly too.
 
-OUTPUTS (in --out):
-  rows.jsonl        one line per judged question (resume file)
-  rows.csv          same, flat, one row per question
-  results.json      aggregated metrics per pipeline x difficulty
-  gold.json         solver-vs-gold accuracy per model
-  chart_*.png       bar charts comparing the pipelines
-
-REQUIREMENTS: requests. Optional: matplotlib (charts),
-sentence-transformers (grounding/diversity — skipped if absent).
+For the full metric definitions (duplicate rate, effective accept, grounding,
+diversity, independent match, gold calibration) see the docstrings in evaluate.py —
+they are identical here.
 """
 
 import argparse
@@ -70,18 +59,26 @@ from collections import defaultdict
 import requests
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Ollama plumbing
+# DeepSeek (OpenAI-compatible) plumbing — the ONLY part that differs from evaluate.py
 # ─────────────────────────────────────────────────────────────────────────────
 
-OLLAMA = "http://localhost:11434"
+# Endpoint + auth are resolved in main() from CLI flags / env, then stored here so
+# the call helper has the same simple signature the rest of the file expects.
+BASE_URL = "https://api.deepseek.com"     # override with --base-url (Groq/OpenRouter)
+API_KEY  = ""                             # filled from env in main(); never committed
+REQUEST_SLEEP = 0.0                       # seconds to pause between calls (rate limit)
 
 
 def _extract_json(text):
-    """Pull the first JSON object out of a model response (tolerates ``` fences
-    and leading prose)."""
+    """Pull the first JSON object out of a model response. Tolerates ``` fences,
+    leading prose, AND a leading <think>…</think> reasoning block (some
+    OpenAI-compatible proxies, e.g. Groq's R1 distill, inline the chain-of-thought
+    into `content` — the DeepSeek API itself keeps it in a separate field, but we
+    strip it either way so both backends parse)."""
     if not text:
         return None
-    text = text.strip()
+    # drop any reasoning trace that leaked into the content
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
     text = re.sub(r"^```(?:json)?|```$", "", text, flags=re.MULTILINE).strip()
     try:
         return json.loads(text)
@@ -103,34 +100,54 @@ def _extract_json(text):
     return None
 
 
-def ollama_json(prompt, model, system="", num_ctx=8192, retries=2):
-    """Call Ollama and parse a JSON object out of the reply. Returns {} on failure
-    (so a broken call FAILS CLOSED rather than silently inflating a score)."""
+def deepseek_json(prompt, model, system="", retries=3):
+    """Call the DeepSeek (OpenAI-compatible) chat API and parse a JSON object out
+    of the reply. Returns {} on failure — a broken call FAILS CLOSED rather than
+    silently inflating a score, exactly like ollama_json in evaluate.py.
+
+    Reasoning models (deepseek-reasoner) put their chain-of-thought in a separate
+    `reasoning_content` field, which we ignore; the answer we want is in
+    `message.content`. max_tokens bounds only that final answer, set high enough
+    that a long reply is not truncated before its closing brace. Retries use
+    exponential backoff and treat HTTP 429 (rate limit) as retryable."""
+    url = f"{BASE_URL.rstrip('/')}/chat/completions"
+    headers = {"Authorization": f"Bearer {API_KEY}",
+               "Content-Type": "application/json"}
+    messages = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    messages.append({"role": "user", "content": prompt})
     body = {
         "model": model,
-        "prompt": prompt,
+        "messages": messages,
+        "temperature": 0.1,     # ignored by deepseek-reasoner; harmless to send
+        "max_tokens": 4096,
         "stream": False,
-        "format": "json",
-        "options": {"temperature": 0.1, "num_ctx": num_ctx},
     }
-    if system:
-        body["system"] = system
+    backoff = 2.0
     for attempt in range(retries + 1):
         try:
-            r = requests.post(f"{OLLAMA}/api/generate", json=body, timeout=300)
+            r = requests.post(url, headers=headers, json=body, timeout=600)
+            if r.status_code == 429:            # rate limited — back off and retry
+                raise requests.HTTPError("429 rate limit")
             r.raise_for_status()
-            data = _extract_json(r.json().get("response", ""))
+            content = r.json()["choices"][0]["message"].get("content", "")
+            data = _extract_json(content)
             if isinstance(data, dict):
+                if REQUEST_SLEEP:
+                    time.sleep(REQUEST_SLEEP)
                 return data
         except Exception as e:
             if attempt == retries:
-                print(f"    [warn] ollama call failed: {e}", file=sys.stderr)
-        time.sleep(1)
+                print(f"    [warn] deepseek call failed: {e}", file=sys.stderr)
+                break
+            time.sleep(backoff)
+            backoff *= 2                          # 2s, 4s, 8s, …
     return {}
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# A. Question quality — LLM as judge
+# A. Question quality — LLM as judge   (identical prompt/logic to evaluate.py)
 # ─────────────────────────────────────────────────────────────────────────────
 
 DIFF_DESC = {
@@ -142,10 +159,8 @@ DIFF_DESC = {
 
 def judge_question(q, content, model):
     """Score ONE question 1-5 on four dimensions, decide accept/reject, and
-    verify whether the MARKED answer is actually correct.
-
-    The judge sees the marked answer here (that is the point of `answer_correct`);
-    the independent check in solve_mcq() deliberately does not."""
+    verify whether the MARKED answer is actually correct. The judge sees the marked
+    answer (that is the point of `answer_correct`); solve_mcq() deliberately does not."""
     diff = (q.get("difficulty") or "medium").lower()
     opts = q.get("options") or {}
     opts_txt = "\n".join(f"{k}. {v}" for k, v in sorted(opts.items()))
@@ -182,8 +197,8 @@ Return STRICT JSON:
 {{"correctness":1,"clarity":1,"difficulty_match":1,"distractor_quality":1,
   "overall":1,"accept":true,"answer_correct":true,"reason":""}}"""
 
-    r = ollama_json(prompt, model,
-                    system="You are a strict but fair quiz judge. Return only JSON.")
+    r = deepseek_json(prompt, model,
+                      system="You are a strict but fair quiz judge. Return only JSON.")
     if not r:
         # fail closed: a broken judge call must not look like a good question
         return {"correctness": 0, "clarity": 0, "difficulty_match": 0,
@@ -205,13 +220,15 @@ Return STRICT JSON:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# B. Answer correctness — the independent "Answer Generator" agent
+# B. Answer correctness — the independent Answer Generator (identical to evaluate.py)
 # ─────────────────────────────────────────────────────────────────────────────
 
 def solve_mcq(q, content, model):
     """Solve an MCQ from scratch WITHOUT being shown the marked answer.
-    Returns the chosen option letter ('A'..'D') or ''. This is the second,
-    independent agent: question generation and answer generation are separate."""
+    Returns the chosen option letter ('A'..'D') or ''. Second, independent agent:
+    question generation and answer generation are separate. Running this on DeepSeek
+    while the generator was Gemma is the CROSS-FAMILY check — agreement here is
+    stronger evidence than a same-family solver agreeing with itself."""
     opts = q.get("options") or {}
     opts_txt = "\n".join(f"{k}. {v}" for k, v in sorted(opts.items()))
     ctx = f"Reference material:\n{content[:3000]}\n\n" if content else ""
@@ -219,17 +236,16 @@ def solve_mcq(q, content, model):
               f"step, then give the single best option.\n\n"
               f"Q: {q.get('question','')}\n{opts_txt}\n\n"
               f'Return STRICT JSON: {{"answer":"A"}}')
-    r = ollama_json(prompt, model,
-                    system="You are an expert solver. Return only JSON.")
+    r = deepseek_json(prompt, model,
+                      system="You are an expert solver. Return only JSON.")
     choice = str(r.get("answer", "")).strip().upper()[:1]
     return choice if choice in ("A", "B", "C", "D") else ""
 
 
 def evaluate_on_gold(gold, models, content, out_dir):
     """Gold calibration: how accurately can each model solve KNOWN-answer MCQ?
-    This is what makes the independent-match rate interpretable — if the solver
-    is only 55% accurate on questions whose answers we know, then 'the solver
-    agrees with the generator' is weak evidence of correctness."""
+    This is what makes independent_match_rate interpretable — a solver that is only
+    55% accurate on questions whose answers we know cannot certify anything at 97%."""
     print(f"\n[GOLD] calibrating {len(models)} model(s) on {len(gold)} known MCQ")
     per_model = {}
     for m in models:
@@ -253,9 +269,6 @@ def evaluate_on_gold(gold, models, content, out_dir):
             "accuracy": round(hits / len(gold), 3) if gold else None,
             "correct": hits, "n": len(gold),
             "by_difficulty": {d: round(c / t, 3) for d, (c, t) in by_diff.items() if t},
-            # Per-stratum accuracy. The generated questions are a MIX of computational
-            # and conceptual, so a single overall gold number under- or over-states how
-            # much to trust the solver — read the stratum matching the question type.
             "by_type": {k: {"accuracy": round(c / t, 3), "correct": c, "n": t}
                         for k, (c, t) in by_type.items() if t},
         }
@@ -269,12 +282,13 @@ def evaluate_on_gold(gold, models, content, out_dir):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Set-level metrics
+# Set-level metrics  (identical to evaluate.py — see there for full derivations)
 # ─────────────────────────────────────────────────────────────────────────────
 
 def duplicate_rate(questions, threshold=0.85):
-    """Fraction of questions that near-duplicate an earlier one. A per-question
-    judge cannot see repetition, so this is measured separately."""
+    """DUPLICATE RATE = (# questions that near-duplicate an EARLIER one) / n.
+    Two stems are the same question if difflib ratio > 0.85. Order-dependent: the
+    first occurrence is the original, later restatements count as duplicates."""
     texts = [(q.get("question") or "").strip().lower() for q in questions]
     if not texts:
         return 0.0
@@ -301,10 +315,11 @@ def _embedder():
 
 
 def grounding_and_diversity(questions, content):
-    """grounding  = mean cosine of each question to its best-matching chunk of
-                    the source text (is the question actually about the material?)
-       diversity  = 1 - mean nearest-neighbour cosine between questions
-                    (are the questions different from each other?)"""
+    """GROUNDING  = (1/n) sum_i max_j sim(q_i, c_j)   — each question vs its best
+                    500-char source chunk; is it about the material?
+       DIVERSITY  = 1 - (1/n) sum_i max_{j!=i} sim(q_i, q_j)  — each question vs its
+                    nearest sibling; are the questions different from each other?
+    No LLM involved, so these cannot be inflated by fluent writing."""
     model = _embedder()
     if not model or not questions:
         return {"grounding": None, "diversity": None}
@@ -312,19 +327,19 @@ def grounding_and_diversity(questions, content):
     qs = [(q.get("question") or "") for q in questions if q.get("question")]
     if not qs:
         return {"grounding": None, "diversity": None}
-    qe = model.encode(qs, normalize_embeddings=True)
+    qe = model.encode(qs, normalize_embeddings=True)     # (n, 384), unit vectors
 
     grounding = None
     if content:
         chunks = [content[i:i + 500] for i in range(0, min(len(content), 40000), 500)]
         if chunks:
-            ce = model.encode(chunks, normalize_embeddings=True)
+            ce = model.encode(chunks, normalize_embeddings=True)   # (m, 384)
             grounding = float(np.mean(np.max(qe @ ce.T, axis=1)))
 
     diversity = None
     if len(qs) > 1:
-        sim = qe @ qe.T
-        np.fill_diagonal(sim, -1.0)
+        sim = qe @ qe.T                  # (n, n) question-to-question cosines
+        np.fill_diagonal(sim, -1.0)      # exclude self-similarity
         diversity = float(1.0 - np.mean(np.max(sim, axis=1)))
 
     return {"grounding": round(grounding, 3) if grounding is not None else None,
@@ -332,6 +347,9 @@ def grounding_and_diversity(questions, content):
 
 
 def f1(tp, fp, fn):
+    """VALIDATOR-JUDGE AGREEMENT (agentic only): validator PASS as prediction,
+    judge accept as ground truth. F1 = 2PR/(P+R), the harmonic mean, so a
+    pass-everything validator cannot score well."""
     p = tp / (tp + fp) if (tp + fp) else 0.0
     r = tp / (tp + fn) if (tp + fn) else 0.0
     return {"precision": round(p, 3), "recall": round(r, 3),
@@ -339,12 +357,11 @@ def f1(tp, fp, fn):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Aggregation
+# Aggregation  (identical to evaluate.py)
 # ─────────────────────────────────────────────────────────────────────────────
 
 def aggregate(rows, content):
-    """Roll per-question rows up into per-(pipeline, difficulty) and per-pipeline
-    metric blocks."""
+    """Roll per-question rows up into per-(pipeline, difficulty) and per-pipeline."""
     def block(sub):
         n = len(sub)
         if not n:
@@ -366,14 +383,14 @@ def aggregate(rows, content):
             "mean_distractor_quality": mean("judge_distractor_quality"),
             "accept_rate":             acc,
             "duplicate_rate":        dup,
+            # EFFECTIVE ACCEPT = accept_rate * (1 - duplicate_rate): quality discounted
+            # by repetition. The ranking metric.
             "effective_accept_rate": round(acc * (1 - dup), 3),
-            # answer correctness, the two independent checks
             "verified_correct_rate":  round(sum(1 for r in sub if r["answer_correct"]) / n, 3),
             "independent_match_rate": round(sum(1 for r in sub if r["independent_match"]) / n, 3),
         }
         m.update(grounding_and_diversity(qs, content))
 
-        # if the set carries TRUSTED ground-truth answers, score against them too
         truth = [r for r in sub if r.get("true_answer")]
         if truth:
             m["marked_vs_truth_rate"] = round(
@@ -392,7 +409,7 @@ def aggregate(rows, content):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# I/O
+# I/O  (identical to evaluate.py)
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _write_json(path, obj):
@@ -409,13 +426,9 @@ def load_questions(path):
 
 
 def load_bulk(path):
-    """Read the UI's bulk_eval_questions.json, whose 'questions' maps
-    "<pipeline>:<difficulty>" -> [question, ...], and regroup it into
-    {pipeline: [questions]} ready to evaluate.
-
-    The difficulty in the KEY is the difficulty the question was REQUESTED at, so
-    we stamp it onto each question — that is what difficulty_match is judged
-    against (a model's self-reported difficulty field is not trustworthy)."""
+    """Read the UI's bulk_eval_questions.json ("<pipeline>:<difficulty>" -> [qs])
+    and regroup into {pipeline: [questions]}, stamping the TARGET difficulty from
+    the key (the model's self-reported difficulty is not trustworthy)."""
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
     groups = data.get("questions", data if isinstance(data, dict) else {})
@@ -426,7 +439,7 @@ def load_bulk(path):
             if not isinstance(q, dict) or not q.get("question"):
                 continue
             if diff:
-                q["difficulty"] = diff          # target difficulty, not self-reported
+                q["difficulty"] = diff
             sets[pipeline].append(q)
     return dict(sets)
 
@@ -509,37 +522,53 @@ def print_table(agg, pipelines):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def main():
-    global OLLAMA
+    global BASE_URL, API_KEY, REQUEST_SLEEP
     ap = argparse.ArgumentParser(
-        description="Standalone MCQ evaluation harness (LLM-as-judge + answer correctness).",
+        description="DeepSeek-backed MCQ evaluation harness (LLM-as-judge + answer "
+                    "correctness). Same metrics as evaluate.py; judge/solver run on "
+                    "the DeepSeek API instead of local Ollama.",
         formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--set", action="append", default=[], metavar="NAME=FILE",
-                    help="Question set to evaluate, e.g. --set cot=cot_limits_200.json "
-                         "(repeatable, one per pipeline)")
+                    help="Question set to evaluate (repeatable, one per pipeline)")
     ap.add_argument("--from-bulk", metavar="FILE",
-                    help="Read bulk_eval_questions.json produced by the UI's bulk "
-                         "generation and evaluate every pipeline in it "
-                         "(agentic/nonagentic/cot/pot) — no --set needed")
+                    help="Read the UI's bulk_eval_questions.json and evaluate every "
+                         "pipeline in it (agentic/nonagentic/cot/pot)")
     ap.add_argument("--gold", help="JSON of KNOWN-answer MCQ for solver calibration")
-    ap.add_argument("--content", help="Text file of the source material (for grounding + judging)")
-    ap.add_argument("--judge-model", default="gemma3:12b")
+    ap.add_argument("--content", help="Text file of the source material (grounding + judging)")
+    # DeepSeek defaults. deepseek-reasoner = R1 (matches EQGBench); deepseek-chat = V3 (faster).
+    ap.add_argument("--judge-model", default="deepseek-reasoner")
     ap.add_argument("--solver-model", default=None,
                     help="Model for the independent Answer Generator (default: judge model)")
     ap.add_argument("--gold-models", default=None,
-                    help="Comma-separated models to calibrate on gold (default: judge + gemma3:4b)")
-    ap.add_argument("--ollama", default=OLLAMA)
-    ap.add_argument("--out", default="eval_out")
+                    help="Comma-separated models to calibrate on gold (default: judge model)")
+    ap.add_argument("--base-url", default=os.environ.get("DEEPSEEK_BASE_URL", BASE_URL),
+                    help="OpenAI-compatible base URL. DeepSeek=https://api.deepseek.com ; "
+                         "Groq=https://api.groq.com/openai/v1 ; OpenRouter=https://openrouter.ai/api/v1")
+    ap.add_argument("--api-key-env", default="DEEPSEEK_API_KEY",
+                    help="Name of the env var holding the API key (default DEEPSEEK_API_KEY)")
+    ap.add_argument("--sleep", type=float, default=0.0,
+                    help="Seconds to pause between API calls to respect rate limits "
+                         "(e.g. 2.0 for Groq free tier's 30 req/min)")
+    ap.add_argument("--out", default="eval_out_deepseek")
     ap.add_argument("--limit", type=int, default=0, help="Only evaluate the first N per set")
     ap.add_argument("--trusted", action="append", default=[],
-                    help="Set names whose 'correct_answer' is VERIFIED ground truth "
-                         "(e.g. --trusted cot). Adds accuracy-vs-truth columns.")
+                    help="Set names whose 'correct_answer' is VERIFIED ground truth")
     ap.add_argument("--fresh", action="store_true", help="Ignore any previous rows and restart")
     ap.add_argument("--no-charts", action="store_true")
     args = ap.parse_args()
 
-    OLLAMA = args.ollama
+    # ── resolve the API backend ────────────────────────────────────────────────
+    BASE_URL = args.base_url
+    API_KEY = os.environ.get(args.api_key_env, "")
+    REQUEST_SLEEP = args.sleep
+    if not API_KEY:
+        sys.exit(f"No API key found. Set it first, e.g.:\n"
+                 f'  PowerShell:  $env:{args.api_key_env} = "sk-..."\n'
+                 f'  bash:        export {args.api_key_env}="sk-..."')
+
     solver_model = args.solver_model or args.judge_model
     os.makedirs(args.out, exist_ok=True)
+    print(f"[backend] {BASE_URL}  judge={args.judge_model}  solver={solver_model}")
 
     content = ""
     if args.content:
@@ -549,7 +578,7 @@ def main():
     else:
         print("[content] none given — grounding disabled, judging without source material")
 
-    # ── resume ────────────────────────────────────────────────────────────────
+    # ── resume ──────────────────────────────────────────────────────────────────
     rows_path = os.path.join(args.out, "rows.jsonl")
     rows, done = [], set()
     if args.fresh and os.path.exists(rows_path):
@@ -565,8 +594,8 @@ def main():
                     pass
         print(f"[resume] {len(rows)} rows already judged — skipping those")
 
-    # ── collect the question sets to evaluate ─────────────────────────────────
-    question_sets = {}          # pipeline name -> [questions]
+    # ── collect the question sets ─────────────────────────────────────────────
+    question_sets = {}
     if args.from_bulk:
         question_sets.update(load_bulk(args.from_bulk))
         print(f"[bulk] {args.from_bulk}: "
@@ -577,7 +606,7 @@ def main():
         name, path = spec.split("=", 1)
         question_sets[name] = load_questions(path)
 
-    # ── judge + solve every question in every set ─────────────────────────────
+    # ── judge + solve every question ──────────────────────────────────────────
     if question_sets:
         rf = open(rows_path, "a", encoding="utf-8")
         try:
@@ -603,7 +632,6 @@ def main():
                         "topic": q.get("topic", ""),
                         "question": (q.get("question") or "")[:300],
                         "marked_answer": marked,
-                        # only set when the file's answers are verified ground truth
                         "true_answer": marked if trusted else "",
                         "judge_overall":            jr["overall"],
                         "judge_correctness":        jr["correctness"],
@@ -629,7 +657,7 @@ def main():
     if args.gold:
         gold = load_questions(args.gold)
         models = ([m.strip() for m in args.gold_models.split(",")]
-                  if args.gold_models else [args.judge_model, "gemma3:4b"])
+                  if args.gold_models else [args.judge_model])
         gold_result = evaluate_on_gold(gold, models, content, args.out)
 
     # ── aggregate + report ────────────────────────────────────────────────────
@@ -640,9 +668,9 @@ def main():
     agg, pipelines = aggregate(rows, content)
     results = {
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
-        "config": {"judge_model": args.judge_model, "solver_model": solver_model,
-                   "pipelines": pipelines, "n_rows": len(rows),
-                   "content_chars": len(content)},
+        "config": {"backend": BASE_URL, "judge_model": args.judge_model,
+                   "solver_model": solver_model, "pipelines": pipelines,
+                   "n_rows": len(rows), "content_chars": len(content)},
         "aggregated": agg,
         "gold_calibration": gold_result,
     }
@@ -655,7 +683,7 @@ def main():
     if gold_result:
         print("\nGOLD CALIBRATION (accuracy on known-answer MCQ — how much to trust the solver)")
         for m, v in gold_result["per_model"].items():
-            print(f"  {m:<16} {v['accuracy']:.1%}  ({v['correct']}/{v['n']})")
+            print(f"  {m:<20} {v['accuracy']:.1%}  ({v['correct']}/{v['n']})")
     print(f"\nWrote: {args.out}/results.json, rows.csv, rows.jsonl"
           + (", gold.json" if gold_result else ""))
 

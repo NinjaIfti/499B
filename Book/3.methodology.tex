@@ -1,0 +1,377 @@
+\chapter{Methodology}
+\label{ch:methodology}
+
+This chapter describes how LectureAssist is built: the overall system design and the
+flow of data through it, the software components chosen and why, and the
+implementation of each stage --- extraction, retrieval, the multi-agent generation
+loop, the four question-generation pipelines whose prompts are given verbatim, the
+two-agent answer cross-check, and the grading and adaptation layers.
+
+\section{System Design}
+\label{sec:meth-design}
+
+LectureAssist is organised as a pipeline of specialist agents coordinated by an
+orchestrator. The user supplies either a lecture video or a document (PDF, DOCX,
+PPTX); the system converts it into a single grounded content representation, and
+every downstream capability --- summary, quiz, chat, adaptive practice --- consumes
+that representation rather than the raw media. The design is deliberately
+staged so that each stage produces an artifact that can be inspected, cached and
+re-used, which is what makes the expensive stages (OCR, transcription) survivable
+on free-tier hardware.
+
+\subsection{Data flow}
+\label{sec:meth-flow}
+
+The end-to-end flow is as follows.
+
+\begin{enumerate}
+  \item \textbf{Ingestion.} A video is sampled into frames and its audio track is
+        demuxed; a document is parsed page by page.
+  \item \textbf{Dual-channel extraction.} The visual channel goes to the
+        \emph{Extractor} agent (scene-adaptive OCR); the audio channel goes to the
+        \emph{Transcriber} agent (Faster-Whisper). Documents bypass both and go to
+        the \emph{DocParser} agent.
+  \item \textbf{Fusion.} OCR blocks and transcript segments are merged in
+        timestamp order into a single unified lecture timeline, so that what the
+        lecturer \emph{said} sits next to what they \emph{wrote} at the same moment.
+  \item \textbf{Understanding.} The \emph{Summary} agent produces a structured
+        summary; the \emph{RAG-Builder} agent chunks the content, embeds it and
+        builds a vector index; the \emph{Hints} agent flags passages the lecturer
+        marked as exam-relevant.
+  \item \textbf{Generation.} The \emph{Quiz Planner} allocates questions across
+        topics and difficulties; a \emph{Question Generator} drafts one question at
+        a time; a \emph{Validator} accepts or rejects it and chooses a remediation
+        action; a \emph{Refiner} applies it. This loop is the core of the system and
+        is described in Section~\ref{sec:meth-agentic}.
+  \item \textbf{Assessment and adaptation.} Answers are graded by a multi-tier
+        grader; per-topic performance is written to a persistent profile, which the
+        \emph{Adaptive Quiz} agent uses to bias the next quiz toward weak topics.
+\end{enumerate}
+
+\subsection{Scene-adaptive extraction}
+\label{sec:meth-ocr}
+
+A single OCR preprocessing recipe cannot handle a real lecture. White chalk on a
+dark board is a low-contrast, inverted-polarity image; a projected slide in a lit
+room is a bright, high-contrast one; a dark-theme slide deck looks superficially
+like a blackboard but is destroyed by the inversion that a blackboard requires.
+LectureAssist therefore \emph{classifies each sampled frame first} and preprocesses
+it accordingly. Frames are routed by brightness and edge statistics into four
+classes --- \texttt{slide}, \texttt{blackboard}, \texttt{whiteboard} and generic
+\texttt{scene} (on-screen text) --- and each class gets its own contrast
+enhancement, thresholding and, where appropriate, polarity inversion before being
+passed to EasyOCR. Consecutive frames whose extracted text is more than $78\%$
+similar are treated as the same board state and deduplicated, so that a slide left
+on screen for two minutes contributes one block rather than sixty.
+
+\subsection{Retrieval}
+\label{sec:meth-rag}
+
+The fused timeline is chunked, embedded with the Sentence-BERT model
+\texttt{all-MiniLM-L6-v2}~\cite{reimers2019sbert}, $L_2$-normalised, and indexed in
+FAISS~\cite{johnson2019faiss} with an inner-product index, so that inner product
+equals cosine similarity (Eq.~\ref{eq:cosine}). Retrieval returns the top
+$k = 5$ chunks together with their timestamps, which is what allows both the chat
+interface and a generated question to be traced back to the moment in the lecture
+they came from. Crucially, retrieval is exposed to the generator agent as a
+\emph{tool} (\texttt{search\_lecture}) rather than being applied unconditionally:
+the agent decides for itself whether it needs more evidence.
+
+\section{Hardware and/or Software Components}
+\label{sec:meth-components}
+
+The system is written in Python and served as a Flask API, with a single-page
+HTML/JavaScript front end that talks to it over an ngrok tunnel; this split lets the
+heavy models run on a Colab GPU while the interface runs in the student's own
+browser. Table~\ref{tab:tools} lists the components, the alternatives considered,
+and the reason for each choice. The overriding constraint throughout was that
+\emph{nothing may require a paid API key}, since the target users are precisely
+those for whom a per-token bill is prohibitive.
+
+\begin{table}[H]
+\centering
+\caption{Software components, alternatives, and selection rationale.}
+\label{tab:tools}
+\footnotesize
+\begin{tabular}{|p{2.6cm}|p{3.0cm}|p{3.2cm}|p{4.4cm}|}
+\hline
+\textbf{Tool} & \textbf{Function} & \textbf{Other similar tools} & \textbf{Why selected} \\
+\hline
+Gemma~3 (4B / 12B) & Generation, summarisation, grading, judging &
+GPT-4, Claude, Llama~3, Mistral &
+Open weights, runs locally, no API key; two sizes let the cheap model generate and
+the strong model judge. \\
+\hline
+Ollama & Local LLM serving &
+llama.cpp, vLLM, HF Transformers &
+One-line model pull, automatic GPU offload, OpenAI-style local HTTP API; vLLM needs
+more VRAM than a free T4 has. \\
+\hline
+Faster-Whisper (\texttt{small}) & Speech-to-text &
+OpenAI Whisper API, Vosk, wav2vec2 &
+Same accuracy as reference Whisper at a fraction of the memory; runs offline. The
+API version is paid and cloud-bound. \\
+\hline
+EasyOCR (en, bn) & Board and slide text extraction &
+Tesseract, PaddleOCR, Google Vision &
+Deep-learning based, far better on handwriting than Tesseract; native Bengali
+support matters for local lectures; Google Vision is a paid cloud API. \\
+\hline
+Sentence-Transformers \texttt{all-MiniLM-L6-v2} & Embeddings for RAG and for evaluation metrics &
+OpenAI \texttt{text-embedding-3}, BGE, E5 &
+$384$-dim, small and fast enough to co-exist with the LLM on one GPU; strong
+quality-per-byte; local. \\
+\hline
+FAISS & Vector index &
+Chroma, Pinecone, pgvector &
+In-process, no server, no network; exact inner-product search is more than
+sufficient at lecture scale. \\
+\hline
+PyMuPDF & PDF/DOCX/PPTX parsing &
+pdfplumber, PyPDF2 &
+Fastest reliable text-layer extraction; preserves page structure used for
+per-page source attribution. \\
+\hline
+Flask + ngrok & Backend API and public tunnel &
+FastAPI, Gradio, Streamlit &
+Minimal surface for a JSON API; ngrok exposes the Colab GPU to a browser UI running
+on the student's own machine. \\
+\hline
+SymPy & Building the verified answer key for calibration &
+Hand-computed answers, WolframAlpha &
+Answers are \emph{machine-computed}, not hand-typed, so the calibration set cannot
+inherit a human arithmetic error. \\
+\hline
+Google Colab (T4) + Drive & Compute and persistence &
+Local GPU, RunPod, AWS &
+Free tier is the realistic deployment target; Drive persistence lets a run survive
+a runtime disconnect. \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Hardware and/or Software Implementation}
+\label{sec:meth-impl}
+
+\subsection{The agentic question-generation loop}
+\label{sec:meth-agentic}
+
+The agentic Question Generator produces \emph{one question at a time} through a
+multi-stage loop. The design decision that distinguishes it from a
+generate-then-filter pipeline is that the validator does not merely reject a bad
+question --- it \emph{diagnoses} it and chooses how the next attempt should differ.
+The stages are:
+
+\begin{enumerate}
+  \item \textbf{Plan.} The Quiz Planner reads the lecture summary and distributes
+        the requested questions across the topics that are actually present, each
+        with a target difficulty, yielding a list of (topic, difficulty) slots.
+  \item \textbf{Retrieve.} Before drafting a slot, the generator inspects the content
+        it holds and decides for itself whether it has enough material on that topic.
+        If not, it issues its own retrieval query through the
+        \texttt{search\_lecture} tool to pull more context. This is genuine tool use:
+        the decision to retrieve is the model's, not a fixed step in the pipeline.
+  \item \textbf{Generate.} It drafts exactly one question under a grounding rule ---
+        the question must be answerable using only the supplied content --- rotating
+        a question strategy on each attempt (concept-check, scenario,
+        compare-and-justify) so that a retry is not merely a resample of the same
+        prompt.
+  \item \textbf{Validate.} A separate call checks the draft on three axes ---
+        difficulty match, grounding, and instruction compliance --- and returns
+        \texttt{PASS} or \texttt{FAIL} together with a remediation \texttt{action}.
+  \item \textbf{Retry (loop back).} On \texttt{FAIL} the loop repeats within a retry
+        budget, and the validator's chosen action decides the fix:
+        \texttt{regenerate} (rewrite, with the failure reason fed back into the
+        prompt), \texttt{fetch\_context} (retrieve more evidence first, then retry),
+        or \texttt{replan\_topic} (abandon a topic that is not really in the lecture
+        and swap to one that is).
+  \item \textbf{Override.} If the retry budget is exhausted, the best attempt so far
+        is kept and explicitly \emph{labelled} as an override. It is never silently
+        recorded as a clean pass --- otherwise the pipeline's own accept rate would
+        be a fiction.
+\end{enumerate}
+
+\begin{algorithm}[H]
+\caption{Agentic generation of one question}
+\label{alg:agentic}
+\KwIn{topic $t$, target difficulty $d$, content $C$, retry budget $R$}
+\KwOut{question $q$, verdict $v \in \{\textsc{pass}, \textsc{override}\}$}
+$best \leftarrow \emptyset$\;
+\For{$a \leftarrow 1$ \KwTo $R$}{
+  \If{generator judges $C$ insufficient for $t$}{
+     $C \leftarrow C \cup \textsc{SearchLecture}(t)$ \tcp*{agent-initiated retrieval}
+  }
+  $q \leftarrow \textsc{Generate}(t, d, C, \text{strategy}[a])$\;
+  $(v, \textit{action}, \textit{reason}) \leftarrow \textsc{Validate}(q, d, C)$\;
+  \lIf{$v = \textsc{pass}$}{\Return $(q, \textsc{pass})$}
+  $best \leftarrow \textsc{BetterOf}(best, q)$\;
+  \Switch{\textit{action}}{
+    \lCase{\texttt{regenerate}}{feed \textit{reason} back into the next prompt}
+    \lCase{\texttt{fetch\_context}}{$C \leftarrow C \cup \textsc{SearchLecture}(t)$}
+    \lCase{\texttt{replan\_topic}}{$t \leftarrow$ a topic present in $C$}
+  }
+}
+\Return $(best, \textsc{override})$ \tcp*{kept, but labelled --- never faked as a pass}
+\end{algorithm}
+
+\subsection{The four generation pipelines}
+\label{sec:meth-pipelines}
+
+To isolate the contribution of the agentic machinery, the same content is used to
+generate questions through four pipelines that differ \emph{only} in how the model
+is asked:
+
+\begin{itemize}
+  \item \textbf{Agentic} --- the Plan $\rightarrow$ Retrieve $\rightarrow$ Generate
+        $\rightarrow$ Validate $\rightarrow$ Retry loop of
+        Section~\ref{sec:meth-agentic}.
+  \item \textbf{Non-agentic (plain)} --- a single LLM call that emits the questions
+        directly: no planning, no retrieval, no validation, no retry.
+  \item \textbf{Chain-of-thought (CoT)} --- a single call in which the model must
+        reason step by step to \emph{derive} each answer before committing to it,
+        and record that reasoning.
+  \item \textbf{Program-of-thought (PoT)} --- a single call in which the model must
+        derive each answer through an explicit, ordered sequence of computation steps
+        (define, substitute, simplify, evaluate) and mark the option equal to the
+        final computed value.
+\end{itemize}
+
+CoT and PoT are both \emph{single-shot and non-agentic}: one LLM call, no
+planning, retrieval, validation or retry. The only thing that separates them from the
+plain baseline is the wording of the prompt. They emit the same JSON schema as the
+plain generator, plus one extra field (\texttt{reasoning} or \texttt{computation})
+that is retained for inspection but ignored by the downstream judge and Answer
+Generator, so all four pipelines feed into an identical scoring path and are
+directly comparable. The two prompts are reproduced verbatim below, since the
+prompt \emph{is} the method.
+
+\subsubsection*{Chain-of-thought generation prompt}
+{\footnotesize
+\begin{verbatim}
+Generate [N] high-quality MCQ from this
+lecture content.
+Difficulty focus: [DIFF]
+Use CHAIN-OF-THOUGHT: for EACH question,
+think step by step to work out the correct
+answer BEFORE choosing it, and record that
+step-by-step reasoning. The option you mark
+correct MUST be exactly the answer your
+reasoning reaches, and each distractor must
+be wrong for a stateable reason.
+STRICT JSON: {"questions":[{"question",
+  "options":{"A","B","C","D"},
+  "reasoning","correct_answer",
+  "explanation","topic","difficulty",
+  "bloom_level","source_timestamp",
+  "source_type"}]}
+'reasoning' = your step-by-step
+derivation of the correct option.
+
+CONTENT: [up to 8000 chars]
+SUMMARY: [up to 1500 chars]
+\end{verbatim}
+}
+
+\subsubsection*{Program-of-thought generation prompt}
+{\footnotesize
+\begin{verbatim}
+Generate [N] high-quality MCQ from this
+lecture content.
+Difficulty focus: [DIFF]
+Use PROGRAM-OF-THOUGHT: for EACH question,
+derive the answer through an explicit
+ordered sequence of computation/derivation
+steps (like a short program: define,
+substitute, simplify, evaluate), record
+those steps, and only then mark the option
+that EQUALS the final computed result. The
+marked correct option MUST equal the
+endpoint of your computation.
+STRICT JSON: {"questions":[{"question",
+  "options":{"A","B","C","D"},
+  "computation","correct_answer",
+  "explanation","topic","difficulty",
+  "bloom_level","source_timestamp",
+  "source_type"}]}
+'computation' = your ordered derivation
+steps ending at the correct value.
+
+CONTENT: [up to 8000 chars]
+SUMMARY: [up to 1500 chars]
+\end{verbatim}
+}
+
+\subsection{Controlling for confounds}
+\label{sec:meth-controls}
+
+Two implementation details are needed for the comparison to be fair, and both were
+bugs before they were features.
+
+\paragraph{Model pinning.} The generator is pinned to \texttt{gemma3:4b}. The
+original implementation silently escalated to the $12$B model whenever the $4$B
+returned malformed JSON, which would have made the claim ``these questions were
+written by the $4$B'' false for exactly the hardest questions --- the ones where the
+$4$B struggles. Pinning costs some yield and is required for an honest study.
+
+\paragraph{Content coverage.} A generator that only ever reads the first $8{,}000$
+characters of a $92{,}000$-character chapter can only ever ask about the first few
+pages, and will necessarily repeat itself. Each baseline therefore reads through a
+\emph{sliding window} over the document, and --- critically --- all three baselines
+use the same batch size, so they receive the same number of windows and see the same
+share of the chapter. Otherwise a pipeline that happened to use a smaller batch
+would read more of the document, and any difference in its questions would be
+confounded by content coverage rather than caused by the prompt. Likewise, the
+lecture summary that the planner uses to pick topics is produced by \emph{map-reduce}
+summarisation over the whole document rather than by truncating it, so the planner
+can propose topics from any part of the chapter.
+
+\subsection{Answer correctness: two agents that must agree}
+\label{sec:meth-answer}
+
+A question can be well written and still mark the wrong option. Question generation
+and answer generation are therefore treated as \emph{two distinct agents}, and their
+answers are cross-checked. Correctness is measured three complementary ways:
+
+\begin{itemize}
+  \item \textbf{Independent re-solve (Answer Generator agent).} The larger model is
+        given the stem and the options \emph{with the marked answer removed}, and
+        solves the question from scratch. Its choice is compared with the Question
+        Generator's marked answer; the agreement rate is the
+        \emph{independent-match rate}. The solver never sees what it is supposed to
+        agree with.
+  \item \textbf{Judge-verify.} While scoring quality, the judge is additionally
+        asked whether the marked answer is actually correct given the content,
+        yielding the \emph{judge-verified-correct rate}. This is free --- it rides
+        along on a call that was already being made.
+  \item \textbf{Calibration on a known-answer set.} The generated questions have no
+        ground-truth key, so neither of the above is an absolute measure of
+        correctness --- if generator and solver share a misconception, they agree
+        and are both wrong. To bound this, both models independently solve a set of
+        MCQ whose answers \emph{are} known, and their accuracy on it calibrates how
+        much the agreement rate above is worth. The calibration set is stratified
+        into \emph{computational} items, whose answers are computed with
+        SymPy~\cite{sympy} rather than typed by hand, and \emph{conceptual} items
+        drawn from the chapter's definitions and theorems. This is reported
+        separately and is explicitly \emph{not} a score on the generated questions.
+\end{itemize}
+
+The calibration set is used for evaluation only. It is never placed on the
+generation path, since a generator that had seen the answer key would be scored on
+questions it had effectively been given, and the resulting numbers would be
+contaminated.
+
+\subsection{Multi-tier grading and adaptation}
+\label{sec:meth-grading}
+
+Student answers are graded by a cascade chosen to match the question type. MCQ and
+True/False are graded by exact key match. Fill-in-the-Blank is graded by a fallback
+chain of exact match, then containment, then fuzzy string similarity above a $0.80$
+threshold, so that a correct answer is not marked wrong over a typo or a plural.
+Short Answer, where no string comparison is adequate, is graded by the $12$B model
+against a rubric, which also returns concept-level feedback naming what the student
+missed rather than merely marking it incorrect.
+
+Every graded response updates a persistent per-topic profile. The Adaptive Quiz
+agent reads that profile and biases the next quiz's topic and difficulty allocation
+toward the topics where the student's accuracy is lowest, so that practice
+concentrates where it is needed instead of being uniformly distributed.

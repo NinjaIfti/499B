@@ -1,0 +1,123 @@
+\chapter{Introduction}
+\label{ch:intro}
+
+This chapter motivates the project, states its purpose and contributions, and
+outlines the structure of the remainder of the report.
+
+\section{Background and Motivation}
+\label{sec:intro-motivation}
+
+The proliferation of recorded lectures and digital course material has created a
+fundamental imbalance in self-directed learning: students have more content than
+ever, but fewer tools with which to extract, consolidate and assess their
+understanding of it. A single semester course now routinely produces dozens of
+hours of recorded lectures, slide decks and reference chapters. Reviewing that
+material passively --- re-watching a video, re-reading a chapter --- is one of the
+least effective study strategies available. Decades of work in the learning
+sciences instead point to \emph{retrieval practice}: repeatedly testing oneself on
+the material produces substantially more durable learning than re-exposure to it.
+The obstacle is supply. Producing good practice questions is slow, expert work,
+and the questions that do exist are concentrated at the end of textbook chapters,
+are not tied to what a particular instructor actually emphasised in class, and run
+out long before a student has mastered a weak topic.
+
+Existing AI-assisted study tools address this gap only partially. Text-based
+chatbots require the student to manually transcribe or paste lecture content before
+they can help, which puts the burden of the hardest step --- getting the lecture out
+of the video and into text --- back on the student. Cloud-dependent question
+generation services remove that burden, but they are inaccessible in
+bandwidth-limited regions, they charge per token at a scale that makes routine
+practice expensive, and they require sending course material --- which may be
+copyrighted or institutionally restricted --- to a third-party server. Crucially,
+none of these tools close the full loop from raw instructional media, through
+intelligent content understanding, to graded and personalised assessment without
+human intervention at each stage.
+
+There is also a quality problem that is easy to overlook. A large language model
+asked to write a multiple-choice question will almost always produce something
+that \emph{reads} like a good question. Whether the option it marks as correct
+actually \emph{is} correct is a separate matter, and one that fluency-based
+evaluation cannot detect. A study tool that confidently teaches a student the wrong
+answer is worse than no tool at all. Any serious system for automatic question
+generation therefore has to be evaluated on answer correctness, and on whether it
+keeps producing genuinely different questions rather than paraphrasing the same one,
+not merely on whether its output is well written.
+
+\section{Purpose and Goal of the Project}
+\label{sec:intro-purpose}
+
+The goal of this project is to build and rigorously evaluate \textbf{LectureAssist},
+a fully local, API-free system that ingests a lecture video or an academic document
+and autonomously produces validated, difficulty-controlled assessment material,
+together with a retrieval-grounded chat interface over the same content.
+
+The system is built around three ideas working in concert. First, a
+\emph{dual-channel extraction} layer simultaneously processes the visual channel of
+a lecture --- using scene-type-adaptive OCR that distinguishes slides, blackboards,
+whiteboards and on-screen text, each of which needs different image preprocessing
+--- and its audio channel via Faster-Whisper transcription, producing a unified,
+timestamped lecture timeline. Second, a \emph{multi-agent generation pipeline}
+decomposes quiz creation into specialist agents for planning, retrieval,
+generation, validation and targeted refinement, enabling structured quality control
+at the level of the individual question. Third, an \emph{adaptive difficulty engine}
+maintains per-topic performance histories across sessions and steers question
+allocation toward a student's weak areas. The entire system runs on locally hosted
+Gemma~3 models through the Ollama runtime, requires no external API keys, and is
+packaged for single-GPU deployment on Google Colab with Google Drive session
+persistence.
+
+The key contributions of this work are:
+
+\begin{itemize}
+  \item A unified multi-modal lecture understanding pipeline that fuses
+        scene-adaptive OCR with filtered speech transcription into a synchronised
+        content timeline, supporting both video and document inputs.
+
+  \item A multi-agent quiz architecture implementing a Plan $\rightarrow$ Retrieve
+        $\rightarrow$ Generate $\rightarrow$ Validate $\rightarrow$ Refine cycle
+        across five question types (MCQ, True/False, Fill-in-the-Blank, Short Answer
+        and Flashcard), with per-question difficulty, grounding and
+        instruction-compliance validation, and a validator that chooses \emph{how}
+        to remediate a rejected question rather than merely rejecting it.
+
+  \item An adaptive assessment engine that tracks per-topic student performance
+        across sessions and personalises question difficulty and distribution
+        without manual configuration.
+
+  \item A multi-tier grading system combining deterministic matching, fuzzy string
+        similarity and LLM-based rubric evaluation for free-text short answers, with
+        targeted concept-level feedback on incorrect responses.
+
+  \item A fully local, API-free deployment on consumer hardware using the Ollama
+        inference runtime, with RAG-enabled semantic chat and persistent session
+        storage.
+
+  \item A large-scale evaluation harness that compares the agentic pipeline against
+        three direct-prompting baselines --- plain, chain-of-thought and
+        program-of-thought --- and which, unlike prior automatic question generation
+        evaluations, separates \emph{question quality} from \emph{answer
+        correctness} by having a second, larger Answer Generator agent independently
+        re-solve every generated question without seeing the marked option.
+\end{itemize}
+
+\section{Organization of the Report}
+\label{sec:intro-org}
+
+The remainder of this report is organised as follows. Chapter~\ref{ch:background}
+provides the background needed to follow the rest of the report --- large language
+models and the prompting strategies used as baselines, retrieval-augmented
+generation, agentic architectures, speech recognition and OCR --- then reviews the
+research literature and the existing commercial applications closest to this work,
+and identifies the gaps this project addresses. Chapter~\ref{ch:methodology}
+describes the system design: the extraction layer, the agent architecture, the four
+question-generation pipelines with their prompts given verbatim, the two-agent
+answer cross-check, and the software components used to build it.
+Chapter~\ref{ch:results} presents the evaluation: the environment, the metrics and
+exactly how each is computed, the large-scale multiple-choice results, and a
+discussion of what they show --- including a failure mode of the agentic pipeline
+that the evaluation exposed. Chapter~\ref{ch:impacts} discusses the societal,
+ethical and environmental implications and the design constraints they impose.
+Chapter~\ref{ch:planning} presents the project plan and budget.
+Chapter~\ref{ch:cep} maps the work onto the complex engineering problem and
+activity attributes. Chapter~\ref{ch:conclusion} summarises the project, states its
+limitations honestly, and sets out the work that follows from it.

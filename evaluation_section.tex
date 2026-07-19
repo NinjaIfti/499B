@@ -1,75 +1,132 @@
 % ============================================================
-%  Evaluation section for LectureForge.
+%  Evaluation section for LectureAssist.
 %  \input{evaluation_section} into your main document.
 %  Requires (in the preamble):
 %     \usepackage{booktabs}
 %     \usepackage{amsmath}
-%  The prompt is shown with the built-in `verbatim` environment, so no extra
-%  package is needed. (If you prefer a framed/coloured box, load `listings` and
-%  swap the verbatim block for lstlisting.)
+%     \usepackage{multirow}   % (main-results table)
+%  The prompt is shown with the built-in `verbatim' environment, so no extra
+%  package is needed.
+%
+%  HONESTY RULE: measured numbers appear in roman type; cells still pending
+%  from the 600-question run are typeset as --- (em-dash) and MUST NOT be
+%  filled with estimates. The pilot table is measured data from the small
+%  pilot run and is labelled as such.
 % ============================================================
 
 \section{Evaluation}
 \label{sec:evaluation}
 
-We evaluate the question generator by comparing two pipelines on the same lecture
-and scoring their output with an independent ``LLM-as-judge''. The goal is to test
-whether the agentic pipeline produces better quiz questions than a non-agentic
-baseline, and to quantify \emph{how} they differ.
+We evaluate LectureAssist's question generator by comparing four generation
+pipelines on the same source material and scoring every question with
+independent ``LLM-as-judge'' models. The evaluation asks four questions:
+(RQ1)~does the agentic pipeline produce better multiple-choice questions than
+single-shot prompting baselines, including stronger prompting strategies
+(chain-of-thought, program-of-thought)?
+(RQ2)~how does each pipeline behave as the target difficulty increases?
+(RQ3)~is the agent's internal self-validator a reliable quality gate, measured
+against an external judge?
+(RQ4)~how trustworthy is the LLM judge itself, assessed with a cross-family
+judge panel and an answer-solver calibrated on known-answer questions?
 
-\subsection{Protocol and models}
+\subsection{Experimental setup}
+\label{sec:eval-setup}
 
-For a given quiz type (MCQ, true/false, fill-in-the-blank, short answer) we run:
+\paragraph{Source material.} All pipelines generate from the same processed
+lecture material --- a calculus chapter on limits ingested by the production
+pipeline (document text, retrieval index, and generated summary), so every
+pipeline sees identical grounding content.
+
+\paragraph{Pipelines.} We compare:
 \begin{itemize}
-  \item \textbf{Agentic pipeline} --- a per-question loop of
-        \emph{Plan $\rightarrow$ Generate $\rightarrow$ Validate $\rightarrow$ Retry}.
-        Each question is drafted, checked by a self-validator on grounding,
-        difficulty, instruction-compliance and uniqueness, and regenerated (with
-        the failure reason fed back) until it passes or a retry budget is reached.
-        The generator may also issue its own retrieval query
-        (\texttt{search\_lecture}) over the lecture index when it judges the
-        supplied context insufficient.
-  \item \textbf{Non-agentic baseline} --- a single LLM call that writes one
-        question on the same topic, with no validation, no retrieval and no retry.
+  \item \textbf{Agentic} --- the production per-question loop of
+        \emph{Plan $\rightarrow$ Generate $\rightarrow$ Validate $\rightarrow$
+        Retry}. A planner selects topics; each question is drafted, checked by
+        a self-validator on grounding, difficulty, instruction compliance and
+        uniqueness, and regenerated (with the failure reason fed back) until it
+        passes or a retry budget (3 attempts) is exhausted. The validator
+        chooses the remediation (\texttt{regenerate}, \texttt{fetch\_context},
+        or \texttt{replan\_topic}), and the generator may issue its own
+        retrieval query over the lecture index when it judges the supplied
+        context insufficient.
+  \item \textbf{Non-agentic} --- a single LLM call per batch that writes
+        questions directly, with no planning, validation, retrieval or retry.
+  \item \textbf{Chain-of-thought (CoT)} --- as non-agentic, but the prompt
+        instructs the model to reason step-by-step about the content before
+        writing each question.
+  \item \textbf{Program-of-thought (PoT)} --- as non-agentic, but the model is
+        instructed to derive each question via explicit worked
+        computation before committing to the answer.
 \end{itemize}
 
-Both pipelines generate from identical lecture content (transcript / slide OCR /
-document text, packed the same way). The generator and self-validator use a fast
-model (\texttt{gemma3:4b}); the judge uses a larger, separate model
-(\texttt{gemma3:12b}) so that the model scoring the questions never wrote or
-validated them, reducing self-grading bias. All inference is local (Ollama) with
-JSON-constrained decoding.
+\paragraph{Coverage fairness.} The three baseline pipelines read the document
+through an identical sliding window that steps across the whole chapter, one
+step per batch, with a uniform batch size --- so no baseline is advantaged by
+seeing more (or more varied) content, and differences between them reflect the
+prompting strategy alone.
+
+\paragraph{Scale.} For every pipeline $\times$ difficulty cell
+($d\in\{\text{easy},\text{medium},\text{hard}\}$) we generate $N{=}50$ MCQs:
+$4\times3\times50 = 600$ questions in total.
+
+\paragraph{Models and infrastructure.} All four pipelines use the same
+generator model (\texttt{gemma3:4b}), pinned so that no pipeline silently
+escalates to a larger model; the local judge is a larger, separate model
+(\texttt{gemma3:12b}) that never wrote or validated any question. Generation
+runs locally via Ollama on a single 16\,GB T4. Model output is parsed with a
+fail-closed JSON pipeline: malformed replies are repaired where the repair is
+provably safe (e.g.\ typographic quotes used as JSON delimiters) and otherwise
+discarded and regenerated --- a discarded reply can only cost time, never
+inject a malformed question. A structural gate additionally rejects any MCQ
+whose four options are not all non-empty or whose answer key is not one of
+A--D, so every evaluated question is well-formed by construction.
+
+\subsection{Protocol: alignment with EQGBench}
+\label{sec:eval-protocol}
+
+We adopt the evaluation frame of EQGBench
+(arXiv:2508.10005),\footnote{If the surrounding document uses BibTeX, replace
+this parenthetical with a proper \texttt{\textbackslash cite} entry.} which scores
+generated educational MCQs with an LLM judge along five dimensions ---
+correctness, clarity, difficulty match, distractor quality, and holistic
+overall quality --- plus a binary accept decision. Following EQGBench we do
+\emph{not} report $n$-gram overlap metrics (BLEU/ROUGE): our generation is
+open-ended over a chapter rather than conditioned on reference questions, so
+there is no gold question set to overlap with, and $n$-gram similarity to any
+particular phrasing is not evidence of quality. Beyond the EQGBench
+dimensions we retain three measures the benchmark omits --- duplicate rate,
+embedding diversity, and independent answer agreement --- because (as the
+pilot below shows) they carry the discriminating signal that saturated judge
+scores miss.
 
 \subsection{Per-question scoring: the judge}
+\label{sec:eval-judge}
 
-Every generated question (from both pipelines) is sent individually to the judge
-with the grounding content and a strict rubric. The judge returns a 1--5 score on
-four dimensions plus a binary accept/reject decision:
+Every generated question is sent individually to the judge with the grounding
+content and a strict rubric:
 
 \begin{verbatim}
 You are an impartial, strict but fair exam-quality judge. Score this ONE
-[TYPE] question on a 1-5 scale for each dimension.
+MCQ question on a 1-5 scale for each dimension.
 
 Target difficulty: [DIFF] - [difficulty description]
 Content snippet (ground truth):
-[up to 4500 chars of lecture content]
+[lecture content]
 
 Question:
 Q: [question text]
-Options: [options]          (MCQ only)
+Options: [options]
 A: [answer]
 
 Score 1 (worst) to 5 (best) on:
 1. correctness        - factually correct, answerable from the content
 2. clarity            - unambiguous, well-formed wording
 3. difficulty_match   - actual difficulty matches the target
-4. distractor_quality - wrong options plausible but clearly wrong (MCQ only)
+4. distractor_quality - wrong options plausible but clearly wrong
 5. overall            - holistic quality
 
 BE DISCRIMINATING - use the FULL range, do not default to 5:
   5 = flawless; 4 = good; 3 = ordinary; 2 = weak; 1 = poor.
-Reserve 5 for genuinely excellent questions; penalise generic phrasing,
-near-duplicate framing, weak distractors, shallow recall.
 Then decide accept (true) or reject (false).
 
 Return STRICT JSON:
@@ -77,46 +134,50 @@ Return STRICT JSON:
  "distractor_quality":1,"overall":1,"accept":true,"reason":""}
 \end{verbatim}
 
-The judge fails closed (a parse error yields a rejected, zero-scored verdict, so
-failures cannot inflate the result), and \texttt{overall}$<3$ forces
-\texttt{accept}$=$\texttt{false} for consistency. The agentic self-validator uses a
-parallel but lighter prompt that returns
-\texttt{\{difficulty, grounded, instruction, overall\}} as
-\texttt{PASS}/\texttt{FAIL} together with a remediation action
-(\texttt{regenerate}, \texttt{fetch\_context}, or \texttt{replan\_topic}).
+The judge fails closed (a parse error yields a rejected, zero-scored verdict,
+so failures cannot inflate the result), and \texttt{overall}$<3$ forces
+\texttt{accept}$=$\texttt{false} for consistency.
+
+\paragraph{Judge panel and the same-family objection.} The generator and the
+local judge share the Gemma-3 family, so they may share blind spots. We
+therefore re-judge the same questions with a cross-family cloud judge
+(DeepSeek-R1, a different model lineage) and a second same-family-adjacent
+judge (Gemini~2.5 Flash), and report inter-judge agreement. The cross-family
+judge serves as the independence check for answer correctness; agreement
+between judges of different lineages is evidence that scores reflect question
+quality rather than family idiosyncrasy.
+
+\paragraph{Independent answer solving and gold calibration.} Separately from
+rubric scoring, a solver model answers each MCQ \emph{blind} --- it sees the
+question and options but not the generator's marked answer. The
+\emph{independent match} rate is the fraction of questions where the blind
+solver picks the marked answer. Agreement is not proof of correctness (both
+models can be wrong the same way), so we bound the solver's reliability by
+running it on a calibration set of questions with \emph{known} answers and
+reporting its gold accuracy; the independent-match figures are interpreted
+relative to that bound.
 
 \subsection{Metrics}
+\label{sec:eval-metrics}
 
-\paragraph{Evaluation procedure.} For each quiz type and target difficulty
-$d\in\{\text{easy},\text{medium},\text{hard}\}$ we evaluate as follows. Let
-$Q^{A}=\{q^{A}_1,\dots,q^{A}_N\}$ be the questions produced by the agentic pipeline
-and, for each agentic question's topic $t_i$, let $q^{B}_i$ be the question the
-non-agentic baseline produces on that same topic, giving $Q^{B}=\{q^{B}_1,\dots,q^{B}_N\}$.
-Both sets are conditioned on identical lecture content $C$. Every question is then
-scored \emph{independently} by the judge model $J$, which returns
-$J(q)=(\text{correctness},\text{clarity},\text{difficulty\_match},\text{overall},\text{accept})$
-with each numeric field in $[1,5]$ and $\text{accept}\in\{0,1\}$. We aggregate the
-per-question judge outputs into set-level means, combine them with the
-deterministic and embedding metrics below, and then rank the two pipelines
-(Sec.~``Ranking''). Each configuration is repeated $R$ times and all reported
-figures are means over the $N\!\times\!R$ questions.
+For each pipeline $X$ and difficulty $d$, let $Q=\{q_1,\dots,q_N\}$ be its
+questions, judged independently by judge $J$ with
+$J(q)=(\text{correctness},\text{clarity},\text{difficulty\_match},
+\text{distractor\_quality},\text{overall},\text{accept})$, numeric fields in
+$[1,5]$, $\text{accept}\in\{0,1\}$. We report three metric families:
 
-Each question set is thus measured along three metric families: judge-based,
-deterministic, and embedding-based.
+\paragraph{Judge metrics.} Mean scores per dimension and the accept rate
+$\mathrm{Acc}=\frac{1}{N}\sum_i \text{accept}(q_i)$ (the fraction the judge
+would put on a real exam).
 
-\paragraph{Judge metrics.} Mean overall/correctness/clarity/difficulty-match
-(1--5) and the \emph{accept rate} $\mathrm{Acc}=\frac{1}{N}\sum_i \text{accept}(q_i)$
-(fraction the judge would put on a real exam).
-
-\paragraph{Deterministic metrics.} A \emph{duplicate rate} flags near-identical
-questions using a string-similarity ratio with threshold $0.85$; we also report
-structural validity (e.g.\ the MCQ answer key is a real option, true/false balance,
-presence of the blank marker).
+\paragraph{Deterministic metrics.} The \emph{duplicate rate} flags
+near-identical questions via string similarity with threshold $0.85$ (lower is
+better --- the only such metric in our tables); structural validity is
+enforced upstream by the generation gate, so it is $100\%$ by construction and
+not tabulated.
 
 \paragraph{Embedding metrics.} Using the sentence-embedding model that powers
-retrieval, for a question $q_i$ and lecture chunks $\{c_j\}$ we define
-\emph{grounding} as the mean best-match similarity and \emph{diversity} as one
-minus the mean nearest-neighbour similarity between questions:
+retrieval, with lecture chunks $\{c_j\}$:
 \begin{equation}
   \mathrm{Grounding} = \frac{1}{N}\sum_{i=1}^{N}\max_{j}\cos\!\big(\mathbf{e}(q_i),\mathbf{e}(c_j)\big),
 \end{equation}
@@ -124,51 +185,41 @@ minus the mean nearest-neighbour similarity between questions:
   \mathrm{Diversity} = 1 - \frac{1}{N}\sum_{i=1}^{N}\max_{k\neq i}\cos\!\big(\mathbf{e}(q_i),\mathbf{e}(q_k)\big).
 \end{equation}
 
-\paragraph{Validator--judge agreement (agentic only).} We treat the independent
-judge's \texttt{accept} as ground truth and the agentic self-validator's
-\texttt{PASS} as the prediction, and report precision, recall and~$F_1$:
+\paragraph{Validator--judge agreement (agentic only).} Treating the external
+judge's \texttt{accept} as ground truth and the self-validator's \texttt{PASS}
+as the prediction:
 \begin{equation}
   P = \frac{TP}{TP+FP}, \quad
   R = \frac{TP}{TP+FN}, \quad
   F_1 = \frac{2PR}{P+R}.
 \end{equation}
-This measures whether the agent's own quality gate matches an external judge.
+This measures whether the agent's own quality gate matches an external judge
+(RQ3).
 
 \subsection{Ranking}
+\label{sec:eval-ranking}
 
-We rank the two pipelines at two levels: per dimension (a \emph{segment verdict})
-and overall.
-
-\paragraph{Per-segment ranking.} The judge's per-question scores are averaged into
-three segments --- \emph{overall quality}, \emph{in-context/grounded}, and
-\emph{difficulty match}. For a pipeline $X$ and segment $s$, the segment score is
-\begin{equation}
-  S_s(X) = \frac{1}{N}\sum_{i=1}^{N} \mathrm{judge}_s\!\big(q^{X}_i\big),
-\end{equation}
-and the winner of segment $s$ is the pipeline with the larger $S_s$. Because the
-judge scores saturate (good questions cluster at the top of the $1$--$5$ scale),
-exact ties are common; we therefore break a tie deterministically with a
-content-quality margin that rewards grounding and penalises repetition,
-\begin{equation}
-  T(X) = \mathrm{Grounding}(X) - \mathrm{DuplicateRate}(X),
-\end{equation}
-awarding the tied segment to the pipeline with the larger $T$.
-
-\paragraph{Overall ranking (duplicate-penalised).} A question that merely repeats
-an earlier one carries little exam value, yet the judge --- scoring each question
-in isolation --- cannot see this. To rank at the set level we therefore use an
-\emph{effective accept rate} that discounts the judge's accept rate by the
-fraction of redundant questions,
+A question that merely repeats an earlier one carries little exam value, yet a
+judge scoring questions in isolation cannot see repetition. The primary
+set-level ranking metric therefore discounts the accept rate by redundancy:
 \begin{equation}
   \mathrm{Acc}_{\mathrm{eff}}(X) = \mathrm{Acc}(X)\,\big(1-\mathrm{DuplicateRate}(X)\big),
+  \label{eq:acceff}
 \end{equation}
-so a set of distinct, accepted questions scores highest while a repetitive set is
-down-weighted in proportion to its redundancy. The pipeline with the larger
-$\mathrm{Acc}_{\mathrm{eff}}$ is ranked higher overall; we report
-$\mathrm{Acc}$, $\mathrm{DuplicateRate}$ and $\mathrm{Acc}_{\mathrm{eff}}$ together
-so the effect of repetition on the ranking is transparent.
+so a set of distinct, accepted questions scores highest. We report
+$\mathrm{Acc}$, $\mathrm{DuplicateRate}$ and $\mathrm{Acc}_{\mathrm{eff}}$
+together so the effect of repetition on the ranking is transparent. For
+per-dimension comparisons, saturated-judge ties are broken deterministically by
+the content-quality margin
+$T(X)=\mathrm{Grounding}(X)-\mathrm{DuplicateRate}(X)$.
 
-\subsection{Findings}
+\subsection{Pilot study (measured)}
+\label{sec:eval-pilot}
+
+Before the main run we conducted a small pilot (one lecture, agentic vs.\
+plain non-agentic only, $N{=}10$ medium / $N{=}5$ hard). Table~\ref{tab:pilot}
+reports the measured pilot results; its role here is to motivate the design of
+the main evaluation, not to support the paper's claims.
 
 \begin{table}[t]
 \centering
@@ -188,38 +239,70 @@ Duplicate rate           & 30\% & 40\% & \textbf{0\%} & \textbf{80\%} \\
 Validator--judge $F_1$   & 0.571 & --- & 0.0\textsuperscript{*} & --- \\
 \bottomrule
 \end{tabular}
-\caption{Agentic vs.\ non-agentic on one lecture. \textsuperscript{*}$F_1$ is
-unreliable at small $N$.}
-\label{tab:eval}
+\caption{Pilot run (measured), agentic vs.\ non-agentic on one lecture.
+\textsuperscript{*}$F_1$ is unreliable at this $N$.}
+\label{tab:pilot}
 \end{table}
 
-Three observations emerge (Table~\ref{tab:eval}):
-
+The pilot produced three lessons that shaped the main evaluation:
 \begin{enumerate}
-  \item \textbf{The judge score alone is insufficient.} At medium difficulty the
-        judge assigned $5/5$ to nearly every question on both sides, so all
-        segments tied; the score saturates and cannot separate the pipelines. This
-        motivated (a) recalibrating the judge to use the full range and (b) a
-        deterministic tiebreaker.
-  \item \textbf{Diversity is the true discriminator.} The duplicate rate
-        consistently separated the pipelines: the agentic pipeline was far less
-        repetitive (0--30\%) than the baseline (40--80\%). At hard difficulty the
-        baseline scored $5/5$ only by asking essentially the \emph{same} question
-        repeatedly ($80\%$ duplicates), a weakness invisible to a per-question
-        judge but captured by the metric.
-  \item \textbf{Agentic generation trades safety for ambition.} At hard
-        difficulty the agentic pipeline attempted genuinely harder questions but
-        occasionally introduced content absent from the lecture (e.g.\ net present
-        value), which the judge correctly rejected, lowering its grounding and
-        accept rate. Constraining the generator to remain answerable from the
-        lecture material addresses this. The validator--judge $F_1$ ($P{=}1.0$,
-        $R{=}0.4$ at $N{=}10$) further shows the agent's self-validator is
-        conservative --- it never approves a question the judge would reject, but
-        rejects many the judge would accept.
+  \item \textbf{Judge scores saturate.} At medium difficulty the judge
+        assigned $5/5$ to nearly everything on both sides, separating nothing.
+        This motivated the discriminating rubric, the duplicate-penalised
+        ranking of Eq.~\eqref{eq:acceff}, and the deterministic tiebreaker.
+  \item \textbf{Redundancy is the discriminator.} The baseline reached $5/5$
+        at hard difficulty partly by asking near-identical questions
+        ($80\%$ duplicates) --- invisible to a per-question judge, captured by
+        the duplicate metric. Hence duplicate rate and diversity are retained
+        alongside the EQGBench dimensions.
+  \item \textbf{Small $N$ is inadequate.} $F_1$ and per-segment verdicts were
+        unstable at $N\le 10$; the main run uses $N{=}50$ per cell and adds
+        the CoT and PoT baselines.
 \end{enumerate}
 
-\paragraph{Limitations.} The judge is an LLM rather than a human rater, so absolute
-scores are a relative signal; generator and judge share the Gemma-3 family
-(mitigated, not eliminated, by using a larger independent judge); and results are
-from a single lecture, so $F_1$ and per-segment verdicts require $N\gtrsim10$ and
-multiple lectures to be statistically meaningful.
+\subsection{Main results}
+\label{sec:eval-results}
+
+Table~\ref{tab:main} will report the main run
+($4$ pipelines $\times$ $3$ difficulties $\times$ $N{=}50$). Cells marked
+``---'' are pending: generation of the $600$-question corpus is complete and
+judging is in progress; no pending cell is estimated.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{llccccc}
+\toprule
+Difficulty & Pipeline & Overall & $\mathrm{Acc}$ & Dup.\ rate & $\mathrm{Acc}_{\mathrm{eff}}$ & Grounding \\
+\midrule
+\multirow{4}{*}{Easy}
+ & Agentic     & --- & --- & --- & --- & --- \\
+ & Non-agentic & --- & --- & --- & --- & --- \\
+ & CoT         & --- & --- & --- & --- & --- \\
+ & PoT         & --- & --- & --- & --- & --- \\
+\midrule
+\multirow{4}{*}{Medium}
+ & Agentic     & --- & --- & --- & --- & --- \\
+ & Non-agentic & --- & --- & --- & --- & --- \\
+ & CoT         & --- & --- & --- & --- & --- \\
+ & PoT         & --- & --- & --- & --- & --- \\
+\midrule
+\multirow{4}{*}{Hard}
+ & Agentic     & --- & --- & --- & --- & --- \\
+ & Non-agentic & --- & --- & --- & --- & --- \\
+ & CoT         & --- & --- & --- & --- & --- \\
+ & PoT         & --- & --- & --- & --- & --- \\
+\bottomrule
+\end{tabular}
+\caption{Main evaluation ($N{=}50$ per cell). All cells pending measurement
+from the $600$-question run; no value in this table is estimated.}
+\label{tab:main}
+\end{table}
+
+\paragraph{Limitations.} The judges are LLMs rather than human raters, so
+absolute scores are a relative signal; the local judge shares the Gemma-3
+family with the generator (mitigated by the cross-family DeepSeek judge and
+inter-judge agreement, not eliminated); independent-match measures agreement,
+not truth, and is bounded by the solver's measured gold accuracy; and all
+results come from a single chapter of one subject, so cross-domain
+generalisation is untested.

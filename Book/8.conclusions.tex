@@ -1,0 +1,131 @@
+\chapter{Conclusion}
+\label{ch:conclusion}
+
+This chapter summarises what was built and what was learned, states the limitations
+of the work honestly, and sets out the improvements that follow most directly from
+them.
+
+\section{Summary}
+\label{sec:concl-summary}
+
+LectureAssist is an end-to-end, fully local agentic system that turns a raw lecture
+video or academic document into validated, difficulty-controlled study and assessment
+material. It fuses two extraction channels --- scene-adaptive OCR that classifies each
+frame before preprocessing it, so that slides, blackboards, whiteboards and on-screen
+text are each handled correctly, and Faster-Whisper speech transcription --- into a
+single timestamped lecture timeline. That timeline is summarised, chunked, embedded
+and indexed, and then consumed by a multi-agent pipeline that plans questions across
+topics, retrieves its own evidence when it judges its context insufficient, generates
+one question at a time, validates each against difficulty, grounding and instruction
+compliance, and, on failure, chooses \emph{how} to remediate before retrying. Around
+this sit a retrieval-grounded chat interface, a multi-tier grader that falls back from
+exact matching through fuzzy similarity to LLM rubric evaluation, and an adaptive
+engine that steers subsequent quizzes toward the topics a student is weakest on.
+Everything runs on open-weight Gemma~3 models served locally through Ollama on a
+single free-tier GPU, with no paid API anywhere in the system.
+
+The project's second contribution is an evaluation that takes seriously a question the
+field usually does not ask: not \emph{does the generator write good questions}, but
+\emph{does it mark the right answer}. Question generation and answer generation are
+treated as two distinct agents, and their answers are cross-checked by having a
+larger model re-solve every question without seeing the marked option. Measured this
+way against a plain single-shot baseline on a college calculus chapter, the agentic
+pipeline wins on judged quality at every difficulty and wins decisively on answer
+correctness where it matters most --- $99\%$ versus $81\%$ judge-verified on hard
+questions --- at roughly seven times the wall-clock cost.
+
+The most instructive result, however, is a negative one. Judge scores turned out to be
+compressed near the ceiling and to discriminate poorly between pipelines, while the
+duplicate rate discriminated sharply; and at hard difficulty the agentic pipeline
+collapses onto a narrow slice of the chapter and repeats itself so badly that a
+repetition-aware metric ranks the plain baseline \emph{above} it. A quality-only
+evaluation --- the kind most commonly reported --- would have shown the agentic
+pipeline winning cleanly across the board and would have concealed this entirely.
+
+\section{Limitations}
+\label{sec:concl-limits}
+
+\paragraph{The judge and the Answer Generator are LLMs, not humans.} All quality
+scores are produced by \texttt{gemma3:12b} rather than by human raters. LLM judges are
+known to reward fluency and verbosity, and the judge here shares a model family with
+the generator, so it plausibly shares its blind spots. Absolute scores should be read
+as a relative signal between pipelines, not as an objective measure of question
+quality.
+
+\paragraph{The Answer Generator is weak, which bounds every answer-correctness
+number.} On the known-answer calibration set the solver scores only $55\%$, and the
+generator model $70\%$. Generator--solver agreement of $88$--$97\%$ therefore cannot be
+interpreted as that fraction of questions being verifiably correct; two models from
+the same family agree partly because they behave alike. This is why the calibration is
+reported --- but it means the answer-correctness results establish a ranking between
+pipelines, not a trustworthy absolute correctness rate. A stronger or
+non-Gemma solver would tighten this considerably.
+
+\paragraph{The CoT and PoT comparison is not yet complete.} The four-pipeline run is
+implemented and the prompts are fixed, but the completed measurements reported in
+Chapter~\ref{ch:results} cover the agentic versus plain non-agentic comparison; the
+CoT and PoT rows are shown as pending rather than filled with estimates.
+
+\paragraph{Single domain, single document.} All results come from one chapter of one
+subject (limits, from OpenStax \emph{Calculus, Volume~1}). Mathematics is unusually
+favourable to program-of-thought prompting and unusually hostile to OCR, and nothing
+here establishes that the findings transfer to a humanities lecture or to a
+lab-based science course.
+
+\paragraph{The extraction layer bounds everything above it.} OCR on handwritten
+board work is imperfect, transcription degrades with accent and background noise, and
+mathematics rendered as an image in a PDF is not extracted at all. Every defect in
+extraction propagates silently upward: a missing board block looks exactly like a
+board that was never written on, and the question generator has no way to know that
+material is absent.
+
+\paragraph{The agentic pipeline's diversity failure at hard difficulty is unresolved.}
+It is measured, diagnosed --- the planner and retriever converge on the narrow region
+of the chapter that supports difficult questions, and each retry draws from that same
+region again --- and reported, but not yet fixed.
+
+\paragraph{Deployment is not production-grade.} The system runs on a free Colab
+runtime behind an ngrok tunnel, with a single-user interface, no authentication, and
+session state on Google Drive. This is adequate to demonstrate and evaluate the
+system; it is not a deployable service.
+
+\section{Future Improvement}
+\label{sec:concl-future}
+
+\paragraph{Fix the diversity collapse first.} It is the clearest defect the evaluation
+exposed and the one that currently negates the agentic pipeline's advantage on hard
+questions. Two mechanisms follow directly from the diagnosis: maintain a coverage map
+of which regions of the document have already been used and penalise the planner for
+returning to them, and make the generator aware of the questions already produced in
+the current run so that a retry is required to be \emph{different}, not merely
+\emph{valid}. A duplicate check could also be moved inside the validation loop, so
+that a repetitive question is rejected at generation time rather than discovered at
+evaluation time.
+
+\paragraph{Strengthen answer verification.} The weakest link in the evaluation is the
+solver. Verifying computational answers symbolically with SymPy --- as is already done
+when constructing the calibration set --- would replace an LLM's opinion with a
+machine-checked fact for exactly the question type where the generator is most likely
+to be wrong. Using a solver from a different model family, or an ensemble, would
+break the shared-blind-spot problem that currently inflates the agreement rate.
+
+\paragraph{Human evaluation.} A modest human study --- a few instructors rating a
+sample of generated questions, and independently answering them --- would anchor the
+LLM judge to a ground truth and quantify how far its scores can be trusted. This is
+the single highest-value addition to the evaluation.
+
+\paragraph{Broaden the domain.} Repeating the comparison on a non-mathematical subject
+would test whether the agentic advantage in answer correctness is general or is an
+artifact of a domain in which answers are computed and therefore easy to get wrong.
+
+\paragraph{Complete and extend the pipeline comparison.} Finishing the CoT and PoT
+runs will answer whether a better prompt can recover most of the agentic pipeline's
+benefit at a fraction of its cost --- a question with direct practical consequences,
+given the seven-fold cost difference. A hybrid worth testing is a CoT or PoT generator
+placed \emph{inside} the agentic validate-and-retry loop, combining derived answers
+with external validation.
+
+\paragraph{Productionisation.} Multi-user support with authentication, a persistent
+server rather than an ephemeral notebook runtime, and quantised models for lower-VRAM
+consumer GPUs would move the system from a demonstrated prototype toward something a
+class of students could actually use.

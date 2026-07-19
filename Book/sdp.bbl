@@ -1,0 +1,106 @@
+\begin{thebibliography}{10}
+
+\bibitem{gemma3}
+{Gemma Team}.
+\newblock Gemma 3 technical report.
+\newblock {\em arXiv preprint arXiv:2503.19786}, 2025.
+
+\bibitem{ollama}
+{Ollama}.
+\newblock Ollama: Get up and running with large language models locally.
+\newblock \url{https://ollama.com}, 2024.
+
+\bibitem{wei2022chain}
+Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Brian Ichter, Fei Xia,
+  Ed~H. Chi, Quoc~V. Le, and Denny Zhou.
+\newblock Chain-of-thought prompting elicits reasoning in large language
+  models.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)},
+  volume~35, pages 24824--24837, 2022.
+
+\bibitem{chen2023program}
+Wenhu Chen, Xueguang Ma, Xinyi Wang, and William~W. Cohen.
+\newblock Program of thoughts prompting: Disentangling computation from
+  reasoning for numerical reasoning tasks.
+\newblock {\em Transactions on Machine Learning Research (TMLR)}, 2023.
+
+\bibitem{lewis2020rag}
+Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir
+  Karpukhin, Naman Goyal, Heinrich K{\"u}ttler, Mike Lewis, Wen-tau Yih, Tim
+  Rockt{\"a}schel, Sebastian Riedel, and Douwe Kiela.
+\newblock Retrieval-augmented generation for knowledge-intensive {NLP} tasks.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)},
+  volume~33, pages 9459--9474, 2020.
+
+\bibitem{reimers2019sbert}
+Nils Reimers and Iryna Gurevych.
+\newblock Sentence-{BERT}: Sentence embeddings using siamese {BERT}-networks.
+\newblock In {\em Proceedings of the 2019 Conference on Empirical Methods in
+  Natural Language Processing (EMNLP)}, pages 3982--3992, 2019.
+
+\bibitem{johnson2019faiss}
+Jeff Johnson, Matthijs Douze, and Herv{\'e} J{\'e}gou.
+\newblock Billion-scale similarity search with {GPU}s.
+\newblock {\em IEEE Transactions on Big Data}, 7(3):535--547, 2019.
+
+\bibitem{yao2023react}
+Shunyu Yao, Jeffrey Zhao, Dian Yu, Nan Du, Izhak Shafran, Karthik Narasimhan,
+  and Yuan Cao.
+\newblock {ReAct}: Synergizing reasoning and acting in language models.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2023.
+
+\bibitem{shinn2023reflexion}
+Noah Shinn, Federico Cassano, Edward Berman, Ashwin Gopinath, Karthik
+  Narasimhan, and Shunyu Yao.
+\newblock Reflexion: Language agents with verbal reinforcement learning.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)},
+  2023.
+
+\bibitem{radford2023whisper}
+Alec Radford, Jong~Wook Kim, Tao Xu, Greg Brockman, Christine McLeavey, and
+  Ilya Sutskever.
+\newblock Robust speech recognition via large-scale weak supervision.
+\newblock In {\em Proceedings of the 40th International Conference on Machine
+  Learning (ICML)}, pages 28492--28518, 2023.
+
+\bibitem{zheng2023judging}
+Lianmin Zheng, Wei-Lin Chiang, Ying Sheng, Siyuan Zhuang, Zhanghao Wu, Yonghao
+  Zhuang, Zi~Lin, Zhuohan Li, Dacheng Li, Eric~P. Xing, Hao Zhang, Joseph~E.
+  Gonzalez, and Ion Stoica.
+\newblock Judging {LLM}-as-a-judge with {MT-Bench} and {Chatbot Arena}.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS),
+  Datasets and Benchmarks Track}, 2023.
+
+\bibitem{kurdi2020systematic}
+Ghader Kurdi, Jared Leo, Bijan Parsia, Uli Sattler, and Salam Al-Emari.
+\newblock A systematic review of automatic question generation for educational
+  purposes.
+\newblock {\em International Journal of Artificial Intelligence in Education},
+  30(1):121--204, 2020.
+
+\bibitem{heilman2010good}
+Michael Heilman and Noah~A. Smith.
+\newblock Good question! statistical ranking for question generation.
+\newblock In {\em Human Language Technologies: The 2010 Annual Conference of
+  the North American Chapter of the ACL (NAACL-HLT)}, pages 609--617, 2010.
+
+\bibitem{du2017learning}
+Xinya Du, Junru Shao, and Claire Cardie.
+\newblock Learning to ask: Neural question generation for reading
+  comprehension.
+\newblock In {\em Proceedings of the 55th Annual Meeting of the Association for
+  Computational Linguistics (ACL)}, pages 1342--1352, 2017.
+
+\bibitem{sympy}
+Aaron Meurer et~al.
+\newblock {SymPy}: Symbolic computing in {Python}.
+\newblock PeerJ Computer Science 3:e103, 2017.
+
+\bibitem{openstax_calculus}
+Gilbert Strang and Edwin Herman.
+\newblock {\em Calculus Volume 1}.
+\newblock OpenStax, Rice University, 2016.
+\newblock \url{https://openstax.org/details/books/calculus-volume-1}.
+
+\end{thebibliography}

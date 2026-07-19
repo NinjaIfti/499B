@@ -1,0 +1,39 @@
+%Abstract
+\setlength{\headheight}{14pt}
+\begin{center}
+	{\huge \bf Abstract}
+	\line(1,0){430}
+\end{center}
+
+Recorded lectures and digital course material are now abundant, but the tools
+that help students convert that material into practice and self-assessment are
+not. Existing study aids either require the student to paste in clean text by
+hand, or depend on paid cloud APIs that are impractical in bandwidth-limited and
+cost-sensitive settings. This report presents \textbf{LectureAssist}, an
+end-to-end agentic AI system that turns a raw lecture video or an academic
+document into structured study and assessment material without any proprietary
+cloud service. The system couples a dual-channel extraction layer --- scene-adaptive
+optical character recognition that distinguishes slides, blackboards, whiteboards
+and on-screen text, combined with Whisper-based speech transcription --- to a
+multi-agent generation pipeline that plans, retrieves, generates, validates and
+refines five types of quiz questions, all served by locally hosted Gemma~3 models
+through the Ollama runtime on a single consumer-grade GPU. A retrieval-augmented
+chat interface and an adaptive difficulty engine that tracks per-topic performance
+complete the loop from raw media to personalised assessment. The system was
+evaluated on a large-scale study in which multiple-choice questions were generated
+from a college-level calculus chapter across three difficulty levels, and scored by
+an independent, larger judge model on question quality, grounding, diversity and
+--- separately --- \emph{answer correctness}, using a second Answer Generator agent
+that re-solves each question without seeing the marked option. On the completed
+agentic versus non-agentic comparison the agentic pipeline produced better-judged
+questions at every difficulty (mean overall $4.96/4.94/4.88$ vs.\ $4.85/4.81/4.79$
+on a $1$--$5$ scale) and was markedly more answer-correct on hard questions
+($99\%$ vs.\ $81\%$ judge-verified), at the cost of roughly seven times the
+wall-clock generation time. The results also expose a failure mode that a
+quality-only evaluation would have hidden: on hard questions the agentic pipeline
+becomes repetitive, and once repetition is discounted the baseline wins on
+throughput. The work demonstrates that high-quality, personalised educational AI
+is achievable on accessible hardware, and that question generators must be judged
+on answer correctness and diversity, not on fluency alone.
+\clearpage
+\setlength{\headheight}{12pt}
