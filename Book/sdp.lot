@@ -1,0 +1,15 @@
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Software components, alternatives, and selection rationale.}}{11}{table.3.1}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces Question quality by difficulty and pipeline (judge scores $1$--$5$; accept rate in \%). CoT and PoT rows are pending the full four-pipeline run and are not yet measured.}}{19}{table.4.1}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Diversity, grounding and answer correctness by difficulty and pipeline. CoT and PoT rows are pending the full four-pipeline run and are not yet measured.}}{19}{table.4.2}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Answer-Generator calibration: accuracy on the known-answer set. This is a calibration of the \emph {solver}, not a score on the generated questions.}}{20}{table.4.3}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces Validator--judge agreement for the agentic pipeline: does the pipeline's own self-validator detect what an independent judge detects?}}{20}{table.4.4}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {7.1}{\ignorespaces Complex Engineering Problem attributes addressed by LectureAssist.}}{28}{table.7.1}%
+\contentsline {table}{\numberline {7.2}{\ignorespaces Complex Engineering Activity attributes addressed by LectureAssist.}}{29}{table.7.2}%
+\addvspace {10\p@ }

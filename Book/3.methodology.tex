@@ -191,29 +191,6 @@ The stages are:
         be a fiction.
 \end{enumerate}
 
-\begin{algorithm}[H]
-\caption{Agentic generation of one question}
-\label{alg:agentic}
-\KwIn{topic $t$, target difficulty $d$, content $C$, retry budget $R$}
-\KwOut{question $q$, verdict $v \in \{\textsc{pass}, \textsc{override}\}$}
-$best \leftarrow \emptyset$\;
-\For{$a \leftarrow 1$ \KwTo $R$}{
-  \If{generator judges $C$ insufficient for $t$}{
-     $C \leftarrow C \cup \textsc{SearchLecture}(t)$ \tcp*{agent-initiated retrieval}
-  }
-  $q \leftarrow \textsc{Generate}(t, d, C, \text{strategy}[a])$\;
-  $(v, \textit{action}, \textit{reason}) \leftarrow \textsc{Validate}(q, d, C)$\;
-  \lIf{$v = \textsc{pass}$}{\Return $(q, \textsc{pass})$}
-  $best \leftarrow \textsc{BetterOf}(best, q)$\;
-  \Switch{\textit{action}}{
-    \lCase{\texttt{regenerate}}{feed \textit{reason} back into the next prompt}
-    \lCase{\texttt{fetch\_context}}{$C \leftarrow C \cup \textsc{SearchLecture}(t)$}
-    \lCase{\texttt{replan\_topic}}{$t \leftarrow$ a topic present in $C$}
-  }
-}
-\Return $(best, \textsc{override})$ \tcp*{kept, but labelled --- never faked as a pass}
-\end{algorithm}
-
 \subsection{The four generation pipelines}
 \label{sec:meth-pipelines}
 
@@ -301,29 +278,29 @@ SUMMARY: [up to 1500 chars]
 \end{verbatim}
 }
 
-\subsection{Controlling for confounds}
-\label{sec:meth-controls}
+% \subsection{Controlling for confounds}
+% \label{sec:meth-controls}
 
-Two implementation details are needed for the comparison to be fair, and both were
-bugs before they were features.
+% Two implementation details are needed for the comparison to be fair, and both were
+% bugs before they were features.
 
-\paragraph{Model pinning.} The generator is pinned to \texttt{gemma3:4b}. The
-original implementation silently escalated to the $12$B model whenever the $4$B
-returned malformed JSON, which would have made the claim ``these questions were
-written by the $4$B'' false for exactly the hardest questions --- the ones where the
-$4$B struggles. Pinning costs some yield and is required for an honest study.
+% \paragraph{Model pinning.} The generator is pinned to \texttt{gemma3:4b}. The
+% original implementation silently escalated to the $12$B model whenever the $4$B
+% returned malformed JSON, which would have made the claim ``these questions were
+% written by the $4$B'' false for exactly the hardest questions --- the ones where the
+% $4$B struggles. Pinning costs some yield and is required for an honest study.
 
-\paragraph{Content coverage.} A generator that only ever reads the first $8{,}000$
-characters of a $92{,}000$-character chapter can only ever ask about the first few
-pages, and will necessarily repeat itself. Each baseline therefore reads through a
-\emph{sliding window} over the document, and --- critically --- all three baselines
-use the same batch size, so they receive the same number of windows and see the same
-share of the chapter. Otherwise a pipeline that happened to use a smaller batch
-would read more of the document, and any difference in its questions would be
-confounded by content coverage rather than caused by the prompt. Likewise, the
-lecture summary that the planner uses to pick topics is produced by \emph{map-reduce}
-summarisation over the whole document rather than by truncating it, so the planner
-can propose topics from any part of the chapter.
+% \paragraph{Content coverage.} A generator that only ever reads the first $8{,}000$
+% characters of a $92{,}000$-character chapter can only ever ask about the first few
+% pages, and will necessarily repeat itself. Each baseline therefore reads through a
+% \emph{sliding window} over the document, and --- critically --- all three baselines
+% use the same batch size, so they receive the same number of windows and see the same
+% share of the chapter. Otherwise a pipeline that happened to use a smaller batch
+% would read more of the document, and any difference in its questions would be
+% confounded by content coverage rather than caused by the prompt. Likewise, the
+% lecture summary that the planner uses to pick topics is produced by \emph{map-reduce}
+% summarisation over the whole document rather than by truncating it, so the planner
+% can propose topics from any part of the chapter.
 
 \subsection{Answer correctness: two agents that must agree}
 \label{sec:meth-answer}

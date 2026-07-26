@@ -1,118 +1,118 @@
-\chapter{Impacts/Design Constraints of the Project}
-\label{ch:impacts}
+% \chapter{Impacts/Design Constraints of the Project}
+% \label{ch:impacts}
 
-This chapter examines the non-technical constraints that shaped LectureAssist ---
-economic, social, legal, ethical and environmental --- and the impact the system is
-likely to have once deployed. Several of the most consequential engineering
-decisions in this project, notably the refusal to depend on any paid cloud API, were
-driven by these constraints rather than by technical considerations.
+% This chapter examines the non-technical constraints that shaped LectureAssist ---
+% economic, social, legal, ethical and environmental --- and the impact the system is
+% likely to have once deployed. Several of the most consequential engineering
+% decisions in this project, notably the refusal to depend on any paid cloud API, were
+% driven by these constraints rather than by technical considerations.
 
-\section{Impact of this Project on Societal, Health, Safety, Legal and Cultural Issues}
-\label{sec:impacts-society}
+% \section{Impact of this Project on Societal, Health, Safety, Legal and Cultural Issues}
+% \label{sec:impacts-society}
 
-\paragraph{Educational and societal impact.} The core societal argument for
-LectureAssist is one of access. Retrieval practice --- repeatedly testing oneself ---
-is among the most effective study strategies known, but a supply of good practice
-questions is a resource distributed very unevenly. A student at a well-resourced
-institution has question banks, teaching assistants and instructor office hours; a
-student without those has the end-of-chapter exercises and nothing else. By
-generating unlimited, validated, difficulty-controlled questions from the student's
-\emph{own} lecture material, the system puts a form of practice that was previously
-a privilege of well-resourced institutions within reach of anyone with a laptop. This
-aligns directly with UN Sustainable Development Goal~4 (Quality Education) and,
-because it removes a cost barrier rather than an ability barrier, with Goal~10
-(Reduced Inequalities).
+% \paragraph{Educational and societal impact.} The core societal argument for
+% LectureAssist is one of access. Retrieval practice --- repeatedly testing oneself ---
+% is among the most effective study strategies known, but a supply of good practice
+% questions is a resource distributed very unevenly. A student at a well-resourced
+% institution has question banks, teaching assistants and instructor office hours; a
+% student without those has the end-of-chapter exercises and nothing else. By
+% generating unlimited, validated, difficulty-controlled questions from the student's
+% \emph{own} lecture material, the system puts a form of practice that was previously
+% a privilege of well-resourced institutions within reach of anyone with a laptop. This
+% aligns directly with UN Sustainable Development Goal~4 (Quality Education) and,
+% because it removes a cost barrier rather than an ability barrier, with Goal~10
+% (Reduced Inequalities).
 
-\paragraph{Economic constraint, and why it drove the architecture.} The system was
-required to run without a paid API. This is not a stylistic preference. Per-token
-cloud pricing makes routine, high-volume practice --- which is precisely the usage
-pattern that makes retrieval practice effective --- prohibitively expensive for
-students in low- and middle-income settings, and it makes the tool's availability
-contingent on a credit card and a payment rail that many students do not have. Every
-model in LectureAssist is therefore open-weight and locally served. The consequence
-is a hard VRAM budget, which is why the generator is a $4$B model rather than a
-frontier one, and much of the engineering in this report exists to extract reliable
-output from a small model.
+% \paragraph{Economic constraint, and why it drove the architecture.} The system was
+% required to run without a paid API. This is not a stylistic preference. Per-token
+% cloud pricing makes routine, high-volume practice --- which is precisely the usage
+% pattern that makes retrieval practice effective --- prohibitively expensive for
+% students in low- and middle-income settings, and it makes the tool's availability
+% contingent on a credit card and a payment rail that many students do not have. Every
+% model in LectureAssist is therefore open-weight and locally served. The consequence
+% is a hard VRAM budget, which is why the generator is a $4$B model rather than a
+% frontier one, and much of the engineering in this report exists to extract reliable
+% output from a small model.
 
-\paragraph{Safety: the risk of confidently teaching the wrong thing.} The most
-serious safety issue in a system of this kind is not a crash --- it is a fluent,
-well-formed multiple-choice question whose marked answer is \emph{wrong}. A student
-who trusts the tool will learn the error and carry it into an exam, and the tool's
-fluency actively works against their catching it. This risk shaped the evaluation
-methodology: answer correctness is measured separately from question quality, by an
-Answer Generator that never sees the marked option
-(Section~\ref{sec:meth-answer}), and the solver is itself calibrated against
-questions with known answers so that its verdict is not over-trusted. The calibration
-results in Chapter~\ref{ch:results} are sobering --- the solver is only $55\%$
-accurate on known-answer items --- and the honest conclusion is that the system's
-output is suitable for \emph{practice} and must not be treated as an authoritative
-answer key. Any deployment should surface this to the student, and no generated
-question should be used for graded assessment without human review.
+% \paragraph{Safety: the risk of confidently teaching the wrong thing.} The most
+% serious safety issue in a system of this kind is not a crash --- it is a fluent,
+% well-formed multiple-choice question whose marked answer is \emph{wrong}. A student
+% who trusts the tool will learn the error and carry it into an exam, and the tool's
+% fluency actively works against their catching it. This risk shaped the evaluation
+% methodology: answer correctness is measured separately from question quality, by an
+% Answer Generator that never sees the marked option
+% (Section~\ref{sec:meth-answer}), and the solver is itself calibrated against
+% questions with known answers so that its verdict is not over-trusted. The calibration
+% results in Chapter~\ref{ch:results} are sobering --- the solver is only $55\%$
+% accurate on known-answer items --- and the honest conclusion is that the system's
+% output is suitable for \emph{practice} and must not be treated as an authoritative
+% answer key. Any deployment should surface this to the student, and no generated
+% question should be used for graded assessment without human review.
 
-\paragraph{Legal and privacy considerations.} Lecture recordings and course materials
-are frequently copyrighted by the instructor or the institution, and lecture audio
-contains the identifiable voices of the instructor and, incidentally, of students.
-Uploading such material to a third-party cloud service to be processed --- and
-potentially retained or used for training --- raises copyright and data-protection
-questions that most students are not in a position to evaluate. Because
-LectureAssist runs entirely locally, the lecture never leaves the machine the user
-controls; there is no third-party processor, and therefore no third-party retention.
-Users must still hold the right to use the material they upload, and the system
-should not be used to redistribute copyrighted lectures. The persistent per-topic
-performance profile is educational data about an identifiable student and is stored
-in the user's own storage rather than on a server operated by the developers.
+% \paragraph{Legal and privacy considerations.} Lecture recordings and course materials
+% are frequently copyrighted by the instructor or the institution, and lecture audio
+% contains the identifiable voices of the instructor and, incidentally, of students.
+% Uploading such material to a third-party cloud service to be processed --- and
+% potentially retained or used for training --- raises copyright and data-protection
+% questions that most students are not in a position to evaluate. Because
+% LectureAssist runs entirely locally, the lecture never leaves the machine the user
+% controls; there is no third-party processor, and therefore no third-party retention.
+% Users must still hold the right to use the material they upload, and the system
+% should not be used to redistribute copyrighted lectures. The persistent per-topic
+% performance profile is educational data about an identifiable student and is stored
+% in the user's own storage rather than on a server operated by the developers.
 
-\paragraph{Cultural and linguistic considerations.} OCR is configured for both
-English and Bengali, reflecting the reality of instruction in Bangladesh, where
-lecturers routinely switch languages and write on the board in either. A pipeline
-that only reads English would silently discard part of the lecture --- and would do
-so invisibly, since a missing board block looks exactly like a board that was never
-written on.
+% \paragraph{Cultural and linguistic considerations.} OCR is configured for both
+% English and Bengali, reflecting the reality of instruction in Bangladesh, where
+% lecturers routinely switch languages and write on the board in either. A pipeline
+% that only reads English would silently discard part of the lecture --- and would do
+% so invisibly, since a missing board block looks exactly like a board that was never
+% written on.
 
-\paragraph{Ethics and professional responsibility.} Two ethical commitments governed
-this work. First, \emph{no fabricated results}: every number reported in
-Chapter~\ref{ch:results} comes from a measured run, results that have not yet been
-measured are shown as pending rather than filled in, and the limitations of the
-measurements --- particularly the weakness of the LLM judge and solver --- are stated
-plainly rather than omitted because they are unflattering. A finding that the system
-performs \emph{worse} than the baseline at hard difficulty is reported as
-prominently as the findings that favour it. Second, \emph{no misrepresentation of the
-system's capability}: the tool is an aid to practice, not a substitute for the
-instructor or for the textbook, and the report is explicit about where its output
-cannot be trusted.
+% \paragraph{Ethics and professional responsibility.} Two ethical commitments governed
+% this work. First, \emph{no fabricated results}: every number reported in
+% Chapter~\ref{ch:results} comes from a measured run, results that have not yet been
+% measured are shown as pending rather than filled in, and the limitations of the
+% measurements --- particularly the weakness of the LLM judge and solver --- are stated
+% plainly rather than omitted because they are unflattering. A finding that the system
+% performs \emph{worse} than the baseline at hard difficulty is reported as
+% prominently as the findings that favour it. Second, \emph{no misrepresentation of the
+% system's capability}: the tool is an aid to practice, not a substitute for the
+% instructor or for the textbook, and the report is explicit about where its output
+% cannot be trusted.
 
-\section{Impact of this Project on Environment and Sustainability}
-\label{sec:impacts-env}
+% \section{Impact of this Project on Environment and Sustainability}
+% \label{sec:impacts-env}
 
-The environmental footprint of an AI system is dominated by the energy consumed
-during inference at scale. LectureAssist's design happens to be favourable on this
-axis, largely as a side effect of the constraint that it must run on a free-tier GPU.
+% The environmental footprint of an AI system is dominated by the energy consumed
+% during inference at scale. LectureAssist's design happens to be favourable on this
+% axis, largely as a side effect of the constraint that it must run on a free-tier GPU.
 
-\paragraph{Small models, local inference.} Question generation runs on a $4$B-parameter
-model rather than a frontier-scale one, and the entire system runs on a single
-consumer GPU. Inference on a small local model consumes orders of magnitude less
-energy per request than routing that request to a hyperscale data centre running a
-model two to three orders of magnitude larger, and it avoids the network transfer and
-data-centre cooling overhead entirely. No model was trained or fine-tuned in the
-course of this project --- all models are used as released --- so the substantial
-carbon cost of training was not incurred.
+% \paragraph{Small models, local inference.} Question generation runs on a $4$B-parameter
+% model rather than a frontier-scale one, and the entire system runs on a single
+% consumer GPU. Inference on a small local model consumes orders of magnitude less
+% energy per request than routing that request to a hyperscale data centre running a
+% model two to three orders of magnitude larger, and it avoids the network transfer and
+% data-centre cooling overhead entirely. No model was trained or fine-tuned in the
+% course of this project --- all models are used as released --- so the substantial
+% carbon cost of training was not incurred.
 
-\paragraph{Caching and resumability as energy savings.} OCR results are cached and
-keyed by a hash of the video, deduplicated frames are never re-processed, and bulk
-evaluation runs are checkpointed to persistent storage so that a disconnection
-resumes rather than restarts. Each of these was implemented for practical reasons ---
-free-tier compute is scarce and Colab runtimes die --- but each also directly avoids
-recomputing work that has already been done, which is the cheapest energy saving
-available.
+% \paragraph{Caching and resumability as energy savings.} OCR results are cached and
+% keyed by a hash of the video, deduplicated frames are never re-processed, and bulk
+% evaluation runs are checkpointed to persistent storage so that a disconnection
+% resumes rather than restarts. Each of these was implemented for practical reasons ---
+% free-tier compute is scarce and Colab runtimes die --- but each also directly avoids
+% recomputing work that has already been done, which is the cheapest energy saving
+% available.
 
-\paragraph{Sustainability of access.} A tool that requires a subscription is
-sustainable only for as long as the student can pay for it, and only for as long as
-the vendor chooses to keep the model available at a stable price. Because
-LectureAssist depends on no external service, it will continue to work on hardware a
-student already owns, for as long as they own it --- an important form of
-sustainability that is easy to overlook when it is framed purely in terms of energy.
-The honest counterweight is that the agentic pipeline costs roughly seven times the
-compute of a single-shot baseline for its quality gains, and, at hard difficulty,
-Chapter~\ref{ch:results} shows it currently spends that additional energy without a
-net benefit once repetition is accounted for. Reducing that waste is both a
-performance goal and an environmental one.
+% \paragraph{Sustainability of access.} A tool that requires a subscription is
+% sustainable only for as long as the student can pay for it, and only for as long as
+% the vendor chooses to keep the model available at a stable price. Because
+% LectureAssist depends on no external service, it will continue to work on hardware a
+% student already owns, for as long as they own it --- an important form of
+% sustainability that is easy to overlook when it is framed purely in terms of energy.
+% The honest counterweight is that the agentic pipeline costs roughly seven times the
+% compute of a single-shot baseline for its quality gains, and, at hard difficulty,
+% Chapter~\ref{ch:results} shows it currently spends that additional energy without a
+% net benefit once repetition is accounted for. Reducing that waste is both a
+% performance goal and an environmental one.

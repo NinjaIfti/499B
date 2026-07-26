@@ -1,217 +1,101 @@
 \chapter{Background and Literature Review}
 \label{ch:background}
 
-This chapter first sets out the technical background needed to follow the rest of
-the report, then reviews the research literature and the existing applications
-closest to LectureAssist, and finally identifies the gaps that this project sets
-out to fill.
+This chapter presents the theoretical foundation and reviews the existing literature related to large language model based educational question generation. Recent advances in large language models have significantly improved the ability of intelligent systems to generate educational content, particularly multiple choice questions that support teaching, learning, and assessment. At the same time, ensuring that generated questions are pedagogically meaningful, cognitively appropriate, and aligned with educational objectives remains a challenging research problem. Consequently, recent studies have shifted their focus from simply generating fluent questions toward developing structured generation frameworks and comprehensive evaluation methodologies.
 
+This chapter first introduces the fundamental concepts required to understand the proposed system, including large language models, prompting techniques, agent based architectures, and evaluation strategies for educational question generation. It then reviews recent research that investigates controlled question generation using large language models, with particular emphasis on hybrid multi agent generation frameworks and educational question evaluation benchmarks. Existing educational applications are subsequently discussed before identifying the research gaps that motivate the proposed work presented in this thesis.
 \section{Preliminaries}
 \label{sec:back-prelim}
 
+Educational question generation using large language models integrates concepts from natural language processing, prompt engineering, intelligent agent systems, and educational assessment. Understanding these foundational concepts is essential for designing systems that generate high quality assessment items while maintaining pedagogical relevance and consistency. This section introduces the key technologies and methodologies that underpin the proposed framework, including large language models, prompting strategies, agent based architectures, and evaluation techniques. These concepts provide the theoretical foundation for the methodology presented in later chapters.
 \subsection{Large Language Models and Prompting}
 \label{sec:back-llm}
 
-A large language model (LLM) is an autoregressive neural network trained to predict
-the next token of a sequence; at inference it generates text by sampling from the
-distribution it has learned. Modern instruction-tuned LLMs can be steered entirely
-through the prompt, without any gradient update, which is what makes them practical
-for a student project: the same frozen model can be turned into a summariser, a
-question writer, a grader or a judge purely by changing the text it is given. This
-project uses the open-weight Gemma~3 family~\cite{gemma3}, served locally by the
-Ollama runtime~\cite{ollama}, in two sizes: a fast $4$-billion-parameter model for
-generation, and a $12$-billion-parameter model for the tasks where quality matters
-more than latency (summarisation, grading, judging and answer verification).
+Large Language Models (LLMs) have emerged as one of the most significant advancements in artificial intelligence, demonstrating remarkable capabilities in understanding, reasoning over, and generating natural language. Built upon the Transformer architecture, LLMs are pretrained on extensive text corpora using self supervised learning, enabling them to capture complex linguistic patterns, semantic relationships, and contextual information. Through subsequent instruction tuning and alignment techniques, these models can perform a wide variety of language tasks including summarization, translation, question answering, content generation, and educational assistance without requiring task specific model architectures. Their versatility has led to widespread adoption across educational, industrial, and research applications, particularly in tasks that require generating coherent and contextually relevant textual content. \cite{eqgbench,requesta}
 
-Two prompting strategies are directly relevant, because they are used in this work
-both as baselines and as generation methods in their own right.
+The emergence of LLMs has fundamentally changed the landscape of automatic educational question generation. Earlier approaches often relied on handcrafted linguistic rules or supervised neural models trained for a single task, limiting their adaptability across different educational domains. In contrast, modern LLMs can generate diverse assessment items from instructional materials using natural language instructions alone. This capability allows a single model to generate questions of different formats, difficulty levels, and cognitive requirements without extensive retraining. Consequently, recent research has increasingly focused on designing effective interaction strategies that enable language models to generate pedagogically meaningful and educationally appropriate assessment items rather than developing specialized generation models for each individual task. \cite{eqgbench,requesta}
 
-\paragraph{Chain-of-Thought (CoT).} Chain-of-thought prompting asks the model to
-produce its intermediate reasoning in natural language \emph{before} stating a final
-answer, rather than jumping straight to it~\cite{wei2022chain}. Making the reasoning
-explicit improves accuracy on multi-step problems, because each intermediate step
-conditions the next and the model is no longer forced to commit to an answer in a
-single forward pass.
+The quality of responses produced by an LLM depends not only on the model itself but also on how the task is presented. Prompt engineering refers to the process of designing structured instructions that guide the model toward producing outputs aligned with specific objectives. In educational question generation, prompts commonly specify the source material, target knowledge concepts, question type, difficulty level, and expected output format. Well designed prompts reduce ambiguity, improve consistency, and help ensure that generated questions remain relevant to the learning objectives. Recent systems further enhance this process by dynamically constructing prompts using contextual information generated during intermediate processing stages, allowing the model to produce more accurate and context aware assessment items. \cite{eqgbench,requesta}
 
-\paragraph{Program-of-Thought (PoT).} Program-of-thought is a variant in which the
-reasoning is expressed as an explicit, ordered sequence of \emph{computational}
-steps --- in the original formulation, as executable code --- rather than as
-free-form prose, so that the answer is \emph{computed} rather than
-recalled~\cite{chen2023program}. It is particularly effective when the answer is a
-numeric quantity, which is exactly the situation in a mathematics chapter, because
-it separates the act of reasoning about \emph{what} to compute from the act of
-performing the arithmetic.
+Several prompting techniques have been proposed to further improve educational question generation. One widely adopted approach is Chain of Thought prompting, which encourages the model to explicitly perform intermediate reasoning before generating the final output. Rather than producing a question immediately, the model first analyzes the instructional content, identifies important concepts, determines appropriate learning objectives, and then constructs a question that reflects the intended educational outcome. This reasoning process improves the generation of higher order questions requiring conceptual understanding or logical inference while reducing inconsistencies in the generated assessment items. Modern educational generation frameworks frequently employ Chain of Thought prompting during planning and evaluation stages to improve both reliability and pedagogical quality. \cite{requesta}
 
-\subsection{Retrieval-Augmented Generation}
-\label{sec:back-rag}
+Another important prompting strategy is persona based prompting, where the language model is instructed to assume the role of an experienced teacher, curriculum designer, or assessment specialist. Assigning a professional role encourages the model to generate questions that more closely resemble those created by human educators while adhering to established educational practices. Recent studies also incorporate self critique prompting, which introduces an internal evaluation stage after question generation. During this stage, the language model reviews its own output by examining question clarity, answer correctness, distractor quality, and alignment with instructional objectives before revising the question if necessary. Together, these prompting strategies improve the controllability, consistency, and educational quality of modern large language model based question generation systems. \cite{requesta}
+\subsection{Agent Based Architectures}
+\label{sec:back-agent}
 
-An LLM only knows what is in its weights and in its context window. Retrieval-augmented
-generation (RAG)~\cite{lewis2020rag} closes that gap: the source material is split
-into chunks, each chunk is embedded into a dense vector, and at query time the
-chunks whose embeddings are most similar to the query are retrieved and pasted into
-the prompt, so the model answers \emph{from the document} rather than from memory.
-LectureAssist embeds lecture chunks with the Sentence-BERT model
-\texttt{all-MiniLM-L6-v2}~\cite{reimers2019sbert} and indexes them with
-FAISS~\cite{johnson2019faiss} using inner-product search over $L_2$-normalised
-vectors, which makes the similarity score the cosine similarity
+Early large language model based educational question generation systems primarily relied on a single prompt to transform instructional content into assessment questions. Although these systems demonstrated impressive language generation capabilities, they often struggled to maintain consistency, accurately control cognitive complexity, and verify the correctness of generated questions. A single language model was expected to understand the source material, identify important concepts, generate meaningful questions, construct plausible distractors, and evaluate the quality of the final output within a single interaction. As the complexity of educational tasks increased, this monolithic approach frequently produced questions with ambiguous wording, incorrect answers, or distractors that failed to effectively distinguish different levels of student understanding. Consequently, recent research has shifted towards agent based architectures that decompose the overall generation process into multiple coordinated subtasks.
 
-\begin{equation}
-\label{eq:cosine}
-\mathrm{sim}(q, c) \;=\; \frac{\mathbf{e}_q \cdot \mathbf{e}_c}
-                              {\lVert \mathbf{e}_q \rVert \, \lVert \mathbf{e}_c \rVert} .
-\end{equation}
+An agent based architecture consists of several specialized agents that collaborate to accomplish a complex task. Rather than assigning every responsibility to a single language model interaction, each agent performs a dedicated function while exchanging information with other agents throughout the workflow. Individual agents may be responsible for analyzing instructional content, identifying learning objectives, generating questions, evaluating assessment quality, or formatting the final output. This modular design improves transparency, allows intermediate outputs to be verified before proceeding to subsequent stages, and enables individual components to be refined independently without affecting the entire system. Such characteristics make agent based architectures particularly suitable for educational applications where accuracy, consistency, and pedagogical quality are essential.
 
-The same embedding machinery is reused at evaluation time, where it supplies two
-LLM-free metrics: how well a generated question is \emph{grounded} in the lecture
-(its best cosine match against any lecture chunk), and how \emph{diverse} a question
-set is (one minus the mean nearest-neighbour cosine between its questions).
+A representative example of this approach is the ReQUESTA framework, which employs a hybrid multi agent architecture for automatic multiple choice question generation. Instead of relying solely on a language model, the framework combines deterministic rule based components with LLM powered reasoning agents. Rule based modules perform structured operations such as document segmentation, workflow coordination, and output formatting, while specialized language model agents perform higher level reasoning tasks including concept identification, question generation, answer verification, and quality evaluation. This hybrid design leverages the reliability of traditional algorithms together with the flexibility and reasoning capability of modern large language models, resulting in more robust educational question generation.
 
-\subsection{Agentic Architectures}
-\label{sec:back-agentic}
+Within the ReQUESTA workflow, the instructional material is first divided into manageable text segments before being analyzed by a planning agent. The planning agent identifies important concepts, determines suitable learning objectives, and prepares a structured generation plan for subsequent stages. Based on this plan, specialized generation agents create different categories of questions that target various cognitive skills. A dedicated evaluation agent then reviews each generated question by examining its clarity, correctness, and educational relevance. If deficiencies are identified, the question is returned to the corresponding generation agent for revision, creating an iterative refinement process that continues until the generated assessment satisfies predefined quality requirements. Finally, formatting components standardize the presentation of the questions for learners.
 
-An \emph{agentic} system does not treat the LLM as a single-shot text generator. It
-gives the model a goal, a set of tools it may call, and a loop in which it can act,
-observe the result, and act again. The ReAct pattern~\cite{yao2023react} interleaves
-reasoning traces with tool calls; reflection-style methods such as
-Reflexion~\cite{shinn2023reflexion} add a self-critique step whose verbal feedback
-is fed back into the next attempt. LectureAssist applies both ideas to question
-generation: the generator may call a retrieval tool when it judges its context
-insufficient, and a separate validator agent critiques each draft question and
-selects a remediation action that determines how the next attempt differs from the
-last.
+The adoption of agent based architectures demonstrates that improvements in educational question generation depend not only on increasingly capable language models but also on carefully designed workflows that coordinate reasoning, generation, and evaluation. By separating complex educational tasks into specialized components, these architectures provide greater control over question quality, improve alignment with learning objectives, and facilitate the development of scalable educational assessment systems. Consequently, agent based workflows have become an important direction in recent research on large language model based educational question generation.
+\subsection{Evaluation of Educational Question Generation}
+\label{sec:back-evaluation}
 
-\subsection{Speech Recognition and Optical Character Recognition}
-\label{sec:back-asr-ocr}
+Evaluating automatically generated educational questions is considerably more challenging than evaluating general text generation tasks. While traditional natural language generation metrics such as BLEU, ROUGE, and METEOR measure lexical similarity between generated text and reference answers, they often fail to capture the educational quality of assessment items. Multiple valid questions can be generated from the same instructional material using different wording, reasoning processes, or assessment formats while remaining equally effective for learning. Consequently, relying solely on text similarity metrics may incorrectly penalize high quality questions that differ from reference examples, making conventional evaluation methods insufficient for educational question generation.
 
-To generate questions from a lecture \emph{video}, the lecture must first be turned
-into text through two independent channels. Whisper~\cite{radford2023whisper} is a
-transformer-based automatic speech recognition model trained on large-scale weakly
-supervised data, robust to accents and background noise; this project uses the
-Faster-Whisper implementation of the \texttt{small} checkpoint for the audio
-channel. The visual channel is handled by optical character recognition, which
-extracts text from sampled video frames. OCR accuracy is highly sensitive to
-preprocessing, and the correct preprocessing depends on what is on screen --- white
-chalk on a dark board needs to be inverted, a bright projected slide does not ---
-which motivates the scene-adaptive design described in
-Chapter~\ref{ch:methodology}.
+Recent research has therefore shifted towards pedagogically oriented evaluation frameworks that assess whether generated questions satisfy educational objectives rather than merely matching reference text. Important evaluation criteria include the correctness of the generated answer, alignment between the question and the intended knowledge point, appropriateness of the question type, clarity of language, cognitive complexity, and the quality of distractors in multiple choice questions. These dimensions provide a more comprehensive assessment of educational usefulness by considering both linguistic quality and instructional effectiveness.
 
-\subsection{LLM-as-a-Judge}
-\label{sec:back-judge}
+One notable contribution in this area is EQGBench, a benchmark specifically developed for evaluating educational question generation using large language models. Unlike conventional benchmarks, EQGBench introduces a multidimensional evaluation framework that measures educational quality from several complementary perspectives. The benchmark evaluates knowledge point alignment, question type alignment, overall question quality, solution quality, and competence oriented guidance. Together, these dimensions assess whether generated questions accurately reflect instructional content, employ appropriate assessment formats, provide correct and complete solutions, and promote meaningful learning outcomes rather than simple factual recall. This multidimensional framework offers a more reliable assessment of educational question generation than traditional text similarity metrics alone. \cite{eqgbench}
 
-Evaluating hundreds of generated questions by hand is not feasible within a
-capstone project, and $n$-gram overlap metrics such as BLEU are known to correlate
-poorly with question quality --- a question can be excellent and share almost no
-vocabulary with any reference. The now-standard alternative is
-\emph{LLM-as-a-judge}~\cite{zheng2023judging}: a strong model is given a rubric and
-scores each item. It is a useful but imperfect instrument --- judges are known to
-favour fluent and verbose text, and a judge from the same model family as the
-generator will share its blind spots --- so this project treats the judge as a
-\emph{relative} signal between pipelines, deliberately uses a larger model as the
-judge than as the generator, and cross-checks the judge against a solver calibrated
-on questions with known answers.
+Another important advancement is the use of large language models as evaluators. Instead of depending exclusively on automatic similarity metrics or manual expert review, recent systems employ language models to assess generated questions according to predefined educational criteria. Acting as impartial evaluators, these models examine question clarity, factual correctness, relevance to the source material, distractor plausibility, and overall pedagogical quality. This approach enables scalable evaluation while maintaining consistency across large numbers of generated assessment items. Human expert evaluation remains the gold standard for educational assessment; however, LLM based evaluation has emerged as a practical alternative for benchmarking and iterative system development.
 
+The increasing emphasis on comprehensive evaluation reflects the growing maturity of educational question generation research. As generation quality continues to improve through advances in large language models and agent based workflows, evaluation methodologies have likewise evolved to measure educational effectiveness rather than linguistic similarity alone. These developments provide a stronger foundation for designing intelligent assessment systems capable of generating reliable, pedagogically meaningful, and cognitively appropriate questions for diverse educational settings. \cite{eqgbench,requesta}
 \section{Literature Review}
-\label{sec:back-lit}
+\label{sec:litreview}
 
-\subsection{Related Research}
-\label{sec:back-related}
+Automatic educational question generation has been an active area of research for several decades, evolving alongside advances in natural language processing and artificial intelligence. Early approaches relied primarily on manually designed linguistic rules and handcrafted templates to transform declarative sentences into questions. Although these methods were computationally efficient and generated grammatically correct questions within restricted domains, they required extensive human effort and exhibited limited adaptability to diverse educational materials. As machine learning techniques matured, researchers gradually shifted towards data driven approaches capable of learning question generation patterns directly from large annotated datasets. More recently, the emergence of large language models has fundamentally transformed the field by enabling the generation of high quality, context aware, and pedagogically meaningful assessment items through natural language instructions rather than task specific model architectures.
 
-Automatic question generation (AQG) has a long history, surveyed comprehensively by
-Kurdi et al.~\cite{kurdi2020systematic}. The earliest systems were
-\emph{rule- and template-based}: they applied syntactic transformations to a
-declarative sentence to turn it into an interrogative one, then ranked the
-candidates with a supervised model, as in the work of Heilman and
-Smith~\cite{heilman2010good}. These systems are transparent and grammatical, but
-they are fundamentally limited to questions whose answer is a span of a single
-sentence, and they cannot ask anything that requires synthesis across a passage.
+Despite these advances, producing educational questions that accurately assess learning outcomes remains a challenging problem. High quality assessment items must not only be grammatically correct but also align with instructional objectives, target appropriate cognitive levels, contain unambiguous answers, and provide effective distractors for multiple choice questions. Consequently, recent research has increasingly focused on developing structured generation frameworks and comprehensive evaluation methodologies that improve both the quality and educational value of automatically generated questions.
 
-The neural era reframed the task as sequence-to-sequence learning. Du et
-al.~\cite{du2017learning} trained an attention-based encoder--decoder to generate
-questions directly from a sentence or paragraph, outperforming rule-based systems on
-human evaluation, and subsequent work fine-tuned pretrained transformers on
-SQuAD-style corpora. Two limitations persisted. First, these models were trained on
-extractive reading-comprehension data, so they inherited its bias toward shallow,
-factoid questions. Second, they generate a question and an answer span but have no
-mechanism to \emph{check} either one.
+This section reviews the major developments in educational question generation, beginning with traditional approaches before discussing recent large language model based methods. Particular emphasis is placed on two representative studies that address complementary aspects of the problem: the ReQUESTA framework, which proposes a hybrid multi agent architecture for controlled multiple choice question generation, and EQGBench, which introduces a comprehensive benchmark for evaluating the educational quality of questions generated by large language models. Together, these studies represent important advancements in both the generation and evaluation of intelligent educational assessment systems.
+\subsection{Evolution of Educational Question Generation}
+\label{sec:lit-evolution}
 
-The current wave prompts general-purpose LLMs to write questions, including
-multiple-choice questions with distractors, which sidesteps the need for
-task-specific training data entirely and produces markedly more fluent items. The
-open problem has shifted accordingly: fluency is no longer the bottleneck,
-\emph{correctness and diversity} are. An LLM will reliably produce a well-formed MCQ
-whose marked option is wrong, or whose four options are four paraphrases of the same
-idea, and it will do so with complete confidence. Evaluations in this line of work
-overwhelmingly report quality-style ratings --- fluency, relevance, answerability
---- and rarely verify that the marked answer is the right one.
+The development of automatic educational question generation has closely followed the evolution of natural language processing techniques. Early research primarily relied on rule based systems that transformed declarative sentences into interrogative forms using handcrafted linguistic rules, syntactic parsing, and manually designed templates. These approaches generated grammatically correct questions within restricted domains and offered high interpretability because the generation process was explicitly defined by human experts. However, developing and maintaining large collections of language rules required substantial manual effort, while the resulting systems often struggled to generalize across different subjects, writing styles, and educational contexts. As a result, rule based methods exhibited limited scalability and were unsuitable for generating diverse assessment items from complex instructional materials.
 
-Orthogonally, the prompting literature has shown that \emph{how} the model is asked
-matters as much as which model is asked. Chain-of-thought~\cite{wei2022chain} and
-program-of-thought~\cite{chen2023program} prompting substantially improve LLM
-accuracy on multi-step and numerical reasoning, and agentic
-patterns~\cite{yao2023react, shinn2023reflexion} improve it further by letting the
-model retrieve evidence and revise its own output. These techniques are well
-established for \emph{answering} questions. Their value for \emph{generating} them
---- where the model must derive an answer it then has to mark correctly --- has
-received far less attention, and is one of the questions this project sets out to
-answer empirically.
+The availability of large educational datasets and advances in machine learning led researchers to adopt data driven approaches for question generation. Sequence-to-sequence neural networks enabled models to learn mappings between instructional content and corresponding questions directly from annotated examples rather than relying on manually designed rules. Attention mechanisms further improved these models by allowing them to focus on the most relevant portions of the input text during generation. Compared with traditional rule based systems, neural approaches produced more fluent and diverse questions while requiring significantly less manual feature engineering. Nevertheless, their performance depended heavily on the availability of large, high quality training datasets and they often struggled to generate questions requiring complex reasoning or deep conceptual understanding.
 
-\subsection{Similar Applications}
-\label{sec:back-apps}
+The introduction of Transformer based architectures marked another major advancement in automatic question generation. Transformer models demonstrated superior contextual understanding through self attention mechanisms, enabling them to capture long range dependencies and semantic relationships more effectively than recurrent neural networks. Pretrained language models such as BERT, T5, and BART further improved generation quality by leveraging knowledge acquired from large scale pretraining before being adapted to educational tasks. These models significantly enhanced grammatical fluency, contextual relevance, and the diversity of generated questions. However, most Transformer based systems still required task specific fine tuning and were generally designed for fixed question generation objectives, limiting their flexibility across different educational settings.
 
-Several commercial and open products overlap with parts of LectureAssist.
-Flashcard and quiz platforms such as Quizlet and Anki support spaced retrieval
-practice, but the questions must be authored by a human; they solve the
-\emph{practice} problem and not the \emph{supply} problem. Note-taking assistants
-such as Notion~AI and NotebookLM will summarise an uploaded document and answer
-questions about it, and NotebookLM in particular is grounded in the user's own
-sources, but their assessment support is shallow and they are cloud services.
-Lecture-capture and transcription tools such as Otter.ai produce a transcript from
-audio but stop there: they do not read the board, and they generate no assessment.
-General-purpose chatbots such as ChatGPT will happily write quiz questions from
-pasted text, but they require the student to supply clean text, they perform no
-validation of the answer they mark, they retain no per-topic model of the student
-across sessions, and they are neither free nor local.
+Recent progress in large language models has fundamentally transformed educational question generation. Unlike earlier approaches that required dedicated training for individual tasks, modern LLMs can generate assessment items through carefully designed natural language prompts without extensive task specific optimization. This capability enables a single model to produce multiple question formats, adjust difficulty levels, and incorporate reasoning processes using prompt engineering techniques alone. Contemporary research has therefore shifted its emphasis from improving language generation itself toward developing structured workflows, agent based architectures, and comprehensive evaluation methodologies that ensure generated questions satisfy pedagogical objectives. These developments represent a transition from purely language focused generation toward intelligent educational assessment systems capable of producing reliable, context aware, and pedagogically meaningful questions across diverse learning environments. \cite{eqgbench,requesta}
 
-Two properties are consistently absent across all of them. None of these tools reads
-the \emph{board} --- the derivation the lecturer actually wrote out is invisible to
-a transcript-only pipeline --- and none of them runs on the student's own hardware
-without a paid API.
+\subsection{Large Language Model Based Educational Question Generation}
+\label{sec:lit-llm}
 
-\section{Gap Analysis}
-\label{sec:back-gap}
+The emergence of large language models has significantly advanced the field of educational question generation by enabling the production of coherent, context aware, and pedagogically relevant assessment items without extensive task specific training. Unlike earlier neural approaches that required fine tuning for individual datasets or question types, modern LLMs leverage knowledge acquired during large scale pretraining to perform educational tasks through carefully designed natural language prompts. This capability has greatly improved the adaptability of question generation systems, allowing them to operate across multiple academic disciplines and educational settings while requiring only minimal modifications to the input instructions.
 
-The review above identifies four gaps, which this project addresses directly.
+Recent research has increasingly focused on improving the controllability of question generation rather than solely enhancing linguistic quality. One representative study is the ReQUESTA framework, which proposes a hybrid multi agent architecture for generating cognitively diverse multiple choice questions. The framework recognizes that educational assessment involves several interconnected tasks, including identifying learning objectives, selecting appropriate concepts, constructing meaningful questions, generating plausible distractors, and verifying the quality of the final assessment item. Instead of assigning all these responsibilities to a single language model interaction, ReQUESTA distributes them among multiple specialized agents that collaborate throughout the generation process. This modular design enables greater control over each stage of question generation while reducing errors that commonly occur in single prompt systems. \cite{requesta}
 
-\begin{enumerate}
-  \item \textbf{The pipeline is not closed.} Existing work operates on
-        pre-extracted, clean text. The step that is actually hardest for a student
-        --- getting the lecture out of a video, including what was written on the
-        board --- is assumed away. LectureAssist closes the loop from raw media to
-        graded assessment, treating the visual and audio channels as first-class
-        and complementary inputs.
+The ReQUESTA framework combines deterministic rule based processing with the reasoning capability of large language models. Rule based components manage operations such as document segmentation, workflow coordination, and output formatting, while specialized LLM agents perform higher level reasoning tasks including concept identification, question generation, quality evaluation, and revision. The workflow begins by dividing instructional material into manageable text segments, after which a planning agent analyzes each segment to identify key concepts and determine suitable learning objectives. Based on this analysis, dedicated generation agents create multiple choice questions targeting different cognitive skills before an evaluation agent reviews each question for correctness, clarity, and educational relevance. Questions that do not satisfy predefined quality criteria are automatically revised through an iterative feedback process until acceptable quality is achieved. This structured workflow improves both the reliability and consistency of generated assessment items compared with conventional single prompt approaches. \cite{requesta}
 
-  \item \textbf{Generation is unvalidated.} Neural and LLM-based generators emit a
-        question and mark an answer, with no mechanism to check that the marked
-        answer is correct or that the question is answerable from the source.
-        LectureAssist adds a validator agent inside the generation loop, and, at
-        evaluation time, a \emph{separate} Answer Generator agent that re-solves
-        every question without seeing the marked option, so that answer correctness
-        is measured rather than assumed.
+Another important contribution of ReQUESTA is its use of advanced prompting strategies throughout the generation pipeline. The framework incorporates Chain of Thought reasoning to encourage systematic analysis before question generation, persona based prompting to emulate experienced educators during assessment design, and self critique mechanisms that enable the language model to evaluate and refine its own outputs. By integrating these techniques within a coordinated multi agent workflow, the framework produces questions with clearer wording, more accurate answers, and higher quality distractors. Experimental results reported in the study demonstrate that this hybrid architecture consistently outperforms conventional zero shot prompting approaches in both automated evaluation and expert assessment, highlighting the importance of structured workflows in educational question generation. \cite{requesta}
 
-  \item \textbf{Evaluation measures the wrong thing.} The field reports fluency-style
-        quality scores, which LLM judges saturate. This project reports answer
-        correctness and duplication alongside quality, and it combines them into a
-        duplicate-penalised accept rate --- a decision that turns out to matter,
-        because it reverses the ranking of the pipelines at the hard difficulty
-        level (Chapter~\ref{ch:results}).
+The findings of the ReQUESTA study demonstrate that advances in educational question generation depend not only on increasingly capable language models but also on carefully designed system architectures that coordinate planning, reasoning, generation, and evaluation. These observations have influenced recent research by encouraging the development of modular, collaborative frameworks that improve both the pedagogical quality and reliability of automatically generated educational assessments.
+\subsection{Evaluation Frameworks for Educational Question Generation}
+\label{sec:lit-evaluation}
 
-  \item \textbf{Agentic and prompting strategies are untested for generation.} CoT,
-        PoT and agentic loops are well studied for \emph{answering} questions but
-        rarely compared head-to-head for \emph{generating} them. This project runs
-        that comparison on identical content, with an identical judge, at three
-        difficulty levels.
-\end{enumerate}
+While recent advances in large language models have significantly improved the generation of educational questions, evaluating the quality of these questions remains an equally important challenge. Unlike conventional natural language generation tasks, educational question generation cannot be assessed solely through lexical similarity between generated and reference texts. Multiple questions may correctly assess the same learning objective despite differing in wording, structure, or reasoning process. Consequently, traditional evaluation metrics such as BLEU, ROUGE, and METEOR often fail to reflect the true pedagogical value of generated assessment items. This limitation has motivated researchers to develop evaluation frameworks that measure educational effectiveness rather than textual similarity alone.
 
-Finally, all of the above must hold under a hard deployment constraint: no paid API
-and a single consumer-grade GPU, so that the system is usable in exactly the
-bandwidth- and cost-limited settings where the need is greatest.
+A notable contribution in this direction is EQGBench, a benchmark specifically designed for evaluating educational question generation using large language models. The benchmark was developed to address the absence of standardized evaluation methodologies capable of measuring both linguistic quality and educational relevance. Rather than relying exclusively on automatic similarity metrics, EQGBench introduces a multidimensional evaluation framework that examines several complementary aspects of educational assessment. These dimensions include knowledge point alignment, question type alignment, question quality, solution quality, and competence oriented guidance. Together, these criteria provide a comprehensive assessment of whether generated questions accurately reflect instructional content while supporting meaningful learning outcomes. \cite{eqgbench}
+
+Knowledge point alignment evaluates whether a generated question correctly targets the intended concepts presented in the instructional material. Question type alignment determines whether the generated assessment follows the desired format, such as multiple choice, short answer, or explanatory questions. Question quality focuses on linguistic clarity, logical consistency, and the absence of ambiguity, while solution quality measures the correctness and completeness of the accompanying answers or explanations. Competence oriented guidance extends the evaluation beyond factual correctness by assessing whether the generated questions encourage reasoning, conceptual understanding, and higher order thinking skills. Collectively, these dimensions provide a richer understanding of educational quality than conventional text based evaluation metrics. \cite{eqgbench}
+
+To validate the proposed benchmark, the authors constructed a comprehensive evaluation dataset consisting of educational materials from mathematics, physics, and chemistry. The benchmark was then used to evaluate numerous state of the art large language models under a standardized experimental protocol. The results demonstrated substantial variation in educational performance among different models despite many of them achieving comparable scores on traditional language generation benchmarks. These findings highlight that strong general language capabilities do not necessarily translate into high quality educational assessment generation, emphasizing the importance of specialized evaluation frameworks tailored to educational applications. \cite{eqgbench}
+
+Another significant contribution of recent evaluation research is the growing adoption of large language models as automated evaluators. Instead of depending exclusively on human experts or lexical similarity metrics, language models can assess generated questions according to predefined educational criteria such as clarity, correctness, relevance, and pedagogical appropriateness. Although human evaluation remains the most reliable method for assessing educational quality, LLM based evaluation offers a scalable and consistent alternative for benchmarking large numbers of generated questions during system development. The integration of comprehensive evaluation frameworks such as EQGBench with automated LLM based assessment represents an important step toward developing reliable, standardized methodologies for educational question generation research. \cite{eqgbench}
+\section{Research Gap}
+\label{sec:research-gap}
+
+The literature demonstrates that recent advances in large language models have significantly improved the generation and evaluation of educational questions. The ReQUESTA framework shows that hybrid multi agent architectures can produce more reliable and cognitively diverse multiple choice questions by separating planning, generation, evaluation, and refinement into specialized components. Similarly, EQGBench establishes that evaluating educational question generation requires multidimensional assessment criteria that consider pedagogical quality in addition to traditional language generation metrics. Together, these studies represent important progress toward intelligent educational assessment systems.
+
+Despite these contributions, several research challenges remain. Existing generation frameworks primarily focus on producing high quality assessment items from textual content but provide limited support for integrating diverse educational resources into a unified generation pipeline. Many systems assume that the instructional content has already been prepared in a structured textual format, making them less suitable for practical educational environments where learning materials may originate from lecture notes, presentation slides, or other unstructured documents.
+
+Furthermore, although recent studies emphasize question quality and evaluation, relatively little attention has been given to developing end to end educational assistance systems that combine document understanding, intelligent question generation, automated answer production, and comprehensive evaluation within a single workflow. In many existing approaches, these components are investigated independently rather than being integrated into a cohesive educational framework capable of supporting both instructors and learners.
+
+Another limitation is that current research predominantly evaluates generated questions using benchmark datasets under controlled experimental settings. While these evaluations provide valuable insights into model performance, they may not fully reflect real world educational scenarios involving diverse instructional materials, varying document structures, and different learning objectives. Consequently, there remains a need for practical systems that effectively combine large language models with structured generation workflows while maintaining high educational quality across different types of learning resources.
+
+Motivated by these research gaps, this thesis proposes a large language model based educational question generation framework that integrates document processing, intelligent question generation, answer generation, and automated evaluation into a unified system. The proposed approach aims to generate contextually relevant and pedagogically meaningful assessment items while providing a flexible and scalable workflow that can be applied to a wide range of educational materials.
