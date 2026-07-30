@@ -1,48 +1,4 @@
 #!/usr/bin/env python3
-"""
-evaluate_eqgbench.py — EQGBench-protocol evaluation harness.
-
-Scores generated MCQs EXACTLY along the EQGBench protocol ("From Answers to
-Questions: EQGBench for Evaluating LLMs' Educational Question Generation",
-arXiv:2508.10005) and nothing else:
-
-  * Five dimensions, each scored 0 / 1 / 2  (Poor / Good / Excellent):
-      KP  Knowledge-Point Alignment   — does the question target the intended
-                                        knowledge point (our per-question topic)?
-      QT  Question-Type Alignment     — does the item conform to the requested
-                                        question type (a well-formed 4-option MCQ
-                                        with exactly one correct answer)?
-      QQ  Question Item Quality       — stem clarity, option quality, reasonable
-                                        distractors, no ambiguity.
-      SQ  Solution Explanation Quality— is the provided explanation correct,
-                                        complete and pedagogically useful?
-      CG  Competence-Oriented Guidance— does the item cultivate competence /
-                                        higher-order thinking rather than rote
-                                        recall?
-  * Judge = DeepSeek-R1 (deepseek-reasoner), the judge model EQGBench uses.
-  * THREE independent judging rounds per question; the per-dimension score is
-    the MODE of the three rounds (median if all three disagree), replicating
-    EQGBench's 3-round voting.
-
-FAITHFULNESS NOTE: EQGBench has no public code release, so the judge prompt
-below is a reconstruction from the paper's dimension definitions, not a copy of
-their exact prompt. The dimensions, scale, judge model and voting rule follow
-the paper; report this caveat wherever results are published.
-
-COST WARNING: 3 rounds x 600 questions = 1800 reasoner calls. On the free tier
-with --sleep for rate limits this can take many hours; rows are checkpointed to
-rows.jsonl after every question, so an interrupted run RESUMES, never restarts.
-
-USAGE (same plumbing as evaluate_deepseek.py):
-  $env:DEEPSEEK_API_KEY = "sk-..."      # never hard-code the key
-  python evaluate_eqgbench.py --from-bulk bulk_eval_questions.json \
-      --content chapter.txt --out eval_out_eqgbench
-
-Works with any OpenAI-compatible endpoint via --base-url/--api-key-env
-(e.g. Groq's R1 distill for a faster, cheaper approximation — but then the
-judge is no longer the paper's exact model; say so if you use it).
-"""
-
 import argparse
 import csv
 import json
@@ -55,9 +11,7 @@ from collections import Counter, defaultdict
 
 import requests
 
-# ─────────────────────────────────────────────────────────────────────────────
-# OpenAI-compatible plumbing (identical to evaluate_deepseek.py)
-# ─────────────────────────────────────────────────────────────────────────────
+
 
 BASE_URL = "https://api.deepseek.com"
 API_KEY = ""
@@ -65,7 +19,7 @@ REQUEST_SLEEP = 0.0
 
 
 def _extract_json(text):
-    """First JSON object in a reply; tolerates ``` fences, prose, <think> blocks."""
+    """First JSON object """
     if not text:
         return None
     text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
@@ -91,7 +45,7 @@ def _extract_json(text):
 
 
 def api_json(prompt, model, system="", retries=3):
-    """One chat call -> parsed JSON dict, {} on failure (fail closed)."""
+    """One chat call """
     url = f"{BASE_URL.rstrip('/')}/chat/completions"
     headers = {"Authorization": f"Bearer {API_KEY}",
                "Content-Type": "application/json"}
@@ -121,9 +75,9 @@ def api_json(prompt, model, system="", retries=3):
     return {}
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+
 # EQGBench judging
-# ─────────────────────────────────────────────────────────────────────────────
+
 
 DIMS = ["KP", "QT", "QQ", "SQ", "CG"]
 
@@ -137,7 +91,7 @@ DIM_LONG = {
 
 
 def judge_once(q, content, model):
-    """One EQGBench-style judging round. Returns {dim: 0|1|2} or {} on failure."""
+    """EQGBench-style ."""
     opts = q.get("options") or {}
     opts_txt = "\n".join(f"{k}. {v}" for k, v in sorted(opts.items()))
     marked = str(q.get("correct_answer") or q.get("answer") or "").strip().upper()[:1]
@@ -217,9 +171,9 @@ def judge_voted(q, content, model, rounds):
     return final, len(votes)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Aggregation / I-O
-# ─────────────────────────────────────────────────────────────────────────────
+
+#  I-O
+
 
 def aggregate(rows):
     """Mean per dimension (0-2) and composite mean, per (pipeline, difficulty)."""

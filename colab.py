@@ -31,7 +31,7 @@ PIN_QUIZ_MODEL   = True
 # idea) by deterministic round-robin and the generator is constrained to it.
 # OFF by default: turning it on changes the generation path, so results produced
 # with it are NOT comparable to the existing four-pipeline run.
-COGNITIVE_ROUTING = False
+COGNITIVE_ROUTING = True
 OLLAMA_BASE      = "http://localhost:11434"
 UPLOAD_DIR       = "/content/uploads"
 OUTPUT_DIR       = "/content/outputs"
