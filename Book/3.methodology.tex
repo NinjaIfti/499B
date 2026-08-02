@@ -19,6 +19,13 @@ staged so that each stage produces an artifact that can be inspected, cached and
 re-used, which is what makes the expensive stages (OCR, transcription) survivable
 on free-tier hardware.
 
+\begin{figure}[h]
+    \centering
+    \includesvg[width=\linewidth]{metho.svg}
+    \caption{System architecture of LectureAssist, showing the orchestrator coordinating specialist agents across the ingestion, representation, and downstream capability stages.}
+    \label{fig:metho}
+\end{figure}
+
 \subsection{Data flow}
 \label{sec:meth-flow}
 

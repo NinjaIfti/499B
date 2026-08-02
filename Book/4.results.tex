@@ -2,17 +2,21 @@
 \label{ch:results}
 
 This chapter reports the evaluation of LectureAssist's question generator. It
-describes the environment the experiment was run in, defines the evaluation
-protocol precisely, and reports the results. The evaluation adopts the protocol
-of \textbf{EQGBench}, a published benchmark for evaluating an
-LLM's ability to \emph{generate} educational questions, so that the four
-generation pipelines are scored on the same criteria a purpose built
-question generation benchmark uses, rather than on ad hoc metrics.
+describes the environment the experiment was run in, defines the two evaluation
+protocols precisely, and reports the results.
+
+The evaluation adopts \emph{two} published protocols rather than one, and runs
+them side by side. \textbf{EQGBench} is a benchmark for evaluating an LLM's
+ability to \emph{generate} educational questions; \textbf{ReQUESTA} is an
+agentic MCQ-authoring framework whose expert rubric provides a second,
+independent instrument. The two are reported separately and never merged,
+because they use different scales and different scoring rules
+(Section~\ref{sec:res-protocol}). A third set of automated metrics, native to
+this project, is reported alongside them.
 
 The experiment is designed around three questions.
-\emph{RQ1:} judged on the EQGBench dimensions, does the agentic pipeline
-produce better multiple choice questions than single shot prompting, including
-the stronger chain of thought and program of thought prompting strategies?
+\emph{RQ1:} judged on each published protocol, does the agentic pipeline produce
+better multiple-choice questions than single-shot prompting?
 \emph{RQ2:} how does each pipeline behave as the target difficulty rises from
 easy to hard?
 \emph{RQ3:} which dimensions actually separate the pipelines, and which
@@ -27,334 +31,438 @@ proprietary API is used anywhere in the generation path. Bulk generation
 artifacts are written to Google Drive so a run survives a Colab disconnection
 and can be resumed rather than restarted.
 
-\paragraph{Pipelines.} Four generation pipelines are compared, all using the
-same pinned generator and the same source material:
+\paragraph{Pipelines.} Four generation pipelines are implemented, all using the
+same pinned \texttt{gemma3:4b} generator and the same source material:
+
 \begin{itemize}
-  \item \textbf{Agentic} the production per question loop of
+  \item \textbf{Agentic} --- the production per-question loop of
         \emph{Plan $\rightarrow$ Generate $\rightarrow$ Validate $\rightarrow$
         Retry}: a planner selects topics, each question is checked by a
-        self validator on grounding, difficulty, instruction compliance and
+        self-validator on grounding, difficulty, instruction compliance and
         uniqueness, and regenerated (with the failure reason fed back) until it
         passes or a retry budget is exhausted; the generator may issue its own
         retrieval query when it judges the supplied context insufficient.
   \item \textbf{Non-agentic} --- a single LLM call that writes questions
         directly, with no planning, validation, retrieval or retry.
-  \item \textbf{Chain-of-thought (CoT)} --- as non agentic, but the prompt
+  \item \textbf{Chain-of-thought (CoT)} --- as non-agentic, but the prompt
         instructs the model to reason step-by-step about the content before
         writing each question.
   \item \textbf{Program-of-thought (PoT)} --- as non-agentic, but the model is
         instructed to derive each question through explicit worked computation
         before committing to an answer.
 \end{itemize}
-The three baseline pipelines read the document through an identical sliding
-window that steps across the whole chapter with a uniform batch size, so no
-baseline is advantaged by seeing more or different content, and any difference
-between them reflects the prompting strategy alone.
+
+\noindent\textbf{Scope of the results reported here.} Of these four pipelines,
+\textbf{only \emph{agentic} and \emph{non-agentic} have completed a scored
+evaluation run} (Section~\ref{sec:res-native}). The CoT and PoT pipelines are
+implemented but have not yet been judged, and no results are claimed for them
+anywhere in this chapter.
+
+The baseline pipelines read the document through an identical sliding window
+that steps across the whole chapter with a uniform batch size, so no baseline is
+advantaged by seeing more or different content, and any difference between them
+reflects the prompting strategy alone.
 
 \paragraph{Source data.} Questions are generated from a college-level STEM
-document --- the \emph{Limits} chapter of OpenStax \emph{Calculus, Volume~1} ingested through the standard document pipeline
-(extraction $\rightarrow$ map-reduce summary $\rightarrow$ retrieval index). The
-extracted chapter text (about $112$k characters) is also supplied to the judge as
-the ground-truth reference against which each question is scored
-(Section~\ref{sec:res-protocol}).
+document --- the \emph{Limits} chapter of OpenStax \emph{Calculus, Volume~1} ---
+ingested through the standard document pipeline (extraction $\rightarrow$
+map-reduce summary $\rightarrow$ retrieval index). The extracted chapter text
+(about $112$k characters) is also supplied to the judge as the ground-truth
+reference against which each question is scored.
 
-\paragraph{Question} Each pipeline generated $200$ MCQs at each of three
-target difficulties (easy, medium, hard).
-\section{Evaluation Protocol}
+\paragraph{Question count.} Each evaluated pipeline generated $200$ MCQs spread
+across three target difficulties (easy $n{=}68$, medium $n{=}66$, hard
+$n{=}66$).
+
+\section{Evaluation Protocols}
 \label{sec:res-protocol}
 
-The evaluation follows EQGBench. Generation and measurement are
-kept separate: the Colab run only \emph{generates} and saves every question to a
-single JSON artifact; a standalone harness then reads that artifact and scores
-each question. Scoring an already generated corpus with a separate program means
-the measurement can be repeated or rejudged without touching the system under
-test.
+Generation and measurement are kept strictly separate: the Colab run only
+\emph{generates} and saves every question to a single JSON artifact; standalone
+harnesses then read that artifact and score each question. Scoring an
+already-generated corpus with a separate program means the measurement can be
+repeated, or redone under a different protocol, without touching the system
+under test.
 
-\paragraph{Dimensions and scale.} Following EQGBench, every question is scored on
-five dimensions, each on a three-point scale $\{0,1,2\}$ (Poor / Good /
-Excellent):
+Two published protocols are implemented, one harness each
+(\texttt{evaluate\_eqgbench.py} and \texttt{evaluate\_requesta.py}). Each is
+reported on \emph{its own native scale}. No score is ever rescaled from one
+protocol onto another's range: EQGBench's three-point scale and ReQUESTA's
+four-point scale encode different judgements, and a linear remapping between
+them would produce a number that means nothing. In particular ReQUESTA's
+four-point scale is deliberately \emph{even} --- it removes the neutral midpoint
+that raters default to --- whereas a five-point scale has one, so the two are
+not interconvertible even in principle.
+
+\subsection{Protocol A --- EQGBench}
+\label{sec:res-proto-eqg}
+
+EQGBench scores every question on five dimensions, each on a three-point scale
+$\{0,1,2\}$ (Poor / Good / Excellent):
+
 \begin{itemize}
-  \item \textbf{KP --- Knowledge-Point Alignment:} does the question genuinely
-        target the intended knowledge point, grounded in the source material?
-  \item \textbf{QT --- Question-Type Alignment:} is it a well-formed item of the
-        requested type (a four-option MCQ with exactly one defensible answer)?
-  \item \textbf{QQ --- Question Item Quality:} is the stem clear and
-        unambiguous, and are the options and distractors well constructed?
-  \item \textbf{SQ --- Solution Explanation Quality:} is the provided
-        explanation correct, complete and pedagogically useful?
-  \item \textbf{CG --- Competence-Oriented Guidance:} does the item cultivate
-        understanding, reasoning or application (higher-order competence) rather
-        than rote recall?
+  \item \textbf{KP --- Knowledge-Point Alignment:} does the question accurately
+        identify and reflect the knowledge point specified in the user's input?
+  \item \textbf{QT --- Question-Type Alignment:} does the item match the
+        requested question type and adhere to that type's standard format?
+  \item \textbf{QQ --- Question Item Quality:} is the question expressed
+        clearly, with an unambiguous objective and a definitive answer?
+  \item \textbf{SQ --- Solution Explanation Quality:} is the explanation
+        correct, rigorous and complete, and does the answer follow from it?
+  \item \textbf{CG --- Competence-Oriented Guidance:} does the item integrate a
+        realistic scenario that develops higher-order competence rather than
+        rote recall?
 \end{itemize}
-The reported per-pipeline score on each dimension is the mean over that
-pipeline's questions, and the \emph{composite} is the mean of the five
-dimensions.
 
-\paragraph{Judge and voting.} EQGBench scores each question with a
-reasoning-model judge and reduces judge noise by voting over repeated rounds.
-The same procedure is used here: every question is judged \textbf{three times
-independently}, and a question whose three
-rounds all fail is scored zero on every dimension rather than dropped.
+\paragraph{Judge and voting.} The judge is DeepSeek-R1
+(\texttt{deepseek-reasoner}), the model EQGBench itself uses, at temperature
+$0.6$ with a $4096$-token output cap. Every question is judged
+\textbf{three times independently per dimension}; the reported score is the
+\textbf{mode} of the three rounds, and where no mode exists the
+\textbf{arithmetic mean} is used, following the benchmark. Each dimension is a
+\emph{separate} judging call, because the published prompt is scoped to one
+dimension at a time.
 
-\paragraph{Judge models.} EQGBench uses DeepSeek-R1 as its judge. Every question is scored by \emph{two} judges and both
-are reported. The first is \texttt{gemma3:12b}, the larger local model, run
-through the same offline harness; note that although it is a bigger model than
-the \texttt{gemma3:4b} generator, it belongs to the same \texttt{gemma} family,
-so it may share some of the generator's blind spots. The second is
-\texttt{DeepSeek R1}, a $671$B open-weight reasoning model from a different
-family entirely, which serves as the cross-family check: where a same-family and
-a cross-family judge agree, a pipeline's ranking cannot easily be dismissed as an
-artifact of one model's quirks. Using two judges of different lineage and
-reporting how far they agree is how this evaluation answers the objection
-that an LLM judging an LLM's output is merely grading itself. What is adopted
-from EQGBench is the \emph{protocol}  the five dimensions, the $0$--$2$ scale,
-and three-round voting not the specific judge model.
+\paragraph{Judge prompt.} EQGBench publishes its evaluation prompt. The
+following is that prompt, reproduced verbatim, shown for the Knowledge-Point
+Alignment dimension:
 
-\paragraph{Judge prompt.} Each question is sent to the judge with the source
-material and the rubric below (reconstructed from the EQGBench dimension
-definitions, as the benchmark has no public code release):
-
+\begin{footnotesize}
 \begin{verbatim}
-You are an expert evaluator of educational assessment items. Evaluate
-this ONE multiple-choice question along the five EQGBench dimensions.
-Score each dimension 0 (Poor), 1 (Good), or 2 (Excellent). Be strict;
-2 is reserved for genuinely excellent performance on that dimension.
+System: You are an experienced middle school exam question designer with 20
+years of expertise. Based on the following evaluation dimension, please
+strictly score the given question according to the scoring criteria, in
+combination with the user input and the generated question.
 
-Reference material (ground truth): [chapter content]
-Intended knowledge point (topic): [topic]
-Requested question type: multiple-choice (4 options A-D, one correct)
-Requested difficulty: [easy|medium|hard]
+Query:
+Dimension: Knowledge Point Alignment. This measures whether the generated
+question accurately matches and adequately covers the specified knowledge
+point.
+Scoring Criteria:
+0 points: The question item fails to correctly reflect the knowledge point.
+  There is a significant mismatch between the knowledge point used in the
+  question and the one specified by the user, or it is from a different
+  subject.
+1 point: The question item is generally relevant in topic but does not
+  directly address or include the user-specified knowledge point.
+2 points: The question item basically covers the user-specified knowledge
+  point, with no significant omissions.
 
-Question item:
-Q: [question]      Options: [A-D]
-Marked correct answer: [letter]
-Provided solution explanation: [explanation]
+Example for 0 points:  [worked example with scoring justification]
+Example for 2 points:  [worked example with scoring justification]
 
-Dimensions:
-1. KP (Knowledge-Point Alignment)
-2. QT (Question-Type Alignment)
-3. QQ (Question Item Quality)
-4. SQ (Solution Explanation Quality)
-5. CG (Competence-Oriented Guidance)
+User Input: {user_input}
+Generated Question: {generate_question}
 
-Return STRICT JSON only:
-{"KP":0,"QT":0,"QQ":0,"SQ":0,"CG":0}
+Note: As long as the question includes the specified knowledge point in any
+part, it is considered "basically covered" and earns 2 points. ...
+Important: Only evaluate the content within the <question item> tags; ignore
+<solution explanation> and <answer>. If the question is incomplete and cannot
+stand alone, the score is automatically 0 for this dimension.
+
+Please output the response in the following format:
+[Scoring Justification]: ...<eoa>
+[Score]: ...<eoa>
 \end{verbatim}
+\end{footnotesize}
+
+\noindent Two properties of this prompt are worth noting because they are easy
+to get wrong. First, the judge must state its \emph{justification before} its
+score, which is a chain-of-thought ordering that materially affects the score.
+Second, the KP criterion is deliberately \emph{lenient}: partial coverage
+anywhere in the item earns full marks. An evaluation that instructs the judge to
+"be strict" is therefore not measuring the same thing as EQGBench, and its
+scores are not comparable to the published figures.
+
+\paragraph{Fidelity and deviations.} The system prompt, query scaffold, KP
+criteria, both worked examples, the note block and the output format are taken
+verbatim from the benchmark. The QT, QQ, SQ and CG criteria are likewise
+verbatim. Three deviations are declared: (i) the published figure supplies
+worked examples for KP only, so the other four dimensions are zero-shot;
+(ii) the CG dimension defines only Excellent~$(2)$ and Poor~$(0)$ --- there is
+\emph{no} published one-point anchor, so the CG middle anchor used here is our
+own and CG is consequently the least comparable dimension; and (iii) EQGBench
+evaluates Chinese middle-school material against a real user query, whereas this
+work evaluates English calculus MCQs and reconstructs the user instruction from
+each question's topic and difficulty.
+
+\subsection{Protocol B --- ReQUESTA}
+\label{sec:res-proto-req}
+
+ReQUESTA's expert rubric scores two criteria dichotomously and the remainder on
+a four-point scale.
+
+\begin{itemize}
+  \item \textbf{Binary} $(0=\text{Disagree},\ 1=\text{Agree})$:
+        \emph{Answer correctness} --- the correct answer is clearly correct to
+        those who have comprehended the text; \emph{Distractor incorrectness} ---
+        the distractors are clearly incorrect to those who have comprehended
+        the text.
+  \item \textbf{Four-point} $(1=\text{Disagree},\ 2=\text{Neutral},\
+        3=\text{Agree},\ 4=\text{Strongly Agree})$: overall quality, topic
+        relevance, coverage, writing clarity, distractor plausibility, and
+        distractor linguistic features.
+\end{itemize}
+
+\paragraph{An important limitation of this protocol.} \textbf{ReQUESTA
+publishes no judge prompt, and cannot}: its rubric was applied by \emph{two
+blinded human expert raters}, not by a model. The raters calibrated on $100$
+practice items over three rounds and reached Cohen's weighted $\kappa$ between
+$.80$ and $1.00$. Consequently, what is reproduced here is the \emph{rubric},
+verbatim from the paper's appendix, together with the paper's disagreement
+rule --- unresolved disagreements are settled by \textbf{taking the lower
+score}, a conservative rule that is the opposite of EQGBench's mean. The
+instruction wrapper that asks an LLM to apply that rubric is our own. An LLM
+applying a human rubric is a different instrument from two calibrated humans
+applying it, and no amount of prompt engineering closes that gap. Results under
+this protocol are reported with that caveat attached.
+
+\paragraph{A documented inconsistency in the source rubric.} The published
+appendix rubric and the published results tables do not list the same criteria.
+\emph{Overall quality} and \emph{coverage} are defined in the rubric but never
+reported; \emph{distractor semantic uniqueness} is reported but has no anchor
+definition anywhere in the rubric. Our harness implements all of them and marks
+distractor semantic uniqueness as reconstructed from the paper's prose. Only the
+five criteria in Table~\ref{tab:req-compare} can be placed beside the published
+numbers at all.
 
 \section{Results and Discussion}
 \label{sec:res-results}
 
-\subsection{What EQGBench does}
-\label{sec:res-what}
+\subsection{Protocol A results --- EQGBench (scale $0$--$2$)}
+\label{sec:res-eqg}
 
-EQGBench is a published benchmark that asks a different question from most
-evaluations. Instead of testing whether a model can \emph{answer} questions, it
-tests whether a model can \emph{write} good educational questions. The authors
-collected a large set of school-level science and mathematics material, asked
-several large language models to generate questions from it, and then had a
-strong ``judge'' model read each generated question and rate it. Every question
-is rated on the five qualities listed earlier knowledge-point alignment,
-question-type alignment, question quality, solution quality, and
-competence-oriented guidance and each quality is given one of three grades:
-poor, good, or excellent (written as $0$, $1$, and $2$). To keep a single
-judge's opinion from dominating, each question is judged three times and the
-grade that appears most often is kept.
+Table~\ref{tab:eqg-compare} reports the EQGBench dimensions. All values in this
+table are on the benchmark's three-point scale. The reference columns are the
+figures published for the benchmark's own strongest judged models on the
+mathematics subset, and are included so that the magnitude of our scores can be
+read against a known anchor.
 
-The headline finding of EQGBench is the useful part for this project. On four of
-the five qualities almost every model scored close to excellent, so those four
-qualities did not tell the models apart. The fifth quality competence-oriented
-guidance, that is, whether a question actually makes a student think rather than
-just recall a fact was where every model scored poorly, and that is the
-quality that separated the good models from the weak ones. Table~\ref{tab:eqg-deepseek-r1}
-shows this pattern with figures reported in the EQGBench paper.
-
-
-\subsection{What ReQUESTA does}
-\label{sec:res-requesta}
-
-Whereas EQGBench focuses on evaluating educational question generation,
-ReQUESTA proposes a complete framework for generating multiple-choice questions.
-Instead of asking a single large language model to generate questions in one
-step, ReQUESTA decomposes the task into a sequence of specialised agents. A
-planning agent first analyses the source text and identifies the key concepts,
-learning objectives, and target cognitive level. A controller then routes this
-plan to dedicated generation agents that independently create text-based,
-inferential, and main-idea questions. After generation, an evaluator agent
-checks each question for quality and consistency, requesting revisions when
-necessary before a final formatting stage produces the completed multiple-choice
-questions.
-
-The authors evaluated ReQUESTA by comparing it with a standard GPT-5 zero-shot
-baseline using both psychometric analyses and expert assessment. Psychometric
-evaluation showed that ReQUESTA-generated questions were more challenging and
-better at distinguishing between students with different levels of reading
-comprehension. Expert reviewers also found that ReQUESTA produced questions that
-were more closely aligned with the source material and contained higher-quality
-distractors, although GPT-5 generated slightly clearer wording for some
-higher-order questions. These findings suggest that improvements in educational
-question generation can be achieved through workflow design and multi-agent
-coordination rather than by changing the underlying language model.
-
-Table~\ref{tab:requesta-results} summarises the main findings reported in the
-ReQUESTA paper.
 \begin{table}[H]
 \centering
-\caption{ReQUESTA results on evaluation metrics comparable to this work.}
-\label{tab:requesta-overlap}
+\caption{EQGBench dimensions, all values on the $0$--$2$ scale. Reference
+columns are published figures; the LectureAssist columns are from our own
+judging run under the verbatim protocol.}
+\label{tab:eqg-compare}
 \small
-\begin{tabular}{|l|c|c|}
+\begin{tabular}{|l|c|c|c|c|}
 \hline
-\textbf{Evaluation Metric} & \textbf{ReQUESTA} & \textbf{GPT-5} \\
+ & \multicolumn{2}{c|}{\textbf{Published reference}} &
+   \multicolumn{2}{c|}{\textbf{LectureAssist}} \\
+\cline{2-5}
+\textbf{Dimension} & \textbf{DeepSeek-R1} & \textbf{GPT-4o} &
+                     \textbf{Agentic} & \textbf{Non-agentic} \\
 \hline
-Topic relevance & 3.36 & 3.12 \\
-Writing clarity & 3.02 & {3.39} \\
-Distractor quality (linguistic) & 2.28 & 1.92 \\
-Distractor quality (semantic) & 3.17 & 2.63 \\
-Answer correctness & 1.00 & 1.00 \\
+KP --- Knowledge-Point Alignment   & 1.98 & 1.96 & --- & --- \\
+QT --- Question-Type Alignment     & 1.95 & 1.82 & --- & --- \\
+QQ --- Question Item Quality       & 1.95 & 1.76 & --- & --- \\
+SQ --- Solution Explanation Quality& 1.96 & 1.72 & --- & --- \\
+CG --- Competence-Oriented Guidance$^{\dagger}$ & 0.17 & 0.21 & --- & --- \\
 \hline
-\end{tabular}
-\end{table}
-\subsection{How this fits our project}
-\label{sec:res-fit}
-
-Our system also \emph{writes} questions, so EQGBench is a natural fit: it was
-built to measure exactly the task our generator performs. We therefore score our
-four pipelines on the same five qualities, on the same three-point scale, using
-the same three-times-and-take-the-most-common judging.
-
-This actually suits us well, because that judge belongs
-to a different model family from our \texttt{gemma3} generator, so the model
-grading a question is never related to the model that wrote it. What we borrow
-from EQGBench is its method --- the five qualities, the grading scale, and the
-repeated judging --- not its exact judge. Second, EQGBench works on school-level
-science and mathematics, whereas our questions come from a university calculus
-chapter; the method carries over, but the subject matter is our own.
-
-\subsection{How our evaluation works}
-\label{sec:res-how}
-
-The evaluation runs in two clearly separated stages. In the first stage the
-system only \emph{generates}: all four pipelines produce their questions and
-everything is saved to a single file, with no scoring involved. In the second
-stage a separate program reads that file and does the scoring. Keeping the two
-apart means the scoring can be repeated, or redone with a different judge, without
-ever re-running or disturbing the generator.
-
-For each saved question the judge is given the original chapter text as the
-source of truth, together with the question, its options, its marked answer and
-its explanation. The judge returns a grade of $0$, $1$ or $2$ on each of the five
-qualities. This is repeated three times per question and the most common grade is
-kept. If a judging attempt fails or returns something unreadable it is treated as
-a zero rather than quietly ignored, so a broken question can never accidentally
-look good. Each pipeline's score on a quality is simply the average of its
-questions' grades, and its overall (composite) score is the average across the
-five qualities.
-
-\subsection{Our results}
-\label{sec:res-ours}
-
-Table~\ref{tab:eqg-overall} reports our four pipelines on the five qualities,
-
-\begin{table}[ht]
-\centering
-\caption{Average complexity metrics across different pipelines.}
-\label{tab:eqg-overall}
-\begin{tabular}{lrrrrrrr}
+Composite (mean of five, max $2$)  & 1.40 & 1.29 & --- & --- \\
+Total (sum of five, max $10$)      & 7.02 & 6.47 & --- & --- \\
 \hline
-\textbf{Pipeline} & \textbf{n} & \textbf{KP} & \textbf{QT} & \textbf{QQ} & \textbf{SQ} & \textbf{CG} & \textbf{Comp} \\
-\hline
-Agentic     & 150& 1.88 & 1.85 & 1.82 & 1.81 & 0.68 & 1.41 \\
-CoT         & 150 & 1.69 & 1.64 & 1.69 & 1.31 & 0.34 & 1.33 \\
-Non-agentic & 150 & 1.29 & 1.63 & 1.38 & 1.39 & 0.30 & 1.20 \\
-PoT         & 150 & 1.69 & 1.65 & 1.67 & 1.33 & 0.70 & 1.41 \\
+$n$ questions                      & 300  & 300  & --- & --- \\
 \hline
 \end{tabular}
 \end{table}
+
+\noindent$^{\dagger}$\,CG carries a reconstructed middle anchor (see
+Section~\ref{sec:res-proto-eqg}) and is the least comparable dimension.
+
+\noindent\textbf{Status.} The LectureAssist columns are \emph{not yet
+populated}. The evaluation harness was rebuilt to use the benchmark's verbatim
+published prompt, which supersedes an earlier run that used a reconstructed
+prompt instructing the judge to "be strict". Because that instruction
+contradicts the benchmark's own lenient scoring rule, scores from the earlier
+run are not comparable to the published figures and are not reported here. The
+re-run under the verbatim protocol is pending; at $5$ dimensions $\times$ $3$
+rounds $\times$ $200$ questions per pipeline it requires approximately $3{,}000$
+judge calls per pipeline.
+
+\paragraph{What the published pattern predicts.} The benchmark's headline
+finding is that KP, QT, QQ and SQ saturate near the ceiling ($1.9$--$2.0$) for
+essentially every capable model and therefore do not discriminate between
+systems, while CG collapses for all of them --- the best mathematics score
+across $46$ evaluated models does not exceed $0.31$. The discriminating
+dimension is the demanding one. This is the same pattern this project observes
+with its own metrics, where acceptance rate saturates and duplicate rate carries
+the signal (Section~\ref{sec:res-native}), and it is the reason both are
+reported.
+
+\subsection{Protocol B results --- ReQUESTA (scale $1$--$4$ and $0$--$1$)}
+\label{sec:res-req}
+
+Table~\ref{tab:req-compare} reports the ReQUESTA rubric. The four-point criteria
+are on the $1$--$4$ scale and the binary criteria on $0$--$1$; the two groups are
+separated in the table and are never averaged together.
 
 \begin{table}[H]
 \centering
-\caption{Comparison between DeepSeek-R1 (EQGBench Mathematics subset) and our proposed pipelines. Higher values indicate better performance.}
-\label{tab:eqg_comparison}
+\caption{ReQUESTA expert-rubric criteria. Four-point criteria on the $1$--$4$
+scale; binary criteria on the $0$--$1$ scale. Reference columns are the
+published expert-rated means ($N{=}200$).}
+\label{tab:req-compare}
 \small
-\begin{tabular}{|l|c|c|c|c|c|}
+\begin{tabular}{|l|c|c|c|c|}
 \hline
-\textbf{Metric} & \textbf{DeepSeek-R1} & \textbf{Agentic} & \textbf{CoT} & \textbf{Non-agentic} & \textbf{PoT} \\
+ & \multicolumn{2}{c|}{\textbf{Published (human experts)}} &
+   \multicolumn{2}{c|}{\textbf{LectureAssist (LLM judge)}} \\
+\cline{2-5}
+\textbf{Criterion} & \textbf{ReQUESTA} & \textbf{GPT-5} &
+                     \textbf{Agentic} & \textbf{Non-agentic} \\
 \hline
-KP & \textbf{1.98} & 1.88 & 1.69 & 1.29 & 1.69 \\
-QT & \textbf{1.95} & 1.85 & 1.64 & 1.63 & 1.65 \\
-QQ & \textbf{1.95} & 1.82 & 1.69 & 1.38 & 1.67 \\
-SQ & \textbf{1.96} & 1.81 & 1.31 & 1.39 & 1.33 \\
-CG & 0.17 & 0.68 & 0.34 & 0.30 & \textbf{0.70} \\
-Composite & 1.40 & \textbf{1.41} & 1.33 & 1.20 & \textbf{1.41} \\
+\multicolumn{5}{|l|}{\emph{Four-point criteria} $(1$--$4)$} \\
+\hline
+Topic relevance                  & 3.36 & 3.12 & --- & --- \\
+Writing clarity                  & 3.02 & \textbf{3.39} & --- & --- \\
+Distractor linguistic features   & 2.28 & 1.92 & --- & --- \\
+Distractor semantic plausibility & 3.17 & 2.63 & --- & --- \\
+Distractor semantic uniqueness$^{\ddagger}$ & 3.82 & 3.75 & --- & --- \\
+\hline
+Overall quality                  & n/r  & n/r  & --- & --- \\
+Coverage                         & n/r  & n/r  & --- & --- \\
+\hline
+\multicolumn{5}{|l|}{\emph{Binary criteria} $(0$--$1)$} \\
+\hline
+Answer correctness               & 1.00 & 1.00 & --- & --- \\
+Distractor incorrectness         & 0.99 & 0.98 & --- & --- \\
+\hline
+\end{tabular}
+\end{table}
+
+\noindent$^{\ddagger}$\,Reported in the source paper but absent from its
+appendix rubric; anchors reconstructed. \emph{n/r} = defined in the rubric but
+never reported in the source paper.
+
+\noindent\textbf{Status.} As with Protocol~A, the LectureAssist columns are
+\emph{not yet populated}; the harness is implemented and verified but has not
+been run. The published columns are reproduced here because they establish the
+comparison target.
+
+\paragraph{The rigour-versus-clarity trade-off.} The published result worth
+attention is the reversal on \emph{writing clarity}: the agentic system beats
+the single-pass GPT-5 baseline on topic relevance, distractor linguistic
+features and distractor semantic plausibility, but \emph{loses} to it on writing
+clarity ($3.02$ versus $3.39$, $p<.001$). Questions that demand integration and
+inference need richer contextual framing, which costs brevity. This is a
+directly testable prediction for our own agentic pipeline, and it is the single
+most useful hypothesis either protocol supplies.
+
+\paragraph{What this protocol cannot deliver here.} The source study also
+reports item difficulty $(p)$, discrimination $(D)$ and point-biserial
+correlation, obtained from $572$ human participants answering the items. Those
+are psychometric properties of \emph{learner responses}, not of question text,
+and no LLM judge can substitute for them. They are outside the scope of this
+work and are listed as a limitation.
+
+\subsection{Native metrics (scale $1$--$5$ and rates)}
+\label{sec:res-native}
+
+Table~\ref{tab:native-overall} reports this project's own automated metrics.
+These are on a five-point scale for the judged quality dimensions and on a
+$0$--$1$ rate scale for the automated measures; they are reported separately
+from both published protocols and are never mixed with them. The judge is
+\texttt{gemma3:12b}, generating from a \texttt{gemma3:4b} generator.
+
+\begin{table}[H]
+\centering
+\caption{Native metrics, $n{=}200$ questions per pipeline. Judged dimensions are
+on a $1$--$5$ scale; the remaining measures are rates or cosine scores in
+$[0,1]$. Higher is better for every row \emph{except} duplicate rate and
+inter-question similarity.}
+\label{tab:native-overall}
+\small
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Metric} & \textbf{Scale} & \textbf{Agentic} & \textbf{Non-agentic} \\
+\hline
+Overall judged quality        & $1$--$5$ & 4.86 & \textbf{4.93} \\
+Correctness                   & $1$--$5$ & 4.98 & \textbf{5.00} \\
+Clarity                       & $1$--$5$ & 4.92 & \textbf{4.99} \\
+Difficulty match              & $1$--$5$ & 4.36 & \textbf{4.39} \\
+\hline
+Acceptance rate               & $0$--$1$ & 0.995 & \textbf{1.000} \\
+Judge-verified correctness    & $0$--$1$ & 0.995 & 0.995 \\
+Independent answer match      & $0$--$1$ & 0.940 & \textbf{0.970} \\
+Semantic grounding            & $0$--$1$ & 0.557 & \textbf{0.624} \\
+Duplicate rate $(\downarrow)$ & $0$--$1$ & 0.385 & \textbf{0.280} \\
+Effective acceptance rate     & $0$--$1$ & 0.612 & \textbf{0.720} \\
+Inter-question similarity $(\downarrow)$ & $0$--$1$ & 0.932 & \textbf{0.894} \\
 \hline
 \end{tabular}
 \end{table}
 
 \begin{table}[H]
 \centering
-\caption{Diversity, grounding and answer correctness by difficulty and pipeline.}
-\label{tab:bulk-answer}
+\caption{Native metrics broken down by target difficulty, $n$ per cell as shown.
+Higher is better except duplicate rate.}
+\label{tab:native-difficulty}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{|l|l|c|c|c|c|c|c|}
 \hline
-\textbf{Difficulty} & \textbf{Pipeline} & \textbf{Duplicate} & \textbf{Grounding} &
-\textbf{Diversity} & \textbf{Eff.\ accept} & \textbf{Indep.\ match} &
-\textbf{Judge-verified} \\
+\textbf{Difficulty} & \textbf{Pipeline} & \textbf{$n$} & \textbf{Duplicate}
+ & \textbf{Grounding} & \textbf{Eff.\ accept} & \textbf{Indep.\ match}
+ & \textbf{Verified} \\
 \hline
-Easy   & Agentic     & 35\% & 0.562 & 0.74 & 65\% & 97\% & 100\% \\
-       & Non-agentic & 63\% & 0.642 & 0.55 & 37\% & 95\% & 99\% \\
-       & CoT         & 33\% & 0.61  & 0.68 & 66\% & 96\% & 99\% \\
-       & PoT         & 28\% & 0.59  & 0.73 & 71\% & 98\% & 100\% \\
+Easy   & Agentic     & 68 & 0.353 & 0.562 & 0.647 & 0.971 & 1.000 \\
+       & Non-agentic & 68 & 0.324 & 0.642 & 0.676 & 0.971 & 0.985 \\
 \hline
-Medium & Agentic     & 38\% & 0.595 & 0.70 & 61\% & 88\% & 99\% \\
-       & Non-agentic & 70\% & 0.614 & 0.48 & 29\% & 84\% & 95\% \\
-       & CoT         & 42\% & 0.60  & 0.64 & 55\% & 90\% & 97\% \\
-       & PoT         & 36\% & 0.58  & 0.70 & 62\% & 93\% & 98\% \\
+Medium & Agentic     & 66 & 0.379 & 0.595 & 0.612 & 0.879 & 0.985 \\
+       & Non-agentic & 66 & 0.227 & 0.614 & 0.773 & 0.955 & 1.000 \\
 \hline
-Hard   & Agentic     & 70\% & 0.513 & 0.45 & 29\% & 88\% & 99\% \\
-       & Non-agentic & 38\% & 0.616 & 0.60 & 56\% & 83\% & 81\% \\
-       & CoT         & 46\% & 0.56  & 0.60 & 49\% & 89\% & 93\% \\
-       & PoT         & 39\% & 0.54  & 0.66 & 57\% & 92\% & 96\% \\
-\hline
-\end{tabular}
-\end{table}
-\begin{table}[H]
-\centering
-\caption{Comparison between the published ReQUESTA results and the proposed framework. The values are reported using each study's original evaluation methodology and are presented for reference only.}
-\label{tab:requesta_vs_ours}
-\small
-\begin{tabular}{|l|c|c|}
-\hline
-\textbf{Evaluation Metric} & \textbf{ReQUESTA} & \textbf{Proposed Framework} \\
-\hline
-Topic Relevance / Grounding & 3.36 / 4 & 0.595 \\
-Writing Clarity & 3.02 / 4 & 4.68 / 5 \\
-Distractor Quality & 3.17 / 4 & 4.63 / 5 \\
-Question Correctness & Expert validated & 4.85 / 5 \\
-Difficulty Match & Not reported & 4.74 / 5 \\
-Overall Quality & Not reported & 4.72 / 5 \\
-Acceptance Rate & Not reported & 61\% \\
-Duplicate Rate & Not reported & 38\% \\
-Question Diversity & Not reported & 0.70 \\
-Independent Answer Verification & Not reported & 88\% \\
-Judge-Verified Correctness & Expert review & 99\% \\
+Hard   & Agentic     & 66 & 0.288 & 0.513 & 0.712 & 0.970 & 1.000 \\
+       & Non-agentic & 66 & 0.182 & 0.616 & 0.818 & 0.985 & 1.000 \\
 \hline
 \end{tabular}
 \end{table}
 
-\vspace{0.3cm}
-\noindent\textit{Note:} ReQUESTA reports human expert evaluation using a 4-point rating scale, whereas the proposed framework uses an LLM-based evaluator with a 5-point rating scale together with automated metrics such as grounding, diversity, acceptance rate, and independent answer verification. Consequently, the reported values are shown side by side for reference and should not be interpreted as direct numerical comparisons.
+\paragraph{Reading these results honestly.} On this instrument the agentic
+pipeline does \textbf{not} outperform the non-agentic baseline. Non-agentic
+matches or beats agentic on every judged dimension, produces fewer duplicates
+($0.280$ versus $0.385$), achieves a higher effective acceptance rate ($0.720$
+versus $0.612$), and is better grounded in the source text ($0.624$ versus
+$0.557$). The pattern holds at every difficulty level.
+
+Two observations follow. First, the four judged quality dimensions
+\emph{saturate}: every value sits between $4.36$ and $5.00$ on a five-point
+scale, and correctness reaches the ceiling exactly. A metric that cannot go up
+cannot discriminate, which is precisely the failure mode EQGBench documents for
+its own four saturating dimensions. The dimensions that do separate the two
+pipelines are the automated ones --- duplicate rate, grounding and effective
+acceptance --- and all three favour the baseline.
+
+Second, the plausible mechanism is the agentic loop's retry behaviour. Because a
+rejected question is regenerated against the same planned topic, repeated
+retries concentrate the output around topics the planner has already selected,
+raising duplication. The validator enforces per-question quality but has no view
+of corpus-level diversity. This is a concrete, testable explanation and a clear
+direction for the next iteration, but on the present evidence the agentic
+pipeline's advantage over single-pass prompting is \textbf{not established}.
 
 \section{Summary}
 \label{sec:res-summary}
 
-This chapter evaluated four question-generation pipelines --- agentic,
-non-agentic, chain-of-thought and program-of-thought --- built on the same
-pinned local \texttt{gemma3:4b} generator, using the EQGBench protocol: five
-dimensions scored $0$--$2$, three-round voting, judged by an independent
-reasoning model. The evaluation deliberately separates generation from
-measurement, scores an already-generated corpus of $583$ questions, and reports
-per-cell sample sizes because they are not uniform. The measured dimension
-scores and the analysis of which dimensions discriminate between pipelines are
-completed once the judging run finishes.
+This chapter evaluated question-generation pipelines built on a pinned local
+\texttt{gemma3:4b} generator under three instruments reported on their own
+scales: the EQGBench protocol (five dimensions, $0$--$2$, DeepSeek-R1 judge,
+three-round voting with an arithmetic-mean tie-break), the ReQUESTA expert
+rubric (two binary criteria and six four-point criteria, disagreements resolved
+downward), and this project's native metrics ($1$--$5$ judged dimensions plus
+automated rates).
+
+The evaluation deliberately separates generation from measurement so that a
+corpus can be rejudged without re-running the generator. Both published
+protocols are implemented with their rubrics transcribed verbatim from source,
+and every deviation is declared rather than absorbed silently --- including the
+absence of any published judge prompt for ReQUESTA, whose rubric was applied by
+human experts.
+
+Of the four implemented pipelines, two have completed a scored run. On the
+native metrics the non-agentic baseline currently outperforms the agentic
+pipeline, driven by lower duplication and better grounding, while the judged
+quality dimensions saturate and do not discriminate. Results under the two
+published protocols are pending their judging runs, and the CoT and PoT
+pipelines remain unevaluated; no claim is made for either until those runs
+complete.
