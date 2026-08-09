@@ -151,63 +151,18 @@ retries within budget. Models are Gemma~3, served locally by Ollama.
 
 %---------------------------------------------------------------
 % THE ONE DIAGRAM ALLOWED BY THE TEMPLATE -- spans both columns.
-% Two rows: row 1 flows left to right, wraps down, row 2 continues
-% left to right. \resizebox guarantees it never exceeds \textwidth.
+% Drawn in draw.io (Book/synopsis-architecture.drawio) and exported to PDF.
+% PDF rather than SVG on purpose: draw.io exports HTML labels as
+% <foreignObject>, which Inkscape (used by the svg package) does not render,
+% so an SVG here would silently lose every caption.
 %---------------------------------------------------------------
 \begin{center}
-\resizebox{\textwidth}{!}{%
-\begin{tikzpicture}[x=1mm,y=1mm]
-
-%---- ROW 1 : ingestion -> representation (4-column grid) ---------------
-\node[data]  (in)   at (17,0)  {\nt{Lecture media}\\[0.2ex]\nd{video, PDF, DOCX or PPTX}};
-\node[agent] (ext)  at (54,0)  {\nt{Dual-channel extractor}\\[0.2ex]\nd{scene-adaptive OCR}\\\nd{Faster-Whisper speech}};
-\node[data]  (fuse) at (91,0)  {\nt{Fused timeline}\\[0.2ex]\nd{board text + speech, timed}};
-\node[data]  (idx)  at (128,0) {\nt{Summary + index}\\[0.2ex]\nd{map-reduce, FAISS}};
-
-\draw[flow] (in)   -- (ext);
-\draw[flow] (ext)  -- (fuse);
-\draw[flow] (fuse) -- (idx);
-
-%---- ROW 2 : agentic generation -> assessment (same 4-column grid) -----
-\node[agent=stageB] (plan) at (17,-24)
-  {\nt{\color{stageB}Quiz Planner}\\[0.2ex]\nd{topic $\times$ difficulty slots}};
-\node[agent=stageB] (gen)  at (54,-24)
-  {\nt{\color{stageB}Generator}\\[0.2ex]\nd{one MCQ per call,}\\\nd{calls \texttt{search\_lecture}}};
-\node[agent=stageB] (val)  at (91,-24)
-  {\nt{\color{stageB}Validator}\\[0.2ex]\nd{grounding, difficulty,}\\\nd{instruction compliance}};
-\node[data=stageB]  (out)  at (128,-24)
-  {\nt{\color{stageB}Grader + profile}\\[0.2ex]\nd{mastery steers next quiz}};
-
-\draw[flow=stageB] (plan) -- (gen);
-\draw[flow=stageB] (gen)  -- (val);
-\draw[flow=stageB] (val)  -- (out);
-\node[elbl,text=stageB] at (109.5,-24) {PASS};
-
-%---- the retry loop, as a labelled feedback edge (not a floating box) ---
-\draw[retry] (val.south) -- (91,-32.5) -- (54,-32.5) -- (gen.south);
-\node[elbl,text=failc] (retrylab) at (72.5,-32.5)
-  {FAIL $\rightarrow$ regenerate / fetch context / replan, within retry budget};
-
-%---- wrap connector: row 1 hands its representation to row 2 ------------
-\draw[flow=inkgy] (idx.south) -- (128,-12) -- (-3,-12) -- (-3,-24) -- (plan.west);
-\node[elbl,text=inkgy] at (66,-12) {grounded content + retrieval index};
-
-%---- stage bands and their labels --------------------------------------
-\begin{scope}[on background layer]
-  \node[band=stageA,fit=(in)(idx),inner sep=3.5mm] (b1) {};
-  \node[band=stageB,fit=(plan)(out)(retrylab),inner sep=3.5mm] (b2) {};
-\end{scope}
-\node[stage=stageA,anchor=north west] at ([shift={(2.5mm,-1.3mm)}]b1.north west)
-  {INGESTION \& REPRESENTATION};
-\node[stage=stageB,anchor=north west] at ([shift={(2.5mm,-1.3mm)}]b2.north west)
-  {AGENTIC GENERATION \& ASSESSMENT};
-
-\end{tikzpicture}}
+  \includegraphics[width=\textwidth]{synopsis-architecture.pdf}
 \end{center}
-\vspace{-0.6em}
-\captionof{figure}{LectureAssist system architecture. Row~1 turns raw media
-into one grounded representation; row~2 is the agentic loop, where a failed
-question is diagnosed and routed back through the Refiner, not discarded.}
+\vspace{-0.8em}
+\captionof{figure}{LectureAssist architecture. Row~1 turns raw media into
+one grounded representation; row~2 is the agentic loop, where a failed
+question is diagnosed and routed back for regeneration, not discarded.}
 \vspace{0.4em}
 
 \begin{multicols}{2}

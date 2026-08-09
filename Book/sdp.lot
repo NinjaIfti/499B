@@ -1,15 +1,13 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {3.1}{\ignorespaces Software components, alternatives, and selection rationale.}}{11}{table.3.1}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Software components, alternatives, and selection rationale.}}{18}{table.3.1}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {4.1}{\ignorespaces Question quality by difficulty and pipeline (judge scores $1$--$5$; accept rate in \%). CoT and PoT rows are pending the full four-pipeline run and are not yet measured.}}{19}{table.4.1}%
-\contentsline {table}{\numberline {4.2}{\ignorespaces Diversity, grounding and answer correctness by difficulty and pipeline. CoT and PoT rows are pending the full four-pipeline run and are not yet measured.}}{19}{table.4.2}%
-\contentsline {table}{\numberline {4.3}{\ignorespaces Answer-Generator calibration: accuracy on the known-answer set. This is a calibration of the \emph {solver}, not a score on the generated questions.}}{20}{table.4.3}%
-\contentsline {table}{\numberline {4.4}{\ignorespaces Validator--judge agreement for the agentic pipeline: does the pipeline's own self-validator detect what an independent judge detects?}}{20}{table.4.4}%
-\addvspace {10\p@ }
-\addvspace {10\p@ }
-\addvspace {10\p@ }
-\contentsline {table}{\numberline {7.1}{\ignorespaces Complex Engineering Problem attributes addressed by LectureAssist.}}{28}{table.7.1}%
-\contentsline {table}{\numberline {7.2}{\ignorespaces Complex Engineering Activity attributes addressed by LectureAssist.}}{29}{table.7.2}%
-\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces The eleven configurations, what each manipulates, and its implementation/measurement status at the time of writing.}}{24}{table.4.1}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces LLM calls per question, counted structurally from the implementation. $k$ is the number of attempts the question required. These are arithmetic, not measurements.}}{30}{table.4.2}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces EQGBench dimensions, all values on the $0$--$2$ scale. Reference columns are published figures; the LectureAssist columns are from our own judging run under the verbatim protocol.}}{31}{table.4.3}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces ReQUESTA expert-rubric criteria. Four-point criteria on the $1$--$4$ scale; binary criteria on the $0$--$1$ scale. Reference columns are the published expert-rated means ($N{=}200$).}}{32}{table.4.4}%
+\contentsline {table}{\numberline {4.5}{\ignorespaces Native metrics, $n{=}200$ questions per pipeline. Judged dimensions are on a $1$--$5$ scale; the remaining measures are rates or cosine scores in $[0,1]$. Higher is better for every row \emph {except} duplicate rate and inter-question similarity.}}{33}{table.4.5}%
+\contentsline {table}{\numberline {4.6}{\ignorespaces Native metrics broken down by target difficulty, $n$ per cell as shown. Higher is better except duplicate rate.}}{33}{table.4.6}%
+\contentsline {table}{\numberline {4.7}{\ignorespaces Leave-one-agent-out ablation, planned at $n{=}100$ per difficulty. Higher is better except duplicate rate and calls. $\Delta $ columns are relative to the full agentic control. No cell is populated: these configurations are specified but not yet implemented.}}{34}{table.4.7}%
+\contentsline {table}{\numberline {4.8}{\ignorespaces Agent-merging variants, planned at $n{=}100$ per difficulty. Higher is better except duplicate rate and calls. The structural call counts of Table~\ref {tab:calls} are repeated for reference; the measured columns are not populated, as neither configuration has been run.}}{35}{table.4.8}%

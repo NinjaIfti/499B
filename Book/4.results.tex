@@ -2,25 +2,43 @@
 \label{ch:results}
 
 This chapter reports the evaluation of LectureAssist's question generator. It
-describes the environment the experiment was run in, defines the two evaluation
-protocols precisely, and reports the results.
+describes the environment the experiment was run in, enumerates the
+configurations under test, defines the evaluation instruments precisely, and
+reports the results that have been measured --- marking clearly, and in every
+table, those that have not.
 
-The evaluation adopts \emph{two} published protocols rather than one, and runs
-them side by side. \textbf{EQGBench} is a benchmark for evaluating an LLM's
-ability to \emph{generate} educational questions; \textbf{ReQUESTA} is an
-agentic MCQ-authoring framework whose expert rubric provides a second,
-independent instrument. The two are reported separately and never merged,
-because they use different scales and different scoring rules
-(Section~\ref{sec:res-protocol}). A third set of automated metrics, native to
-this project, is reported alongside them.
+The evaluation has two halves. The first asks whether the agentic pipeline
+produces better multiple-choice questions than single-shot prompting, judged
+under \emph{two published protocols} run side by side: \textbf{EQGBench}, a
+benchmark for evaluating an LLM's ability to \emph{generate} educational
+questions, and \textbf{ReQUESTA}, an agentic MCQ-authoring framework whose
+expert rubric provides a second, independent instrument. The two are reported
+separately and never merged, because they use different scales and different
+scoring rules (Section~\ref{sec:res-protocol}). A third set of automated
+metrics, native to this project, is reported alongside them.
 
-The experiment is designed around three questions.
+The second half is new to this chapter and is the direct consequence of the
+first half's outcome. Because the completed measurements show the agentic
+pipeline \emph{failing} to beat its own baseline
+(Section~\ref{sec:res-native}), the interesting question is no longer
+``does the agentic loop win'' but ``\emph{which agent} is responsible, and how
+much does each one cost''. Two families of controlled variants answer that:
+\textbf{leave-one-agent-out} ablations, which delete one agent at a time
+(Section~\ref{sec:res-loo}), and \textbf{agent-merging} variants, which collapse
+two agents into a single LLM call (Section~\ref{sec:res-merge}).
+
+The experiment is designed around five questions.
 \emph{RQ1:} judged on each published protocol, does the agentic pipeline produce
 better multiple-choice questions than single-shot prompting?
 \emph{RQ2:} how does each pipeline behave as the target difficulty rises from
 easy to hard?
 \emph{RQ3:} which dimensions actually separate the pipelines, and which
 saturate?
+\emph{RQ4:} which individual agent accounts for the agentic pipeline's
+behaviour --- in particular, is the retry loop the cause of its excess
+repetition?
+\emph{RQ5:} can two agents be merged into one call without losing quality, and
+how much compute does that save?
 
 \section{Environment Setup}
 \label{sec:res-env}
@@ -31,32 +49,82 @@ proprietary API is used anywhere in the generation path. Bulk generation
 artifacts are written to Google Drive so a run survives a Colab disconnection
 and can be resumed rather than restarted.
 
-\paragraph{Pipelines.} Four generation pipelines are implemented, all using the
-same pinned \texttt{gemma3:4b} generator and the same source material:
+\subsection{Configurations under test}
+\label{sec:res-configs}
 
-\begin{itemize}
-  \item \textbf{Agentic} --- the production per-question loop of
-        \emph{Plan $\rightarrow$ Generate $\rightarrow$ Validate $\rightarrow$
-        Retry}: a planner selects topics, each question is checked by a
-        self-validator on grounding, difficulty, instruction compliance and
-        uniqueness, and regenerated (with the failure reason fed back) until it
-        passes or a retry budget is exhausted; the generator may issue its own
-        retrieval query when it judges the supplied context insufficient.
-  \item \textbf{Non-agentic} --- a single LLM call that writes questions
-        directly, with no planning, validation, retrieval or retry.
-  \item \textbf{Chain-of-thought (CoT)} --- as non-agentic, but the prompt
-        instructs the model to reason step-by-step about the content before
-        writing each question.
-  \item \textbf{Program-of-thought (PoT)} --- as non-agentic, but the model is
-        instructed to derive each question through explicit worked computation
-        before committing to an answer.
-\end{itemize}
+Eleven configurations are defined. All share the same pinned
+\texttt{gemma3:4b} generator, the same source material, the same retrieval
+tool and the same cognitive-routing Controller; they differ only in which
+agents are present and how those agents are packaged into LLM calls. Holding
+everything else fixed is what makes any difference attributable to the
+manipulation rather than to a confound.
 
-\noindent\textbf{Scope of the results reported here.} Of these four pipelines,
-\textbf{only \emph{agentic} and \emph{non-agentic} have completed a scored
-evaluation run} (Section~\ref{sec:res-native}). The CoT and PoT pipelines are
-implemented but have not yet been judged, and no results are claimed for them
-anywhere in this chapter.
+\begin{table}[H]
+\centering
+\caption{The eleven configurations, what each manipulates, and its
+implementation/measurement status at the time of writing.}
+\label{tab:configs}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|l|p{5.6cm}|p{3.2cm}|l|}
+\hline
+\textbf{Configuration} & \textbf{Manipulation} & \textbf{Question it answers}
+ & \textbf{Status} \\
+\hline
+\multicolumn{4}{|l|}{\emph{Baseline comparison (RQ1--RQ3)}} \\
+\hline
+\texttt{agentic}     & full loop: Plan $\rightarrow$ Retrieve $\rightarrow$
+                       Generate $\rightarrow$ Validate $\rightarrow$ Retry
+                     & control                        & scored \\
+\texttt{nonagentic}  & one LLM call, no planning, retrieval, validation or retry
+                     & does the machinery help?       & scored \\
+\texttt{cot}         & single call, chain-of-thought prompt
+                     & can a prompt substitute?       & unscored \\
+\texttt{pot}         & single call, program-of-thought prompt
+                     & can a prompt substitute?       & unscored \\
+\hline
+\multicolumn{4}{|l|}{\emph{Leave-one-agent-out ablations (RQ4)}} \\
+\hline
+$-$\,planner    & uniform slots at the target difficulty; no Quiz Planner
+                & does planning help, or cause topic tunnel-vision?
+                & not built \\
+$-$\,retrieval  & fixed content snippet; \texttt{search\_lecture} disabled
+                & is model-directed RAG earning its cost?
+                & not built \\
+$-$\,validator  & first draft accepted; no validation, no retry
+                & the whole quality gate
+                & not built \\
+$-$\,refiner    & validator still runs and labels, but never remediates
+                & \textbf{separates detection from remediation}
+                & not built \\
+$-$\,routing    & \texttt{COGNITIVE\_ROUTING=False}
+                & does the Controller buy diversity?
+                & not built \\
+\hline
+\multicolumn{4}{|l|}{\emph{Agent-merging variants (RQ5)}} \\
+\hline
+\texttt{merge\_vr} & Validator $+$ Refiner in ONE call: it judges the draft and
+                     returns the rewrite in the same reply
+                   & is a separate refiner call worth it?
+                   & built, unrun \\
+\texttt{merge\_pg} & Planner $+$ Generator in ONE call: the generator picks its
+                     own topic and drafts the question
+                   & is a separate planner call worth it?
+                   & built, unrun \\
+\hline
+\end{tabular}
+\end{table}
+
+\noindent\textbf{Scope of the results reported in this chapter.} Of the eleven
+configurations, \textbf{only \texttt{agentic} and \texttt{nonagentic} have
+completed a scored evaluation run} (Section~\ref{sec:res-native}). The
+\texttt{cot} and \texttt{pot} pipelines are implemented but have not been
+judged. The two merging variants are implemented in a standalone harness
+(\texttt{merged\_agents.py}) and verified, but have not been run. The five
+leave-one-out configurations are specified in
+Section~\ref{sec:res-loo} but not yet implemented. No result is claimed for any
+of them anywhere in this chapter, and every corresponding table cell is shown
+as pending rather than filled with an estimate.
 
 The baseline pipelines read the document through an identical sliding window
 that steps across the whole chapter with a uniform batch size, so no baseline is
@@ -70,9 +138,12 @@ map-reduce summary $\rightarrow$ retrieval index). The extracted chapter text
 (about $112$k characters) is also supplied to the judge as the ground-truth
 reference against which each question is scored.
 
-\paragraph{Question count.} Each evaluated pipeline generated $200$ MCQs spread
-across three target difficulties (easy $n{=}68$, medium $n{=}66$, hard
-$n{=}66$).
+\paragraph{Question count.} Each of the two evaluated pipelines generated $200$
+MCQs spread across three target difficulties (easy $n{=}68$, medium $n{=}66$,
+hard $n{=}66$). The ablation and merging configurations are specified at
+$n{=}100$ per difficulty rather than $200$: duplicate rate and grounding are
+large effects and separate at that size, and eleven configurations at $200$ each
+is not affordable on a free-tier T4.
 
 \section{Evaluation Protocols}
 \label{sec:res-protocol}
@@ -82,7 +153,10 @@ Generation and measurement are kept strictly separate: the Colab run only
 harnesses then read that artifact and score each question. Scoring an
 already-generated corpus with a separate program means the measurement can be
 repeated, or redone under a different protocol, without touching the system
-under test.
+under test. It also means the ablation and merging corpora feed into an
+\emph{identical} scoring path --- the harnesses key on a
+\texttt{pipeline:difficulty} group label and are indifferent to which
+configuration produced a question.
 
 Two published protocols are implemented, one harness each
 (\texttt{evaluate\_eqgbench.py} and \texttt{evaluate\_requesta.py}). Each is
@@ -171,7 +245,7 @@ to get wrong. First, the judge must state its \emph{justification before} its
 score, which is a chain-of-thought ordering that materially affects the score.
 Second, the KP criterion is deliberately \emph{lenient}: partial coverage
 anywhere in the item earns full marks. An evaluation that instructs the judge to
-"be strict" is therefore not measuring the same thing as EQGBench, and its
+``be strict'' is therefore not measuring the same thing as EQGBench, and its
 scores are not comparable to the published figures.
 
 \paragraph{Fidelity and deviations.} The system prompt, query scaffold, KP
@@ -226,6 +300,154 @@ distractor semantic uniqueness as reconstructed from the paper's prose. Only the
 five criteria in Table~\ref{tab:req-compare} can be placed beside the published
 numbers at all.
 
+\subsection{Native metrics, and why a cost column is mandatory}
+\label{sec:res-proto-native}
+
+Alongside the two published protocols, this project reports its own automated
+metrics: four judged quality dimensions on a $1$--$5$ scale
+(\texttt{gemma3:12b} judging a \texttt{gemma3:4b} generator), plus automated
+measures in $[0,1]$ --- acceptance rate, judge-verified correctness,
+independent answer match, semantic grounding, duplicate rate, effective
+acceptance rate and inter-question similarity.
+
+For the ablation and merging configurations these are joined by a
+\textbf{cost} measure: the number of LLM calls consumed per accepted question,
+recorded per question at generation time. This is not decoration. An ablation
+result of the form ``removing agent $X$ barely changed quality'' is
+uninterpretable on its own; it becomes a finding only when read next to
+``and it removed a third of the calls''. Equally, a merging result that
+preserves quality is worthless if it does not actually save compute. Every
+ablation and merging table in this chapter therefore carries a cost column, and
+no configuration is declared preferable on quality alone.
+
+\section{Ablation Design}
+\label{sec:res-ablation}
+
+\subsection{Leave-one-agent-out}
+\label{sec:res-loo}
+
+The agentic pipeline is not a monolith; it is five separable parts --- the Quiz
+Planner, the model-directed retrieval tool, the Validator, the Refiner, and the
+cognitive-routing Controller. The leave-one-out family deletes exactly one of
+them per configuration, holding the other four and every hyper-parameter fixed
+(Table~\ref{tab:configs}).
+
+Two of these configurations deserve emphasis because they form a matched pair.
+The $-$\,validator condition removes the quality gate entirely: a draft is
+accepted as written. The $-$\,refiner condition keeps the Validator, and keeps
+its verdict, but forbids it from acting --- a failing question is labelled and
+retained rather than regenerated. Together they separate \emph{detection} from
+\emph{remediation}: the first asks whether noticing a bad question helps at all,
+the second whether acting on that verdict helps.
+
+That pair is the sharpest instrument in this chapter, because it tests a
+specific mechanism this work has already proposed but never verified.
+Section~\ref{sec:res-native} finds the agentic pipeline producing
+substantially more near-duplicate questions than the plain baseline, and
+Section~\ref{sec:res-discuss} attributes that to the retry loop: a rejected
+question is regenerated against the \emph{same} planned topic, so repeated
+retries concentrate the output on topics the planner has already chosen. If that
+explanation is correct, then $-$\,refiner --- which retains validation but
+performs no retries --- should show a duplicate rate markedly closer to the
+baseline's than to the full pipeline's. If it does not, the proposed mechanism
+is wrong and the excess repetition originates elsewhere, most plausibly in the
+planner. Either outcome is informative; at present the explanation is an
+untested hypothesis and is labelled as such.
+
+\subsection{Agent merging}
+\label{sec:res-merge}
+
+Where the leave-one-out family asks \emph{whether} an agent is needed, the
+merging family asks whether two agents need to be two \emph{LLM calls}. The
+distinction matters because the agentic pipeline's cost is dominated by call
+count, not by any single agent's presence.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{pipeline-merge-illustrated.pdf}
+    \caption{The three configurations compared by the merging experiment. All
+    three receive identical grounded content and retrieval index and share the
+    pinned \texttt{gemma3:4b} generator, the retrieval tool and the Controller;
+    only the boxed agent merges differ. Call counts are structural --- counted
+    from the implementation, not measured runtimes.}
+    \label{fig:merge}
+\end{figure}
+
+\paragraph{\texttt{merge\_vr} --- Validator $+$ Refiner.} In the control
+pipeline a failing question costs two calls to fix: one to validate, and a
+second to redraft with the failure reason fed back. In \texttt{merge\_vr} the
+validator is instructed to repair what it rejects and to return the corrected
+question in the same reply, so a rejected question is re-validated directly
+rather than redrafted first.
+
+Only the \texttt{regenerate} remediation can be absorbed this way. The other two
+actions the validator may choose --- \texttt{fetch\_context} and
+\texttt{replan\_topic} --- require work \emph{outside} the model (a retrieval
+query, a topic swap) and are still returned as actions for the loop to act on,
+exactly as in the control. A merge cannot remove a step that was never an LLM
+call.
+
+\paragraph{\texttt{merge\_pg} --- Planner $+$ Generator.} The control spends one
+planner call per batch and then one drafting call per question against an
+assigned topic. In \texttt{merge\_pg} there is no standalone planner: each
+drafting call is shown the topics already used and must itself choose an unused
+topic that the summary genuinely covers, then write the question for it in the
+same reply. This trades a global view for a local one --- the model can no
+longer balance topic counts across the whole quiz, only avoid what it has
+already seen. Whether that costs diversity is precisely what the experiment
+measures.
+
+\paragraph{Structural call counts.} Because both merges are changes to
+\emph{packaging} rather than to behaviour, their cost can be counted from the
+implementation without running anything. For a question that is accepted on
+attempt $k$, and writing $g$ for a drafting call and $v$ for a validation call:
+
+\begin{table}[H]
+\centering
+\caption{LLM calls per question, counted structurally from the implementation.
+$k$ is the number of attempts the question required. These are arithmetic, not
+measurements.}
+\label{tab:calls}
+\small
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Configuration} & \textbf{Calls for $k$ attempts} & \textbf{$k{=}1$}
+ & \textbf{$k{=}2$} \\
+\hline
+\texttt{agentic} (control) & $2k$ \;(+1 planner per batch) & 2 & 4 \\
+\texttt{merge\_vr}         & $k+1$ \;(+1 planner per batch) & 2 & \textbf{3} \\
+\texttt{merge\_pg}         & $2k$ \;(no batch planner call) & 2 & 4 \\
+\hline
+\end{tabular}
+\end{table}
+
+\noindent Two honest qualifications follow from this table. First,
+\texttt{merge\_pg} saves nothing per question; its entire saving is the single
+batch-level planner call, which amortises to almost nothing over $100$
+questions. Its interest is therefore not cost but \emph{diversity} --- whether
+a generator that plans locally repeats itself more or less than one that plans
+globally. Second, \texttt{merge\_vr}'s $k+1$ figure is realised \emph{only when
+the merged call actually returns a usable rewrite}. When it returns a
+structurally invalid rewrite, or chooses \texttt{fetch\_context} or
+\texttt{replan\_topic}, the loop must redraft and the cost reverts to $2k$, the
+same as the control. The rate at which the merged call supplies a usable rewrite
+is thus itself a quantity to be measured, and the $25\%$ saving at $k{=}2$ is an
+upper bound rather than a prediction.
+
+\subsection{What these ablations cannot show}
+\label{sec:res-ablation-limits}
+
+Three limitations are inherent to the design and are stated here rather than
+discovered later. First, leave-one-out attributes an effect to the
+\emph{absence} of one agent in the presence of the other four; it cannot
+identify interactions between agents, for which a factorial design far beyond
+this project's compute budget would be required. Second, every quality number
+is produced by an LLM judge from the same model family as the generator, so an
+ablation that changes quality only slightly may be changing something the judge
+cannot see. Third, all configurations are evaluated on one chapter of one
+subject, so an agent that appears unnecessary on calculus may be necessary on
+material with different structure.
+
 \section{Results and Discussion}
 \label{sec:res-results}
 
@@ -273,7 +495,7 @@ Section~\ref{sec:res-proto-eqg}) and is the least comparable dimension.
 \noindent\textbf{Status.} The LectureAssist columns are \emph{not yet
 populated}. The evaluation harness was rebuilt to use the benchmark's verbatim
 published prompt, which supersedes an earlier run that used a reconstructed
-prompt instructing the judge to "be strict". Because that instruction
+prompt instructing the judge to ``be strict''. Because that instruction
 contradicts the benchmark's own lenient scoring rule, scores from the earlier
 run are not comparable to the published figures and are not reported here. The
 re-run under the verbatim protocol is pending; at $5$ dimensions $\times$ $3$
@@ -288,7 +510,9 @@ across $46$ evaluated models does not exceed $0.31$. The discriminating
 dimension is the demanding one. This is the same pattern this project observes
 with its own metrics, where acceptance rate saturates and duplicate rate carries
 the signal (Section~\ref{sec:res-native}), and it is the reason both are
-reported.
+reported. It also has a direct consequence for the ablations: they should be
+read on duplicate rate, grounding and cost, not on the judged dimensions, which
+have no headroom left to move.
 
 \subsection{Protocol B results --- ReQUESTA (scale $1$--$4$ and $0$--$1$)}
 \label{sec:res-req}
@@ -356,14 +580,15 @@ are psychometric properties of \emph{learner responses}, not of question text,
 and no LLM judge can substitute for them. They are outside the scope of this
 work and are listed as a limitation.
 
-\subsection{Native metrics (scale $1$--$5$ and rates)}
+\subsection{Native metrics --- agentic versus non-agentic}
 \label{sec:res-native}
 
-Table~\ref{tab:native-overall} reports this project's own automated metrics.
-These are on a five-point scale for the judged quality dimensions and on a
-$0$--$1$ rate scale for the automated measures; they are reported separately
-from both published protocols and are never mixed with them. The judge is
-\texttt{gemma3:12b}, generating from a \texttt{gemma3:4b} generator.
+Table~\ref{tab:native-overall} reports this project's own automated metrics for
+the two configurations that have completed a scored run. These are on a
+five-point scale for the judged quality dimensions and on a $0$--$1$ rate scale
+for the automated measures; they are reported separately from both published
+protocols and are never mixed with them. The judge is \texttt{gemma3:12b},
+generating from a \texttt{gemma3:4b} generator.
 
 \begin{table}[H]
 \centering
@@ -418,12 +643,14 @@ Hard   & Agentic     & 66 & 0.288 & 0.513 & 0.712 & 0.970 & 1.000 \\
 \end{tabular}
 \end{table}
 
-\paragraph{Reading these results honestly.} On this instrument the agentic
-pipeline does \textbf{not} outperform the non-agentic baseline. Non-agentic
-matches or beats agentic on every judged dimension, produces fewer duplicates
-($0.280$ versus $0.385$), achieves a higher effective acceptance rate ($0.720$
-versus $0.612$), and is better grounded in the source text ($0.624$ versus
-$0.557$). The pattern holds at every difficulty level.
+\paragraph{Reading these results honestly.}
+\label{sec:res-discuss}
+On this instrument the agentic pipeline does \textbf{not} outperform the
+non-agentic baseline. Non-agentic matches or beats agentic on every judged
+dimension, produces fewer duplicates ($0.280$ versus $0.385$), achieves a higher
+effective acceptance rate ($0.720$ versus $0.612$), and is better grounded in
+the source text ($0.624$ versus $0.557$). The pattern holds at every difficulty
+level.
 
 Two observations follow. First, the four judged quality dimensions
 \emph{saturate}: every value sits between $4.36$ and $5.00$ on a five-point
@@ -437,9 +664,121 @@ Second, the plausible mechanism is the agentic loop's retry behaviour. Because a
 rejected question is regenerated against the same planned topic, repeated
 retries concentrate the output around topics the planner has already selected,
 raising duplication. The validator enforces per-question quality but has no view
-of corpus-level diversity. This is a concrete, testable explanation and a clear
-direction for the next iteration, but on the present evidence the agentic
-pipeline's advantage over single-pass prompting is \textbf{not established}.
+of corpus-level diversity. \textbf{This remains a hypothesis.} It is
+consistent with the data but is not established by it, and it is exactly what
+the $-$\,refiner and $-$\,planner ablations of Section~\ref{sec:res-loo} are
+designed to test. On the present evidence the agentic pipeline's advantage over
+single-pass prompting is \textbf{not established}.
+
+\subsection{Leave-one-agent-out results}
+\label{sec:res-loo-results}
+
+Table~\ref{tab:loo} is the reporting frame for the leave-one-out family. It is
+restricted to the measures that Section~\ref{sec:res-native} shows actually
+discriminate, plus cost; the judged $1$--$5$ dimensions are omitted because they
+saturate and would fill the table with values that cannot move.
+
+\begin{table}[H]
+\centering
+\caption{Leave-one-agent-out ablation, planned at $n{=}100$ per difficulty.
+Higher is better except duplicate rate and calls. $\Delta$ columns are relative
+to the full agentic control. No cell is populated: these configurations are
+specified but not yet implemented.}
+\label{tab:loo}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Configuration} & \textbf{Duplicate} $(\downarrow)$ &
+\textbf{Grounding} & \textbf{Eff.\ accept} & \textbf{Indep.\ match} &
+\textbf{Calls / accepted} $(\downarrow)$ \\
+\hline
+\texttt{agentic} (control) & 0.385$^{*}$ & 0.557$^{*}$ & 0.612$^{*}$ & 0.940$^{*}$ & --- \\
+\hline
+$-$\,planner    & --- & --- & --- & --- & --- \\
+$-$\,retrieval  & --- & --- & --- & --- & --- \\
+$-$\,validator  & --- & --- & --- & --- & --- \\
+$-$\,refiner    & --- & --- & --- & --- & --- \\
+$-$\,routing    & --- & --- & --- & --- & --- \\
+\hline
+\texttt{nonagentic} (all removed) & 0.280$^{*}$ & 0.624$^{*}$ & 0.720$^{*}$ & 0.970$^{*}$ & --- \\
+\hline
+\end{tabular}
+\end{table}
+
+\noindent$^{*}$\,Carried over from Table~\ref{tab:native-overall} at $n{=}200$,
+not $n{=}100$; the two control rows are therefore not sample-size-matched to the
+ablation rows and will be re-run at $n{=}100$ before any $\Delta$ is computed.
+Cost is shown as pending for the control as well, because call counts were not
+instrumented during the original run --- the instrumentation was added with the
+ablation harness.
+
+\noindent\textbf{Status.} Not measured. The five configurations are specified in
+Section~\ref{sec:res-loo}; the flags that select them are not yet implemented,
+and no number will be entered into this table until they are run.
+
+\paragraph{The prediction on record.} Stating a prediction before the run is
+what makes the result falsifiable. If the retry-concentration mechanism of
+Section~\ref{sec:res-discuss} is correct, then $-$\,refiner should show a
+duplicate rate substantially below the control's $0.385$ and closer to the
+baseline's $0.280$, while $-$\,validator --- which also removes retries ---
+should behave similarly on duplication but worse on grounding, since nothing
+then blocks an ungrounded question. If instead $-$\,planner is the configuration
+that drops duplication, the cause is topic selection rather than retrying, and
+the mechanism stated in Section~\ref{sec:res-discuss} is wrong and should be
+corrected in this chapter rather than defended.
+
+\subsection{Agent-merging results}
+\label{sec:res-merge-results}
+
+Table~\ref{tab:merge} is the reporting frame for the merging family. The two
+merged configurations are implemented and verified in
+\texttt{merged\_agents.py}, which reuses the control pipeline's prompts verbatim
+so that the merge is the only difference, and which emits the same artifact the
+two published harnesses already read.
+
+\begin{table}[H]
+\centering
+\caption{Agent-merging variants, planned at $n{=}100$ per difficulty. Higher is
+better except duplicate rate and calls. The structural call counts of
+Table~\ref{tab:calls} are repeated for reference; the measured columns are not
+populated, as neither configuration has been run.}
+\label{tab:merge}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Configuration} & \textbf{Structural calls} & \textbf{Duplicate} $(\downarrow)$
+ & \textbf{Grounding} & \textbf{Eff.\ accept} & \textbf{Calls / accepted} $(\downarrow)$ \\
+ & \textbf{at $k{=}2$} & & & & \textbf{(measured)} \\
+\hline
+\texttt{agentic} (control) & 4 & 0.385$^{*}$ & 0.557$^{*}$ & 0.612$^{*}$ & --- \\
+\texttt{merge\_vr}         & 3 & ---         & ---         & ---         & --- \\
+\texttt{merge\_pg}         & 4 & ---         & ---         & ---         & --- \\
+\hline
+\end{tabular}
+\end{table}
+
+\noindent$^{*}$\,As in Table~\ref{tab:loo}, carried over at $n{=}200$ and not
+sample-size-matched.
+
+\noindent\textbf{Status.} Not measured. The harness is implemented and its
+control flow verified against a stubbed model --- confirming, among other
+things, that a retried question costs three calls rather than four under
+\texttt{merge\_vr}, and that a question whose retry budget is exhausted is
+recorded as an explicit override rather than a silent pass --- but no scored
+generation run has been performed.
+
+\paragraph{The prediction on record.} \texttt{merge\_vr} should reduce measured
+calls per accepted question relative to the control, by an amount bounded above
+by $25\%$ at $k{=}2$ and realised only in proportion to how often the merged
+call returns a usable rewrite. Its risk is quality: a model asked to judge and
+rewrite in one reply may become a lenient judge of its own rewrite, which would
+show up as a higher acceptance rate paired with unchanged or worse grounding ---
+a pattern worth watching for specifically, since acceptance rate alone would
+look like an improvement. \texttt{merge\_pg} should be approximately cost-neutral
+and is being run for its effect on duplication, where losing the planner's
+global view could plausibly move the metric in either direction.
 
 \section{Summary}
 \label{sec:res-summary}
@@ -450,19 +789,28 @@ scales: the EQGBench protocol (five dimensions, $0$--$2$, DeepSeek-R1 judge,
 three-round voting with an arithmetic-mean tie-break), the ReQUESTA expert
 rubric (two binary criteria and six four-point criteria, disagreements resolved
 downward), and this project's native metrics ($1$--$5$ judged dimensions plus
-automated rates).
+automated rates and a per-question call count).
 
 The evaluation deliberately separates generation from measurement so that a
-corpus can be rejudged without re-running the generator. Both published
+corpus can be rejudged without re-running the generator, and so that eleven
+configurations can be scored through one identical path. Both published
 protocols are implemented with their rubrics transcribed verbatim from source,
 and every deviation is declared rather than absorbed silently --- including the
 absence of any published judge prompt for ReQUESTA, whose rubric was applied by
 human experts.
 
-Of the four implemented pipelines, two have completed a scored run. On the
-native metrics the non-agentic baseline currently outperforms the agentic
-pipeline, driven by lower duplication and better grounding, while the judged
-quality dimensions saturate and do not discriminate. Results under the two
-published protocols are pending their judging runs, and the CoT and PoT
-pipelines remain unevaluated; no claim is made for either until those runs
-complete.
+Of the eleven configurations, two have completed a scored run. On the native
+metrics the non-agentic baseline currently outperforms the agentic pipeline,
+driven by lower duplication and better grounding, while the judged quality
+dimensions saturate and do not discriminate. That negative result is what
+motivates the two ablation families introduced in this chapter: the
+leave-one-out configurations exist to identify \emph{which} agent produces the
+excess duplication, and the merging configurations exist to establish what the
+remaining agents cost. The retry-concentration explanation offered for the
+negative result is, at present, an untested hypothesis with a stated,
+falsifiable prediction attached to it.
+
+Results under the two published protocols are pending their judging runs; the
+CoT and PoT pipelines remain unevaluated; the merging harness is implemented but
+unrun; and the leave-one-out configurations are specified but not implemented. No
+claim is made for any of them until those runs complete.

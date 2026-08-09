@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.6.18)  8 AUG 2026 21:03
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.6.18)  9 AUG 2026 22:07
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -664,78 +664,44 @@ File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
-LaTeX Font Info:    Calculating math sizes for size <6.3> on input line 205.
 
 
-LaTeX Font Warning: Font shape `OT1/cmr/m/n' in size <4.40997> not available
-(Font)              size <5> substituted on input line 205.
-
-
-LaTeX Font Warning: Font shape `OT1/cmr/m/n' in size <3.15> not available
-(Font)              size <5> substituted on input line 205.
-
-
-LaTeX Font Warning: Font shape `OML/cmm/m/it' in size <4.40997> not available
-(Font)              size <5> substituted on input line 205.
-
-
-LaTeX Font Warning: Font shape `OML/cmm/m/it' in size <3.15> not available
-(Font)              size <5> substituted on input line 205.
-
-
-LaTeX Font Warning: Font shape `OMS/cmsy/m/n' in size <4.40997> not available
-(Font)              size <5> substituted on input line 205.
-
-
-LaTeX Font Warning: Font shape `OMS/cmsy/m/n' in size <3.15> not available
-(Font)              size <5> substituted on input line 205.
-
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6.3> on input line 205.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <4.40997> on input line 205.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <3.15> on input line 205.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 205.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 205.
+pdfTeX warning: pdflatex.exe (file ./synopsis-architecture.pdf): PDF inclusion:
+ found PDF version <1.7>, but at most version <1.5> allowed
+<synopsis-architecture.pdf, id=4, 793.04276pt x 253.90858pt>
+File: synopsis-architecture.pdf Graphic file (type pdf)
+<use synopsis-architecture.pdf>
+Package pdftex.def Info: synopsis-architecture.pdf  used on input line 160.
+(pdftex.def)             Requested size: 467.42276pt x 149.65366pt.
 
 Package caption Warning: \setcaptiontype
-(caption)                outside box or environment on input line 208.
+(caption)                outside box or environment on input line 163.
 See the caption package documentation for explanation.
 
 [1
 
 {C:/Users/I-Bros/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/I-B
-ros/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/carlito/crlt_hsqwq5.enc}]
-(synopsis.aux)
+ros/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/carlito/crlt_hsqwq5.enc} <./s
+ynopsis-architecture.pdf>] (synopsis.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
  ***********
-
-
-LaTeX Font Warning: Size substitutions with differences
-(Font)              up to 1.85pt have occurred.
-
  ) 
 Here is how much of TeX's memory you used:
- 16075 strings out of 467871
- 331497 string characters out of 5417892
- 730852 words of memory out of 5000000
- 44672 multiletter control sequences out of 15000+600000
- 705496 words of font info for 63 fonts, out of 8000000 for 9000
+ 15874 strings out of 467871
+ 328012 string characters out of 5417892
+ 722852 words of memory out of 5000000
+ 44479 multiletter control sequences out of 15000+600000
+ 659138 words of font info for 49 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 84i,9n,117p,525b,892s stack positions out of 10000i,1000n,20000p,200000b,200000s
- <C:\Users\I-Bros\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi450\ect
-t0800.pk><C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/fonts/type1/google/carl
-ito/Crlt-Bold.pfb><C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/fonts/type1/go
-ogle/carlito/Crlt-Regular.pfb><C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/fo
-nts/type1/public/amsfonts/cm/cmsy6.pfb>
-Output written on synopsis.pdf (1 page, 88536 bytes).
+ 84i,5n,117p,525b,220s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/fonts/type1/google/carlito/Crl
+t-Bold.pfb><C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/fonts/type1/google/ca
+rlito/Crlt-Regular.pfb>
+Output written on synopsis.pdf (1 page, 206428 bytes).
 PDF statistics:
- 39 PDF objects out of 1000 (max. 8388607)
+ 53 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 13 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 18 words of extra memory for PDF output out of 10000 (max. 10000000)
 
