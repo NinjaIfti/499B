@@ -336,6 +336,46 @@ body{
 .step-p.active{background:var(--pri-s);color:var(--g1);border-color:rgba(99,102,241,0.3)}
 .step-p.done{background:var(--green-s);color:var(--green);border-color:rgba(16,185,129,0.3)}
 
+/* ── Live agent ticker (Upload page) ── */
+.agent-ticker{
+  margin-top:14px;border:1px solid var(--border);border-radius:10px;
+  background:var(--bg);overflow:hidden;display:none;position:relative;z-index:1;
+}
+.at-head{
+  display:flex;align-items:center;gap:8px;padding:8px 12px;
+  border-bottom:1px solid var(--border);
+  font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.06em;
+}
+.at-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulseDot 1.6s infinite}
+.at-count{margin-left:auto;font-weight:600;letter-spacing:0;text-transform:none}
+.at-body{max-height:168px;overflow-y:auto;padding:6px 0}
+.at-body::-webkit-scrollbar{width:4px}
+.at-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px}
+.at-row{
+  display:flex;align-items:baseline;gap:8px;padding:4px 12px;
+  font-size:12px;line-height:1.5;animation:atIn .25s ease;
+}
+@keyframes atIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.at-agent{
+  flex-shrink:0;font-family:'DM Mono',monospace;font-size:10.5px;font-weight:600;
+  padding:1px 7px;border-radius:100px;
+  background:var(--pri-s);color:var(--g1);border:1px solid rgba(99,102,241,0.18);
+}
+.at-msg{flex:1;min-width:0;color:var(--ink2)}
+.at-dur{flex-shrink:0;font-size:10.5px;color:var(--muted);font-family:'DM Mono',monospace}
+.at-row[data-level="PLAN"] .at-agent{background:var(--cyan-s);color:var(--cyan);border-color:rgba(6,182,212,0.25)}
+.at-row[data-level="DONE"] .at-agent{background:var(--green-s);color:var(--green);border-color:rgba(16,185,129,0.25)}
+.at-row[data-level="RETRY"] .at-agent{background:var(--amber-s);color:var(--amber);border-color:rgba(245,158,11,0.25)}
+.at-row[data-level="ERROR"] .at-agent,
+.at-row[data-level="FAIL"] .at-agent{background:var(--red-s);color:var(--red);border-color:rgba(239,68,68,0.25)}
+.sp-t{margin-left:6px;opacity:.75;font-family:'DM Mono',monospace;font-size:10px}
+.step-p.active{animation:stepPulse 1.4s infinite}
+@keyframes stepPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0)}
+  50%{box-shadow:0 0 0 4px rgba(99,102,241,0.12)}
+}
+
 .quiz-live-notice{
   margin-top:14px;display:flex;align-items:center;gap:14px;
   padding:14px 16px;border-radius:14px;
@@ -1224,6 +1264,14 @@ body{
           <span class="step-p" data-k="rag">📚 RAG</span>
         </div>
 
+        <div class="agent-ticker" id="agentTicker">
+          <div class="at-head">
+            <span class="at-dot"></span> Agent activity
+            <span class="at-count" id="atCount">0 decisions</span>
+          </div>
+          <div class="at-body" id="atBody"></div>
+        </div>
+
         <div class="quiz-live-notice" id="quizLiveNotice" style="display:none">
           <span class="qln-pulse"></span>
           <div class="qln-text">
@@ -1829,6 +1877,7 @@ function ddr(e, type) {
 // ═══════════════════════════════════════════════
 function startProc() {
   if(!API_BASE){toast('Connect to backend first!','er');document.getElementById('setupModal').style.display='flex';return;}
+  resetRunUi();
   var fd=new FormData(), ep='';
   if(selFile){fd.append('video',selFile);ep='/upload/video';}
   else if(selDoc){fd.append('document',selDoc);ep='/upload/document';}
@@ -1852,6 +1901,7 @@ function pollStatus() {
     document.getElementById('progPct').textContent=(d.pct||0)+'%';
     document.getElementById('progBar').style.width=(d.pct||0)+'%';
     updSteps(d.stage||'',d.pct||0);
+    pollAgentTicker();
     if(d.model)document.getElementById('modelBadge').textContent=d.model;
 
     // Stream agentic quiz thinking into the Agent Workspace whenever the
@@ -1902,18 +1952,109 @@ function showQuizLiveNotice(active) {
   card.style.display = active ? 'flex' : 'none';
 }
 
+// ── Live agent ticker + per-step timers (Upload page) ──
+// /agent_log streams during a run (colab.py aliases state.agent_log to the
+// orchestrator's live list), so named agents can be shown deciding things
+// while OCR/Whisper/Summary/RAG are still working. Without this the Upload
+// page shows a bare progress bar for several minutes.
+var _tickerCount = 0;    // how many log entries have already been drawn
+var _stepStart   = {};   // step key -> ms timestamp when it first went active
+var _stepFrozen  = {};   // step key -> final seconds, once the step is done
+
+function resetRunUi() {
+  _tickerCount = 0;
+  _stepStart   = {};
+  _stepFrozen  = {};
+  var body = document.getElementById('atBody');
+  if (body) body.innerHTML = '';
+  var wrap = document.getElementById('agentTicker');
+  if (wrap) wrap.style.display = 'none';
+  var c = document.getElementById('atCount');
+  if (c) c.textContent = '0 decisions';
+  document.querySelectorAll('.step-p .sp-t').forEach(function(el){ el.remove(); });
+  document.querySelectorAll('.step-p').forEach(function(el){
+    el.classList.remove('active','done');
+  });
+}
+
+function renderAgentTicker(log) {
+  var body = document.getElementById('atBody');
+  var wrap = document.getElementById('agentTicker');
+  if (!body || !wrap || !log.length) return;
+  wrap.style.display = 'block';
+  // Append only what is new, so existing rows do not re-run their animation
+  // on every poll.
+  for (var i = _tickerCount; i < log.length; i++) {
+    var e   = log[i] || {};
+    var dur = (typeof e.duration_sec === 'number') ? (e.duration_sec + 's') : '';
+    var row = document.createElement('div');
+    row.className = 'at-row';
+    row.setAttribute('data-level', e.level || 'INFO');
+    row.innerHTML = '<span class="at-agent">' + esc(e.agent || 'agent') + '</span>' +
+                    '<span class="at-msg">'   + esc(e.message || '') + '</span>' +
+                    '<span class="at-dur">'   + esc(dur) + '</span>';
+    body.appendChild(row);
+  }
+  if (log.length > _tickerCount) {
+    _tickerCount = log.length;
+    body.scrollTop = body.scrollHeight;
+    var c = document.getElementById('atCount');
+    if (c) c.textContent = _tickerCount + ' decision' + (_tickerCount === 1 ? '' : 's');
+  }
+}
+
+function pollAgentTicker() {
+  if (!API_BASE) return;
+  apiFetch('/agent_log').then(function(r){ return r.json(); }).then(function(d){
+    var log = d.log || [];
+    // A fresh run replaces the backend list, so a shorter list means restart.
+    if (log.length < _tickerCount) {
+      _tickerCount = 0;
+      var body = document.getElementById('atBody');
+      if (body) body.innerHTML = '';
+    }
+    renderAgentTicker(log);
+  }).catch(function(){ /* transient poll failures are ignored */ });
+}
+
+function paintStepTimers() {
+  ['ocr','whisper','summary','rag'].forEach(function(k){
+    var p = document.querySelector('[data-k="' + k + '"]');
+    if (!p) return;
+    var secs = null;
+    if (_stepFrozen[k] != null)  secs = _stepFrozen[k];
+    else if (_stepStart[k])      secs = Math.round((Date.now() - _stepStart[k]) / 1000);
+    var t = p.querySelector('.sp-t');
+    if (secs == null) { if (t) t.remove(); return; }
+    if (!t) { t = document.createElement('span'); t.className = 'sp-t'; p.appendChild(t); }
+    t.textContent = secs + 's';
+  });
+}
+
 function updSteps(stage, pct) {
   var kw={ocr:['OCR','board','EasyOCR'],whisper:['Whisper','speech','Transcrib'],
     summary:['summary','Summary'],rag:['RAG','FAISS']};
   var sl=stage.toLowerCase();
   Object.keys(kw).forEach(function(k){
     var p=document.querySelector('[data-k="'+k+'"]');if(!p)return;
-    if(kw[k].some(function(w){return sl.includes(w.toLowerCase());})){p.classList.add('active');p.classList.remove('done');}
+    if(kw[k].some(function(w){return sl.includes(w.toLowerCase());})){
+      p.classList.add('active');p.classList.remove('done');
+      if(!_stepStart[k]) _stepStart[k]=Date.now();
+    }
   });
   var marks={ocr:35,whisper:55,summary:78,rag:100};
   Object.keys(marks).forEach(function(k){
-    if(pct>=marks[k]){var p=document.querySelector('[data-k="'+k+'"]');if(p){p.classList.add('done');p.classList.remove('active');}}
+    if(pct>=marks[k]){
+      var p=document.querySelector('[data-k="'+k+'"]');
+      if(p){
+        p.classList.add('done');p.classList.remove('active');
+        if(_stepStart[k] && _stepFrozen[k]==null){
+          _stepFrozen[k]=Math.round((Date.now()-_stepStart[k])/1000);
+        }
+      }
+    }
   });
+  paintStepTimers();
 }
 
 function onDone(d) {
@@ -1946,6 +2087,7 @@ function clearAll() {
   document.getElementById('vf').value='';document.getElementById('df').value='';
   document.getElementById('progCard').style.display='none';
   document.getElementById('processBtn').disabled=true;
+  resetRunUi();
   if(pollInt)clearInterval(pollInt);
 }
 
