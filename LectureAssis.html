@@ -2117,9 +2117,12 @@ function fillHeroStats(d) {
     setHeroStat('hsTopics', (list && list.length) ? list.length : null);
   }).catch(function(){ setHeroStat('hsTopics', null); });
 
-  // agent decisions
+  // agent decisions -- a genuine 0 is real data and must render as "0", not
+  // "--"; only an absent/non-numeric field (fetch failed or field missing)
+  // is treated as unknown.
   apiFetch('/agent_log').then(function(r){ return r.json(); }).then(function(a){
-    setHeroStat('hsAgents', a.total ? a.total : null);
+    var ok = a && typeof a.total === 'number';
+    setHeroStat('hsAgents', ok ? a.total : null);
   }).catch(function(){ setHeroStat('hsAgents', null); });
 
   // questions is filled by updCounts(), which already fetches all four types
@@ -2192,17 +2195,21 @@ function dl(t){window.open(API_BASE+'/download/'+t,'_blank')}
 //  Quiz
 // ═══════════════════════════════════════════════
 function updCounts() {
-  var total = 0, seen = 0;
+  var total = 0, seen = 0, ok = 0;
   [{k:'mcq',ep:'/quiz/mcq',id:'cnt-mcq'},{k:'tf',ep:'/quiz/true_false',id:'cnt-tf'},
    {k:'fill',ep:'/quiz/fill_blank',id:'cnt-fill'},{k:'short',ep:'/quiz/short_answer',id:'cnt-short'}]
   .forEach(function(t){
     apiFetch(t.ep).then(function(r){return r.json();}).then(function(d){
       var el=document.getElementById(t.id);if(el)el.textContent=(d.total||0)+' questions';
       total += (d.total||0);
+      ok++;
     }).catch(function(){}).then(function(){
       seen++;
-      // once all four have settled, publish the sum to the hero pill
-      if (seen === 4) setHeroStat('hsQs', total > 0 ? total : null);
+      // once all four have settled, publish the sum only if every fetch
+      // succeeded -- a partial sum (one endpoint errored) is a confidently
+      // wrong total, worse than showing nothing. A genuine 0 total (all
+      // four succeeded, all empty) still renders as "0", not "--".
+      if (seen === 4) setHeroStat('hsQs', ok === 4 ? total : null);
     });
   });
 }
