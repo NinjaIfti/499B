@@ -534,6 +534,20 @@ body{
 }
 .qmode-group{display:flex;flex-direction:column;gap:4px;min-width:140px}
 .qmode-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em}
+/* display:contents so the wrapper does not become a flex item -- the wrapped
+   .qmode-group children must keep participating in .qmode-bar's own layout. */
+.qmode-adv{display:contents}
+.qmode-adv[hidden]{display:none}
+.qmode-advbtn{
+  align-self:flex-end;font-family:'DM Sans',sans-serif;
+  font-size:11.5px;font-weight:700;padding:7px 13px;border-radius:8px;
+  cursor:pointer;background:transparent;color:var(--ink2);
+  border:1.5px solid var(--border2);transition:all var(--tr);
+  white-space:nowrap;
+}
+.qmode-advbtn:hover{background:var(--bg);color:var(--g1);border-color:rgba(99,102,241,0.3)}
+.qmode-advbtn .cav{display:inline-block;transition:transform var(--tr)}
+.qmode-advbtn.open .cav{transform:rotate(180deg)}
 .qmode-select{
   padding:7px 12px;border-radius:8px;
   border:1.5px solid var(--border);background:var(--bg);
@@ -1499,25 +1513,6 @@ body{
             <option value="pot">Program-of-Thought (MCQ)</option>
           </select>
         </div>
-        <div class="qmode-group" id="planGroup">
-          <span class="qmode-label">Plan Mode</span>
-          <select class="qmode-select" id="planModeSelect" onchange="onPlanModeChange()">
-            <option value="auto" selected>Auto</option>
-            <option value="manual_topics">Manual Topics</option>
-          </select>
-        </div>
-        <div class="qmode-group" id="manualTopicsGroup" style="display:none;min-width:260px;flex:1">
-          <span class="qmode-label">Select Topics (multi-select)</span>
-          <select class="qmode-select" id="manualTopicsSelect" multiple size="6"></select>
-        </div>
-        <div class="qmode-group" id="diffGroup" style="display:none">
-          <span class="qmode-label">Difficulty</span>
-          <select class="qmode-select" id="diffSelect">
-            <option value="easy">Easy</option>
-            <option value="medium" selected>Medium</option>
-            <option value="hard">Hard</option>
-          </select>
-        </div>
         <div class="qmode-group" id="countGroup">
           <span class="qmode-label">Questions</span>
           <select class="qmode-select" id="countSelect">
@@ -1528,17 +1523,39 @@ body{
             <option value="20">20</option>
           </select>
         </div>
-        <div class="qmode-group" id="actionGroup" style="min-width:160px">
-          <span class="qmode-label">Action</span>
-          <select class="qmode-select" id="qactionSelect">
-            <option value="new" selected>New (overwrite)</option>
-            <option value="refine">Refine existing</option>
-          </select>
+        <div class="qmode-adv" id="qmodeAdvanced" hidden>
+          <div class="qmode-group" id="planGroup">
+            <span class="qmode-label">Plan Mode</span>
+            <select class="qmode-select" id="planModeSelect" onchange="onPlanModeChange()">
+              <option value="auto" selected>Auto</option>
+              <option value="manual_topics">Manual Topics</option>
+            </select>
+          </div>
+          <div class="qmode-group" id="manualTopicsGroup" style="display:none;min-width:260px;flex:1">
+            <span class="qmode-label">Select Topics (multi-select)</span>
+            <select class="qmode-select" id="manualTopicsSelect" multiple size="6"></select>
+          </div>
+          <div class="qmode-group" id="diffGroup" style="display:none">
+            <span class="qmode-label">Difficulty</span>
+            <select class="qmode-select" id="diffSelect">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="qmode-group" id="actionGroup" style="min-width:160px">
+            <span class="qmode-label">Action</span>
+            <select class="qmode-select" id="qactionSelect">
+              <option value="new" selected>New (overwrite)</option>
+              <option value="refine">Refine existing</option>
+            </select>
+          </div>
+          <div class="qmode-group" style="flex:1;min-width:180px">
+            <span class="qmode-label">Instructions (optional)</span>
+            <input class="qmode-instr" id="qmodeInstr" placeholder="e.g. focus on chapter 3, avoid true/false traps..."/>
+          </div>
         </div>
-        <div class="qmode-group" style="flex:1;min-width:180px">
-          <span class="qmode-label">Instructions (optional)</span>
-          <input class="qmode-instr" id="qmodeInstr" placeholder="e.g. focus on chapter 3, avoid true/false traps..."/>
-        </div>
+        <button class="qmode-advbtn" id="qmodeAdvBtn" onclick="toggleQmodeAdvanced()">Advanced <span class="cav">▾</span></button>
         <button class="qmode-gen" id="qmodeGenBtn" onclick="generateQuiz()">Generate Quiz</button>
       </div>
 
@@ -2327,6 +2344,20 @@ function updCounts() {
 }
 
 // ── Quiz Mode Controls ──
+// Simple by default: Quiz Mode, Questions, Generate. Everything else lives
+// behind Advanced. All ids are unchanged, so generateQuiz() and the existing
+// onQModeChange()/onPlanModeChange() visibility rules keep working as-is.
+function toggleQmodeAdvanced() {
+  var wrap = document.getElementById('qmodeAdvanced');
+  var btn  = document.getElementById('qmodeAdvBtn');
+  if (!wrap || !btn) return;
+  var opening = wrap.hasAttribute('hidden');
+  if (opening) wrap.removeAttribute('hidden');
+  else         wrap.setAttribute('hidden', '');
+  btn.classList.toggle('open', opening);
+  // re-apply the mode-dependent visibility rules for the controls we just showed
+  if (opening) onQModeChange();
+}
 function onQModeChange() {
   var mode = document.getElementById('qmodeSelect').value;
   // manual, CoT and PoT all pick a fixed target difficulty
