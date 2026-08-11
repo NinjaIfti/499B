@@ -1020,6 +1020,30 @@ body{
 .empty-icon{width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(139,92,246,0.08));border:1px solid rgba(99,102,241,0.12);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;}
 .empty-title{font-family:'Cabinet Grotesk',sans-serif;font-size:15px;font-weight:700;color:var(--ink2);margin-bottom:6px}
 .empty-sub{font-size:12.5px}
+.empty-cta{
+  margin-top:16px;display:inline-flex;align-items:center;gap:7px;
+  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;
+  padding:7px 16px;border-radius:8px;cursor:pointer;
+  background:var(--pri-s);color:var(--g1);
+  border:1.5px solid rgba(99,102,241,0.3);
+  transition:all var(--tr);
+}
+.empty-cta:hover{background:var(--g1);color:#fff;border-color:var(--g1)}
+
+/* ── Not-connected banner ── */
+.conn-banner{
+  display:none;align-items:center;gap:10px;
+  background:var(--amber-s);border:1px solid rgba(245,158,11,0.3);
+  border-radius:10px;padding:10px 14px;margin-bottom:16px;
+  font-size:13px;color:var(--ink2);
+}
+.conn-banner.on{display:flex}
+.conn-banner b{color:var(--amber)}
+.conn-banner button{
+  margin-left:auto;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;
+  padding:5px 13px;border-radius:8px;cursor:pointer;
+  background:var(--amber);color:#fff;border:none;
+}
 
 /* ── Info banner ── */
 .info-banner{background:var(--pri-s);border:1px solid rgba(99,102,241,0.2);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--ink2);margin-bottom:14px;display:flex;align-items:flex-start;gap:8px}
@@ -1283,6 +1307,12 @@ body{
 
   <!-- Main -->
   <main class="main">
+
+    <div class="conn-banner" id="connBanner">
+      <span>🔌</span>
+      <span><b>Backend not connected.</b> Paste the ngrok URL printed by your Colab notebook to start.</span>
+      <button onclick="document.getElementById('setupModal').style.display='flex'">Connect</button>
+    </div>
 
     <!-- ══ UPLOAD ══ -->
     <div id="page-upload">
@@ -1626,7 +1656,12 @@ body{
           <button class="btn btn-outline btn-sm" onclick="loadGeneratedRuns()">↻ Refresh</button>
         </div>
         <div id="generatedRunsArea">
-          <div class="empty"><div class="empty-icon">📂</div><div class="empty-title">No saved sets yet</div><div class="empty-sub">Generate a quiz or process a lecture — each run is listed here.</div></div>
+          <div class="empty">
+            <div class="empty-icon">📂</div>
+            <div class="empty-title">No saved sets yet</div>
+            <div class="empty-sub">Every agentic generation is snapshotted here so you can reload it as the active quiz later.</div>
+            <button class="empty-cta" onclick="goPage('quiz')">Generate a quiz →</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1641,7 +1676,12 @@ body{
         <button class="btn btn-grad btn-sm" onclick="generateFlashcardsNow()">Generate Flashcards</button>
       </div>
       <div id="flashArea">
-        <div class="empty"><div class="empty-icon">🃏</div><div class="empty-title">No flashcards yet</div><div class="empty-sub">Click Generate Flashcards to create a new deck.</div></div>
+        <div class="empty">
+          <div class="empty-icon">🃏</div>
+          <div class="empty-title">Flashcards unlock after a lecture is processed</div>
+          <div class="empty-sub">Key terms and definitions are pulled from your material, then turned into a flip-card deck.</div>
+          <button class="empty-cta" onclick="goPage('upload')">Upload a lecture →</button>
+        </div>
       </div>
     </div>
 
@@ -1652,7 +1692,12 @@ body{
         <div class="page-sub">AI-detected emphasis moments + most important topics for your exam.</div>
       </div>
       <div id="hintsContent">
-        <div class="empty"><div class="empty-icon">🔥</div><div class="empty-title">No analysis yet</div><div class="empty-sub">Process a video to detect exam focus.</div></div>
+        <div class="empty">
+          <div class="empty-icon">🔥</div>
+          <div class="empty-title">Exam Focus unlocks after a lecture is processed</div>
+          <div class="empty-sub">Detects the moments your lecturer emphasised and ranks the topics most likely to be examined.</div>
+          <button class="empty-cta" onclick="goPage('upload')">Upload a lecture →</button>
+        </div>
       </div>
     </div>
 
@@ -1727,7 +1772,12 @@ body{
         <div class="page-sub">Track your quiz scores by topic. Weak areas are highlighted for targeted practice.</div>
       </div>
       <div id="perfContent">
-        <div class="empty"><div class="empty-icon">📊</div><div class="empty-title">No performance data yet</div><div class="empty-sub">Take a quiz and get graded to see your per-topic scores here.</div></div>
+        <div class="empty">
+          <div class="empty-icon">📊</div>
+          <div class="empty-title">Performance tracking starts with your first graded quiz</div>
+          <div class="empty-sub">Scores are broken down per topic, and weak areas are fed back into the difficulty adapter.</div>
+          <button class="empty-cta" onclick="goPage('quiz')">Go to Quiz Engine →</button>
+        </div>
       </div>
     </div>
 
@@ -1756,7 +1806,12 @@ body{
         <button class="btn btn-ghost btn-sm" onclick="loadAgentLog()" style="margin-left:auto">Refresh</button>
       </div>
       <div class="card" id="agentLogContent">
-        <div class="empty"><div class="empty-icon">🤖</div><div class="empty-title">No agent log yet</div><div class="empty-sub">Process a file to see the orchestrator's decision trail.</div></div>
+        <div class="empty">
+          <div class="empty-icon">🤖</div>
+          <div class="empty-title">No agent log yet</div>
+          <div class="empty-sub">The full decision trail of every agent in the last pipeline run appears here, with per-agent timing.</div>
+          <button class="empty-cta" onclick="goPage('upload')">Upload a lecture →</button>
+        </div>
       </div>
     </div>
 
@@ -1854,6 +1909,7 @@ function connectBackend() {
       toast('✅ Connected to Colab backend!', 'ok');
       sessionStorage.setItem('qf_api_base', raw);
       updCounts();
+      refreshConnBanner();
       // If the backend is still running, attach the live poller so the user
       // can watch the agentic quiz pipeline progress without re-uploading.
       if (d.state === 'running') {
@@ -1891,6 +1947,7 @@ document.getElementById('ngrokInp').addEventListener('keydown', function(e) {
     connectBackend();
   }
 })();
+refreshConnBanner();
 
 // ═══════════════════════════════════════════════
 //  State
@@ -1905,6 +1962,15 @@ var fcCards=[], fcCur=0, fcFlip=false;
 var _vidBlobUrl='';
 
 var typeEP={mcq:'/quiz/mcq',tf:'/quiz/true_false',fill:'/quiz/fill_blank',short:'/quiz/short_answer'};
+
+// A grey box reads as unimplemented. Every locked page instead states what it
+// will show and offers the step that unlocks it (static markup, see below).
+function refreshConnBanner() {
+  var b = document.getElementById('connBanner');
+  if (!b) return;
+  if (API_BASE) b.classList.remove('on');
+  else          b.classList.add('on');
+}
 
 // ═══════════════════════════════════════════════
 //  Navigation
@@ -1926,6 +1992,7 @@ function goPage(p) {
   // close mobile nav if open
   var sb=document.querySelector('.sidebar');
   if(sb&&sb.classList.contains('mobile-open'))toggleMobileNav();
+  refreshConnBanner();
 }
 
 // ═══════════════════════════════════════════════
