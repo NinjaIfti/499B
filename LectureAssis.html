@@ -584,6 +584,10 @@ body{
    The head keeps the top corners rounded on its own. */
 .agent-workspace.live{overflow:visible}
 .agent-workspace.live .aw-head{border-radius:var(--r) var(--r) 0 0}
+/* .aw-log-toggle is the last opaque-background child (the collapsed raw-log
+   row) -- with overflow:visible it now paints past the container's own
+   rounded corner, squaring off the bottom. Round it to match. */
+.agent-workspace.live .aw-log-toggle{border-radius:0 0 var(--r) var(--r)}
 .aw-head{
   display:flex;align-items:center;justify-content:space-between;
   padding:16px 20px;
@@ -1058,6 +1062,11 @@ body{
   padding:5px 13px;border-radius:8px;cursor:pointer;
   background:var(--amber);color:#fff;border:none;
 }
+.conn-banner .cb-dismiss{
+  margin-left:8px;padding:5px 9px;
+  background:transparent;color:var(--ink2);
+}
+.conn-banner .cb-dismiss:hover{color:var(--ink)}
 
 /* ── Info banner ── */
 .info-banner{background:var(--pri-s);border:1px solid rgba(99,102,241,0.2);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--ink2);margin-bottom:14px;display:flex;align-items:flex-start;gap:8px}
@@ -1326,6 +1335,7 @@ body{
       <span>🔌</span>
       <span><b>Backend not connected.</b> Paste the ngrok URL printed by your Colab notebook to start.</span>
       <button onclick="document.getElementById('setupModal').style.display='flex'">Connect</button>
+      <button class="cb-dismiss" onclick="dismissConnBanner()" title="Dismiss" aria-label="Dismiss">✕</button>
     </div>
 
     <!-- ══ UPLOAD ══ -->
@@ -1908,6 +1918,11 @@ function connectBackend() {
   if (!raw) { setSetupStatus('Please enter a URL.', true); return; }
   if (!/^https?:\/\//.test(raw)) { setSetupStatus('URL must start with https://', true); return; }
 
+  // Any connect attempt -- success or failure -- clears a prior dismissal.
+  // Otherwise a dismissed banner would stay hidden through a reconnect that
+  // turns out to still be unreachable, and the user would have no way to
+  // see the failure short of the small badge in the header.
+  _connBannerDismissed = false;
   setSetupStatus('Testing connection…', false);
   // Temporarily set API_BASE so apiFetch() works during the test
   var prev = API_BASE; API_BASE = raw;
@@ -1983,11 +1998,22 @@ var typeEP={mcq:'/quiz/mcq',tf:'/quiz/true_false',fill:'/quiz/fill_blank',short:
 
 // A grey box reads as unimplemented. Every locked page instead states what it
 // will show and offers the step that unlocks it (static markup, see below).
+// _connBannerDismissed is intentionally in-memory only (not sessionStorage) --
+// connectBackend() clears it on every connect attempt, so a dismissal never
+// survives a reconnect-then-disconnect cycle. It DOES survive ordinary page
+// navigation (goPage() also calls refreshConnBanner()), which is the point
+// of a dismiss control at all.
+var _connBannerDismissed = false;
 function refreshConnBanner() {
   var b = document.getElementById('connBanner');
   if (!b) return;
-  if (API_BASE) b.classList.remove('on');
-  else          b.classList.add('on');
+  if (API_BASE)                 b.classList.remove('on');
+  else if (_connBannerDismissed) b.classList.remove('on');
+  else                            b.classList.add('on');
+}
+function dismissConnBanner() {
+  _connBannerDismissed = true;
+  refreshConnBanner();
 }
 
 // ═══════════════════════════════════════════════
@@ -2089,9 +2115,15 @@ function pollStatus() {
       processNewEvents(d.quiz_thinking, d.quiz_thinking_session);
     }
     showQuizLiveNotice(d.quiz_thinking_active === true);
-    setQuizLiveChip(d.quiz_thinking_active === true);
-    if (d.quiz_thinking_active === true) openAgentWorkspace();
-    else if (_prevQuizThinkingActive) closeAgentWorkspaceLive();
+    // While generateQuiz() is running its own job poller it owns the
+    // workspace/chip lifecycle end-to-end (open on start, close on every
+    // terminal branch) -- pollStatus backs off so the two mechanisms can't
+    // fight over the same 'live' class / chip state.
+    if (!_quizGenManual) {
+      setQuizLiveChip(d.quiz_thinking_active === true);
+      if (d.quiz_thinking_active === true) openAgentWorkspace();
+      else if (_prevQuizThinkingActive) closeAgentWorkspaceLive();
+    }
 
     // While lecture quiz agents run, hide the play area so old questions are not visible.
     if (d.quiz_thinking_active && !_quizGenManual) {
@@ -2105,7 +2137,12 @@ function pollStatus() {
     _prevQuizThinkingActive = d.quiz_thinking_active === true;
 
     if(d.state==='done'){clearInterval(pollInt);onDone(d);}
-    else if(d.state==='error'){clearInterval(pollInt);toast('Error: '+d.error,'er');document.getElementById('processBtn').disabled=false;}
+    else if(d.state==='error'){
+      clearInterval(pollInt);
+      toast('Error: '+d.error,'er');
+      document.getElementById('processBtn').disabled=false;
+      if (!_quizGenManual) { closeAgentWorkspaceLive(); setQuizLiveChip(false); }
+    }
   }).catch(function(){});
 }
 
@@ -2232,7 +2269,10 @@ function fillHeroStats(d) {
     var words = d.transcript.trim().split(/\s+/).length;
     setHeroStat('hsWords', words.toLocaleString() + ' w');
   } else if (d.doc_chars) {
-    setHeroStat('hsWords', Math.round(d.doc_chars / 1000) + 'k ch');
+    // A rounded "0k ch" for a small-but-real document (e.g. 400 chars) reads
+    // as a fabricated zero. Show the exact count below 1k, abbreviate above.
+    var dc = d.doc_chars;
+    setHeroStat('hsWords', dc >= 1000 ? (Math.round(dc / 1000) + 'k ch') : (dc + ' ch'));
   } else {
     setHeroStat('hsWords', null);
   }
@@ -2357,6 +2397,15 @@ function toggleQmodeAdvanced() {
   btn.classList.toggle('open', opening);
   // re-apply the mode-dependent visibility rules for the controls we just showed
   if (opening) onQModeChange();
+  else {
+    // Collapsing Advanced hides Plan Mode, but the <select> keeps whatever
+    // value it had. If that's still 'manual_topics', generateQuiz() dead-ends
+    // on "Select at least one topic" against a control the user can no
+    // longer see or reach. Reset to Auto on collapse so Simple mode can
+    // never inherit a hidden manual-topics requirement.
+    var pms = document.getElementById('planModeSelect');
+    if (pms) { pms.value = 'auto'; onPlanModeChange(); }
+  }
 }
 function onQModeChange() {
   var mode = document.getElementById('qmodeSelect').value;
@@ -2766,6 +2815,7 @@ function resetAgentWorkspace(total) {
   document.getElementById('pipelineRows').innerHTML = '';
   document.getElementById('awLogEntries').innerHTML = '';
   document.getElementById('logCount').textContent = '0';
+  var awc = document.getElementById('awCounters'); if (awc) awc.innerHTML = '';
   document.getElementById('lsBar').style.width = '0%';
   document.getElementById('lsProg').textContent = '0 / ' + (total || 0);
   document.getElementById('lsText').textContent = 'Starting agent pipeline…';
@@ -2850,6 +2900,12 @@ function generateQuiz() {
   _quizGenManual = true;
   setQuizPlayBlocked(true, 'Generating a new quiz set…');
   resetAgentWorkspace(count);
+  // generateQuiz() drives its own job poller below and does not rely on
+  // pollStatus() (which is not running on the main demo path -- it was
+  // already stopped when the lecture finished processing). Promote the
+  // workspace here so it activates on every path, not just the upload flow.
+  openAgentWorkspace();
+  setQuizLiveChip(true);
   toast('Agent pipeline starting — ' + count + ' ' + qType.toUpperCase() + ' questions…', 'info');
 
   apiPost('/quiz/generate_async', {
@@ -2861,6 +2917,7 @@ function generateQuiz() {
       if (d.error) {
         _quizGenManual = false;
         setQuizPlayBlocked(false);
+        closeAgentWorkspaceLive(); setQuizLiveChip(false);
         document.getElementById('quizIntro').style.display = 'block';
         document.getElementById('quizExam').style.display = 'none';
         document.getElementById('quizResult').style.display = 'none';
@@ -2872,6 +2929,7 @@ function generateQuiz() {
       if (!jobId) {
         _quizGenManual = false;
         setQuizPlayBlocked(false);
+        closeAgentWorkspaceLive(); setQuizLiveChip(false);
         document.getElementById('quizIntro').style.display = 'block';
         document.getElementById('quizExam').style.display = 'none';
         document.getElementById('quizResult').style.display = 'none';
@@ -2893,6 +2951,7 @@ function generateQuiz() {
               btn.textContent = 'Generate Quiz';
               _quizGenManual = false;
               setQuizPlayBlocked(false);
+              closeAgentWorkspaceLive(); setQuizLiveChip(false);
 
               qQs = x.result.questions || [];
               qAns = {};
@@ -2921,6 +2980,7 @@ function generateQuiz() {
               btn.textContent = 'Generate Quiz';
               _quizGenManual = false;
               setQuizPlayBlocked(false);
+              closeAgentWorkspaceLive(); setQuizLiveChip(false);
               document.getElementById('quizIntro').style.display = 'block';
               document.getElementById('quizExam').style.display = 'none';
               document.getElementById('quizResult').style.display = 'none';
@@ -2936,6 +2996,7 @@ function generateQuiz() {
     .catch(function(){
       _quizGenManual = false;
       setQuizPlayBlocked(false);
+      closeAgentWorkspaceLive(); setQuizLiveChip(false);
       document.getElementById('quizIntro').style.display = 'block';
       document.getElementById('quizExam').style.display = 'none';
       document.getElementById('quizResult').style.display = 'none';

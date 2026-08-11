@@ -155,10 +155,27 @@ class AppState:
                 state="running", stage="Upload received…", pct=2, error="",
                 summary="", transcript="", board_text="", lecture_timeline="",
             )
+            # doc_chars/doc_blocks are only ever added by document extraction
+            # (never part of the base status dict), so .update() above can't
+            # clear them -- a stale value from a previous document run would
+            # otherwise survive into this run's /status payload and print
+            # under the "transcript" hero label if the new run's transcript
+            # comes back empty (e.g. a video with a failed/empty transcript).
+            self.status.pop("doc_chars", None)
+            self.status.pop("doc_blocks", None)
             self._quiz_agent_thinking   = []
             self._quiz_thinking_active  = False
             self._quiz_thinking_session += 1
             self.generated_quiz_runs = []  # new material — clear past-set history
+            # New lecture, new content -- stale hints/topics/questions from
+            # the previous lecture must not leak into this run's UI (topics
+            # count, question totals). Reset to the exact empty shape used
+            # at startup (see __init__) so downstream .get(...) calls keep
+            # working unchanged.
+            self.quiz = {
+                "mcq": [], "tf": [], "fill": [], "short": [],
+                "flash": [], "hints": {},
+            }
 
     # ── Persistence ───────────────────────────────────────────
 
