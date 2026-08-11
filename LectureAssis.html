@@ -194,7 +194,10 @@ body{
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 
 /* ── Main ── */
-.main{padding:28px 32px 60px;overflow-x:hidden;min-height:calc(100vh - 60px)}
+/* overflow-x:clip, not hidden -- `hidden` would make .main a scroll container
+   (the other axis computes to auto), which breaks position:sticky for the
+   phase stepper inside the Agent Workspace. `clip` clips without scrolling. */
+.main{padding:28px 32px 60px;overflow-x:clip;min-height:calc(100vh - 60px)}
 
 /* ── Page header ── */
 .page-head{margin-bottom:24px;animation:fadeUp .4s ease both}
@@ -563,6 +566,10 @@ body{
   margin-bottom:16px;overflow:hidden;transition:all var(--tr);
   box-shadow:var(--shadow);
 }
+/* While a run is live the stepper sticks, so overflow must not clip it.
+   The head keeps the top corners rounded on its own. */
+.agent-workspace.live{overflow:visible}
+.agent-workspace.live .aw-head{border-radius:var(--r) var(--r) 0 0}
 .aw-head{
   display:flex;align-items:center;justify-content:space-between;
   padding:16px 20px;
@@ -625,6 +632,37 @@ body{
 .phase-step.active .ps-icon{background:var(--g1);color:#fff;border-color:transparent;box-shadow:0 0 0 4px rgba(99,102,241,0.18)}
 .phase-step.done .ps-icon{background:var(--green);color:#fff;border-color:transparent}
 .phase-step .ps-label{letter-spacing:.08em;text-transform:uppercase}
+
+.agent-workspace.live .phase-stepper{
+  position:sticky;top:60px;z-index:20;
+  background:var(--surface);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  box-shadow:0 4px 16px rgba(99,102,180,0.08);
+}
+.aw-counters{
+  display:flex;gap:8px;flex-wrap:wrap;
+  padding:10px 20px;border-bottom:1px solid var(--border);
+}
+.awc{
+  font-size:11px;font-weight:700;padding:2px 10px;border-radius:100px;
+  background:var(--bg);border:1px solid var(--border);color:var(--ink2);
+}
+.awc b{color:var(--g1);font-weight:800}
+.awc.ok b{color:var(--green)}
+.awc.warn b{color:var(--amber)}
+.nav-live{
+  margin-left:auto;flex-shrink:0;display:none;align-items:center;gap:5px;
+  font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--green);
+}
+.nav-live.on{display:inline-flex}
+.nav-live i{
+  width:6px;height:6px;border-radius:50%;background:var(--green);
+  animation:pulseDot 1.6s infinite;font-style:normal;
+}
+@media(max-width:860px){
+  .agent-workspace.live .phase-stepper{position:static}
+}
 
 /* Live status card */
 .live-status{
@@ -1205,6 +1243,7 @@ body{
     <div class="nav-group">Quiz</div>
     <button class="nav-btn" onclick="goPage('quiz')" id="nav-quiz">
       <div class="nav-icon">📝</div> Quiz Engine
+      <span class="nav-live" id="navQuizLive"><i></i>live</span>
       <span class="nav-ready" id="dot-quiz"></span>
     </button>
     <button class="nav-btn" onclick="goPage('quiz-past')" id="nav-quiz-past">
@@ -1497,6 +1536,8 @@ body{
             <span class="ps-icon">4</span><span class="ps-label">Done</span>
           </div>
         </div>
+
+        <div class="aw-counters" id="awCounters"></div>
 
         <div class="live-status">
           <div class="ls-spinner idle" id="lsSpinner"></div>
@@ -1963,6 +2004,9 @@ function pollStatus() {
       processNewEvents(d.quiz_thinking, d.quiz_thinking_session);
     }
     showQuizLiveNotice(d.quiz_thinking_active === true);
+    setQuizLiveChip(d.quiz_thinking_active === true);
+    if (d.quiz_thinking_active === true) openAgentWorkspace();
+    else if (_prevQuizThinkingActive) closeAgentWorkspaceLive();
 
     // While lecture quiz agents run, hide the play area so old questions are not visible.
     if (d.quiz_thinking_active && !_quizGenManual) {
@@ -2264,6 +2308,7 @@ var awState = {
   passCount:    0,
   overrideCount:0,
   session:      null,     // /status quiz_thinking_session — used to detect a fresh run
+  agentNames:   [],      // distinct agent names seen in this run
 };
 
 function toggleAgentLog() {
@@ -2283,6 +2328,69 @@ function setPhase(phase) {
     if (i < curIdx) el.classList.add('done');
     else if (i === curIdx) el.classList.add('active');
   });
+}
+
+// ── Agent Workspace promotion ──
+// The Plan -> Generate -> Validate -> Retry loop is the actual contribution
+// being demonstrated, so when a run starts we surface it rather than waiting
+// for someone to scroll and find it.
+var _awScrolled = false;
+
+function openAgentWorkspace() {
+  var ws = document.getElementById('agentWorkspace');
+  if (!ws) return;
+  ws.style.display = 'block';
+  ws.classList.add('live');
+  if (!_awScrolled) {
+    _awScrolled = true;
+    // rAF so the scroll happens after the element is actually laid out
+    requestAnimationFrame(function(){
+      ws.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+}
+
+function closeAgentWorkspaceLive() {
+  var ws = document.getElementById('agentWorkspace');
+  if (ws) ws.classList.remove('live');
+  _awScrolled = false;
+}
+
+function updateAwCounters() {
+  var el = document.getElementById('awCounters');
+  if (!el) return;
+  var rows     = awState.rows || {};
+  var keys     = Object.keys(rows);
+  var retries  = 0;
+  var agents   = {};
+  keys.forEach(function(k){
+    var r = rows[k] || {};
+    if (r.attempt && r.attempt > 1) retries += (r.attempt - 1);
+  });
+  (awState.agentNames || []).forEach(function(n){ agents[n] = 1; });
+  var done = (awState.passCount || 0) + (awState.overrideCount || 0);
+
+  var parts = [];
+  parts.push('<span class="awc">questions <b>' + done + '/' + (awState.total || 0) + '</b></span>');
+  parts.push('<span class="awc ok">validated <b>' + (awState.passCount || 0) + '</b></span>');
+  if (awState.overrideCount) {
+    parts.push('<span class="awc warn">override <b>' + awState.overrideCount + '</b></span>');
+  }
+  if (retries) {
+    parts.push('<span class="awc warn">retries <b>' + retries + '</b></span>');
+  }
+  var nAgents = Object.keys(agents).length;
+  if (nAgents) {
+    parts.push('<span class="awc">agents <b>' + nAgents + '</b></span>');
+  }
+  el.innerHTML = parts.join('');
+}
+
+function setQuizLiveChip(active) {
+  var chip = document.getElementById('navQuizLive');
+  if (!chip) return;
+  if (active) chip.classList.add('on');
+  else        chip.classList.remove('on');
 }
 
 function setLiveStatus(text, progFraction) {
@@ -2533,12 +2641,16 @@ function processNewEvents(entries, session) {
   var n = entries.length;
   for (var i = awState.rendered; i < n; i++) {
     var e = entries[i];
+    if (e && e.agent && awState.agentNames.indexOf(e.agent) === -1) {
+      awState.agentNames.push(e.agent);
+    }
     appendRawLog(e);
     applyEvent(e);
   }
   awState.rendered = n;
   var lc = document.getElementById('logCount');
   if (lc) lc.textContent = n;
+  updateAwCounters();
 }
 
 function resetAgentWorkspace(total) {
@@ -2546,7 +2658,7 @@ function resetAgentWorkspace(total) {
   awState = {
     total: total || 0, rendered: 0, rows: {},
     phase: null, done: false, passCount: 0, overrideCount: 0,
-    session: prevSession,
+    session: prevSession, agentNames: [],
   };
   document.getElementById('agentWorkspace').style.display = '';
   document.querySelectorAll('.phase-step').forEach(function(el){
