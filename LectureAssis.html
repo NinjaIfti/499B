@@ -200,6 +200,43 @@ body{
 .page-head{margin-bottom:24px;animation:fadeUp .4s ease both}
 .page-title{font-family:'Cabinet Grotesk',sans-serif;font-size:1.55rem;font-weight:800;color:var(--ink);letter-spacing:-0.025em;margin-bottom:4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .page-sub{font-size:13px;color:var(--muted);font-weight:400}
+
+/* ── Upload hero ── */
+.hero{
+  display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:22px 24px;margin-bottom:16px;
+  box-shadow:var(--shadow);
+  background-image:
+    radial-gradient(120% 140% at 0% 0%, rgba(99,102,241,0.10) 0%, transparent 55%),
+    radial-gradient(100% 140% at 100% 0%, rgba(6,182,212,0.08) 0%, transparent 55%);
+}
+.hero-main{flex:1;min-width:260px}
+.hero-kicker{
+  display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--g1);
+  background:var(--pri-s);border:1px solid rgba(99,102,241,0.18);
+  border-radius:100px;padding:3px 10px;margin-bottom:10px;
+}
+.hero-title{
+  font-family:'Cabinet Grotesk',sans-serif;font-size:1.35rem;font-weight:800;
+  color:var(--ink);letter-spacing:-0.02em;margin-bottom:6px;
+}
+.hero-sub{font-size:13px;color:var(--ink2);line-height:1.65;max-width:60ch}
+.hero-stats{display:flex;gap:10px;flex-wrap:wrap}
+.hs{
+  min-width:92px;padding:10px 14px;border-radius:12px;
+  background:var(--bg);border:1px solid var(--border);text-align:center;
+}
+.hs-v{
+  font-family:'Cabinet Grotesk',sans-serif;font-size:1.15rem;font-weight:800;
+  color:var(--g1);line-height:1.2;
+}
+.hs-l{font-size:10.5px;color:var(--muted);font-weight:600;margin-top:2px}
+@media(max-width:860px){
+  .hero-stats{width:100%}
+  .hs{flex:1}
+}
 .page-badge{
   display:inline-flex;align-items:center;gap:6px;
   font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:800;
@@ -1215,6 +1252,20 @@ body{
         <div class="page-sub">Start with a lecture video for the richest experience — or upload a document.</div>
       </div>
 
+      <div class="hero">
+        <div class="hero-main">
+          <div class="hero-kicker">Agentic · Multimodal · Runs fully local</div>
+          <div class="hero-title">Turn a lecture into a study kit</div>
+          <div class="hero-sub">Upload a lecture video or a document. A pipeline of specialist agents transcribes the audio, reads the board, summarises the material, and builds quizzes — every question planned, generated, and validated before it reaches you.</div>
+        </div>
+        <div class="hero-stats">
+          <div class="hs"><div class="hs-v" id="hsWords">—</div><div class="hs-l">transcript</div></div>
+          <div class="hs"><div class="hs-v" id="hsTopics">—</div><div class="hs-l">topics found</div></div>
+          <div class="hs"><div class="hs-v" id="hsQs">—</div><div class="hs-l">questions</div></div>
+          <div class="hs"><div class="hs-v" id="hsAgents">—</div><div class="hs-l">agent decisions</div></div>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-label"><div class="card-label-dot">🎬</div> Lecture Video <span style="font-weight:400;margin-left:6px;color:var(--g1);font-size:10px;background:var(--pri-s);padding:2px 8px;border-radius:100px">Primary · Best Results</span></div>
         <div class="upload-video-zone" id="videoZone"
@@ -1975,6 +2026,7 @@ function resetRunUi() {
   document.querySelectorAll('.step-p').forEach(function(el){
     el.classList.remove('active','done');
   });
+  ['hsWords','hsTopics','hsQs','hsAgents'].forEach(function(id){ setHeroStat(id, null); });
 }
 
 function renderAgentTicker(log) {
@@ -2031,6 +2083,48 @@ function paintStepTimers() {
   });
 }
 
+// ── Upload hero stats ──
+// Every pill is either a real backend number or an em dash. Never a
+// placeholder, an estimate, or a fallback -- these numbers get shown to an
+// examining panel.
+function setHeroStat(id, value) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var missing = (value === null || value === undefined || value === '' ||
+                 (typeof value === 'number' && isNaN(value)));
+  el.textContent = missing ? '—' : value;
+}
+
+function fillHeroStats(d) {
+  d = d || {};
+
+  // transcript size: words for video, extracted characters for documents
+  if (d.transcript && d.transcript.trim()) {
+    var words = d.transcript.trim().split(/\s+/).length;
+    setHeroStat('hsWords', words.toLocaleString() + ' w');
+  } else if (d.doc_chars) {
+    setHeroStat('hsWords', Math.round(d.doc_chars / 1000) + 'k ch');
+  } else {
+    setHeroStat('hsWords', null);
+  }
+
+  // topics: ONLY the AI-detected list. /quiz/topics is deliberately not used
+  // here -- it invents four generic topics when nothing is detected
+  // (colab.py:5596-5598), which would put a fabricated number on screen.
+  apiFetch('/exam_hints').then(function(r){ return r.json(); }).then(function(h){
+    var ai = (h && h.ai_analysis) ? h.ai_analysis : {};
+    var list = ai.ai_important_topics;
+    setHeroStat('hsTopics', (list && list.length) ? list.length : null);
+  }).catch(function(){ setHeroStat('hsTopics', null); });
+
+  // agent decisions
+  apiFetch('/agent_log').then(function(r){ return r.json(); }).then(function(a){
+    setHeroStat('hsAgents', a.total ? a.total : null);
+  }).catch(function(){ setHeroStat('hsAgents', null); });
+
+  // questions is filled by updCounts(), which already fetches all four types
+}
+
 function updSteps(stage, pct) {
   var kw={ocr:['OCR','board','EasyOCR'],whisper:['Whisper','speech','Transcrib'],
     summary:['summary','Summary'],rag:['RAG','FAISS']};
@@ -2077,6 +2171,7 @@ function onDone(d) {
   if(d.transcript)document.getElementById('transcriptContent').textContent=d.transcript;
   if(d.board_text)document.getElementById('boardContent').textContent=d.board_text;
   updCounts();
+  fillHeroStats(d);
   if (document.getElementById('page-quiz-past') && document.getElementById('page-quiz-past').style.display === 'block') { loadGeneratedRuns(); }
   document.getElementById('processBtn').disabled=false;
 }
@@ -2097,12 +2192,18 @@ function dl(t){window.open(API_BASE+'/download/'+t,'_blank')}
 //  Quiz
 // ═══════════════════════════════════════════════
 function updCounts() {
+  var total = 0, seen = 0;
   [{k:'mcq',ep:'/quiz/mcq',id:'cnt-mcq'},{k:'tf',ep:'/quiz/true_false',id:'cnt-tf'},
    {k:'fill',ep:'/quiz/fill_blank',id:'cnt-fill'},{k:'short',ep:'/quiz/short_answer',id:'cnt-short'}]
   .forEach(function(t){
     apiFetch(t.ep).then(function(r){return r.json();}).then(function(d){
       var el=document.getElementById(t.id);if(el)el.textContent=(d.total||0)+' questions';
-    }).catch(function(){});
+      total += (d.total||0);
+    }).catch(function(){}).then(function(){
+      seen++;
+      // once all four have settled, publish the sum to the hero pill
+      if (seen === 4) setHeroStat('hsQs', total > 0 ? total : null);
+    });
   });
 }
 
