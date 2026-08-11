@@ -2079,6 +2079,11 @@ function ddr(e, type) {
 //  Processing
 // ═══════════════════════════════════════════════
 function startProc() {
+  // A new pipeline run must never inherit a stuck _quizGenManual from an
+  // earlier failed quiz-generation job -- that flag gates pollStatus()'s
+  // workspace promotion (see pollStatus below), so a leftover true here
+  // would silently disable the Agent Workspace for this whole run.
+  _quizGenManual = false;
   if(!API_BASE){toast('Connect to backend first!','er');document.getElementById('setupModal').style.display='flex';return;}
   resetRunUi();
   var fd=new FormData(), ep='';
@@ -2938,11 +2943,22 @@ function generateQuiz() {
         return;
       }
 
+      var pollFailCount = 0;
+      var pollFailLimit = 5; // consecutive failed polls tolerated before giving up (transient-blip grace period at the 1.5s poll interval)
+      function onPollFail() {
+        pollFailCount++;
+        if (pollFailCount < pollFailLimit) return;
+        clearInterval(pollInt);
+        _quizGenManual = false;
+        closeAgentWorkspaceLive(); setQuizLiveChip(false);
+        toast('Lost contact with the backend during quiz generation.', 'er');
+      }
       var pollInt = setInterval(function(){
         apiFetch('/quiz/generate_job?job_id=' + encodeURIComponent(jobId))
           .then(function(r){ return r.json(); })
           .then(function(x){
-            if (!x.ok) return;
+            if (!x.ok) { onPollFail(); return; }
+            pollFailCount = 0;
             processNewEvents(x.thinking || [], awState.session);
 
             if (x.status === 'done' && x.result) {
@@ -2990,7 +3006,7 @@ function generateQuiz() {
               setLiveStatus('Pipeline failed: ' + esc(x.error || 'unknown error'), 1);
               toast(x.error || 'Quiz generation failed.', 'er');
             }
-          }).catch(function(){});
+          }).catch(function(){ onPollFail(); });
       }, 1500);
     })
     .catch(function(){
