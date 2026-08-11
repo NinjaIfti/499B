@@ -2949,8 +2949,15 @@ function generateQuiz() {
         pollFailCount++;
         if (pollFailCount < pollFailLimit) return;
         clearInterval(pollInt);
+        btn.disabled = false;
+        btn.textContent = 'Generate Quiz';
         _quizGenManual = false;
+        setQuizPlayBlocked(false);
         closeAgentWorkspaceLive(); setQuizLiveChip(false);
+        document.getElementById('lsSpinner').classList.add('idle');
+        document.getElementById('awPulse').classList.add('idle');
+        document.getElementById('awSummary').textContent = 'Failed';
+        setLiveStatus('Lost contact with the backend.', 1);
         toast('Lost contact with the backend during quiz generation.', 'er');
       }
       var pollInt = setInterval(function(){
