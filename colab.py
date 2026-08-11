@@ -4851,7 +4851,10 @@ class OrchestratorAgent:
         pipeline_start = time.time()
         ctx = AgentContext(content_type, file_path)
         state.session_id = state._make_session_id(ctx.source_name)
-        state.agent_log  = []
+        # Alias, not a fresh list: every agent appends to ctx.agent_log, so
+        # sharing the object is what makes GET /agent_log stream live during
+        # the run instead of staying empty until the pipeline finishes.
+        state.agent_log  = ctx.agent_log
         state.quiz_history = []
 
         pipeline = self.PIPELINE.get(content_type, [])
