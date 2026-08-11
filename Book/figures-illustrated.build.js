@@ -224,71 +224,125 @@ function merges() {
   return doc(c, 1190, 696);
 }
 
-fs.writeFileSync(path.join(OUT, "lectureassist-architecture-illustrated.drawio"), architecture(), "utf8");
-/* ============ FIGURE 3 - condensed variant for the synopsis page ============
- * The full architecture is far too dense for a one-page synopsis: at 164 mm
- * text width its 11px captions render at about 4 pt. This variant is designed
- * on a WIDE, SHORT canvas with deliberately oversized type, so that after
- * \includegraphics scales it to \linewidth the captions land near 8 pt.
- * Scale factor = 164.3mm / (1300px * 25.4/96) = 0.478, so 22px -> ~7.9pt. */
+/* ============ FIGURE 3 - the synopsis figure ================================
+ * A closed loop: row 1 runs left to right, drops down the right edge, row 2
+ * runs right to left, and the formatted quiz returns up the left edge to the
+ * learner it started from. The serpentine keeps the whole system on one wide,
+ * short canvas, which is what a one page synopsis can afford.
+ *
+ * Type is oversized on purpose. \includegraphics scales this to \linewidth, a
+ * factor of 164.3mm / (1300px * 25.4/96) = 0.478, so 22px lands near 8pt.
+ * Every node names the concrete technology behind it, because the figure is
+ * the only place in a 450 word synopsis where that detail fits. */
 function synopsisFigure() {
   const c = [];
-  const F = 22, FS = 18;                       // oversized on purpose - see above
+  const F = 22, FS = 17;
   const big = (a, b) => `&lt;b&gt;&lt;font style=&quot;font-size:${F}px&quot;&gt;${esc(a)}&lt;/font&gt;&lt;/b&gt;`
     + (b ? `&lt;br/&gt;&lt;font color=&quot;${SUB}&quot; style=&quot;font-size:${FS}px&quot;&gt;${esc(b)}&lt;/font&gt;` : "");
 
   const U = {
-    student: M.uri(M.student()), docu: M.uri(M.doc()),
-    prep: M.uri(M.gear("#2E86C1")), idx: M.uri(M.lens()),
-    plan: M.uri(M.robot("#F4C542", "bulb")), gen: M.uri(M.robot("#E67E22", "q")),
-    val: M.uri(M.robot(GRN, "check")), fmt: M.uri(M.gear("#2E86C1")),
-    ok: M.uri(M.badge("check")), no: M.uri(M.badge("cross")),
+    student: M.uri(M.student()),
+    docu:    M.uri(M.doc()),
+    extract: M.uri(M.robot("#2E86C1", "lens")),
+    tline:   M.uri(M.robot("#16A085", "wave")),
+    index:   M.uri(M.lens()),
+    plan:    M.uri(M.robot("#F4C542", "bulb")),
+    ctrl:    M.uri(M.gear(PUR)),
+    gen:     M.uri(M.robot("#E67E22", "q")),
+    val:     M.uri(M.robot(GRN, "check")),
+    fmt:     M.uri(M.robot("#2E86C1", "doc")),
+    ok:      M.uri(M.badge("check")),
   };
 
-  const CX = [90, 400, 710, 1020], IW = 84, IH = 88;
-  const R1 = 40, R2 = 218, CAP1 = R1 + IH, MIDY = 186;
-  const cx = i => CX[i] + IW / 2;
+  const IW = 84, IH = 88;
+  const X  = [76, 316, 556, 796, 1036];
+  const R1 = 92, R2 = 366;
+  const mid = y => y + IH / 2;
+  const cx  = i => X[i] + IW / 2;
 
-  const put = (id, u, a, b, col, y) =>
-    c.push(icon(id, u, big(a, b), CX[col], y, IW, IH));
+  const band = (id, xx, yy, w, h, tint) =>
+    `<mxCell id="${id}" value="" style="rounded=1;arcSize=4;html=1;fillColor=${tint};`
+    + `strokeColor=none;" vertex="1" parent="1">`
+    + `<mxGeometry x="${xx}" y="${yy}" width="${w}" height="${h}" as="geometry"/></mxCell>`;
+  c.push(band("bd1", 48, 52, 1220, 198, "#F4F8FB"));
+  c.push(band("bd2", 48, 326, 1220, 198, "#FBF7FD"));
 
-  put("s1", U.student, "Learner", "", 0, R1);
-  put("s2", U.docu, "Lecture video / PDF", "", 1, R1);
-  put("s3", U.prep, "Preprocessor", "", 2, R1);
-  put("s4", U.idx, "Summary + FAISS index", "", 3, R1);
+  const phase = (id, n, label, yy, col) => {
+    c.push(`<mxCell id="${id}c" value="${n}" style="ellipse;html=1;fillColor=${col};`
+      + `strokeColor=none;fontColor=#FFFFFF;fontStyle=1;fontSize=19;fontFamily=Calibri;" `
+      + `vertex="1" parent="1"><mxGeometry x="62" y="${yy}" width="28" height="28" as="geometry"/></mxCell>`);
+    c.push(`<mxCell id="${id}t" value="${esc(label)}" style="text;html=1;align=left;`
+      + `verticalAlign=middle;fontSize=19;fontStyle=1;fontColor=${col};fontFamily=Calibri;" `
+      + `vertex="1" parent="1"><mxGeometry x="98" y="${yy}" width="620" height="28" as="geometry"/></mxCell>`);
+  };
+  phase("p1", "1", "INGEST AND REPRESENT", 60, "#1B4F72");
+  phase("p2", "2", "PLAN, GENERATE AND VERIFY", 334, PUR);
 
-  put("t1", U.plan, "Quiz Planner", "topic × difficulty", 0, R2);
-  put("t2", U.gen, "Generator", "3 cognitive tracks", 1, R2);
-  put("t3", U.val, "Validator", "grounding · difficulty", 2, R2);
-  put("t4", U.fmt, "Formatter", "quiz to the learner", 3, R2);
+  const put = (id, u, a, b, col, y) => c.push(icon(id, u, big(a, b), X[col], y, IW, IH));
+  put("a0", U.student, "Learner",               "uploads a lecture",            0, R1);
+  put("a1", U.docu,    "Lecture video / PDF",   "DOCX and PPTX too",            1, R1);
+  put("a2", U.extract, "Dual channel extraction", "EasyOCR + Faster Whisper",   2, R1);
+  put("a3", U.tline,   "Fused timeline",        "board text + speech, timed",   3, R1);
+  put("a4", U.index,   "Summary and index",     "MiniLM embeddings + FAISS",    4, R1);
 
-  const st = flex(); st.replace("width=9", "width=14");
-  const big2 = c2 => flex(c2).replace("width=9;endWidth=17;endSize=5",
-                                      "width=14;endWidth=26;endSize=8");
+  put("b0", U.fmt,  "Formatter and Grader", "gemma3:12b",                   0, R2);
+  put("b1", U.val,  "Validator",            "gemma3:4b",                    1, R2);
+  put("b2", U.gen,  "Generator",            "gemma3:4b + search_lecture",   2, R2);
+  put("b3", U.ctrl, "Controller",           "recall, inference, synthesis", 3, R2);
+  put("b4", U.plan, "Quiz Planner",         "gemma3:4b",                    4, R2);
 
-  c.push(fedge("q1", [[CX[0] + IW, R1 + 44], [CX[1] - 6, R1 + 44]], big2()));
-  c.push(fedge("q2", [[CX[1] + IW, R1 + 44], [CX[2] - 6, R1 + 44]], big2()));
-  c.push(fedge("q3", [[CX[2] + IW, R1 + 44], [CX[3] - 6, R1 + 44]], big2()));
+  const arrow = c2 => flex(c2).replace("width=9;endWidth=17;endSize=5",
+                                       "width=13;endWidth=24;endSize=7");
 
-  /* wrap: right side down, across, into the second row */
-  c.push(fedge("qw", [[cx(3), CAP1 + 34], [cx(3), MIDY], [cx(0), MIDY], [cx(0), R2 - 6]],
-               wire(), "grounded content"));
+  for (let i = 0; i < 4; i++)
+    c.push(fedge("f1" + i, [[X[i] + IW, mid(R1)], [X[i + 1] - 6, mid(R1)]], arrow()));
 
-  c.push(fedge("q4", [[CX[0] + IW, R2 + 44], [CX[1] - 6, R2 + 44]], big2()));
-  c.push(fedge("q5", [[CX[1] + IW, R2 + 44], [CX[2] - 6, R2 + 44]], big2()));
-  c.push(fedge("q6", [[CX[2] + IW, R2 + 44], [CX[3] - 6, R2 + 44]], big2(GRN)));
-  c.push(icon("qok", U.ok, "", (CX[2] + IW + CX[3]) / 2 - 20, R2 + 24, 40, 40));
+  for (let i = 4; i > 1; i--)
+    c.push(fedge("f2" + i, [[X[i], mid(R2)], [X[i - 1] + IW + 6, mid(R2)]], arrow()));
 
-  /* retry loop, below the caption band so it crosses nothing */
-  c.push(fedge("qr", [[cx(2), R2 + IH + 46], [cx(2), R2 + IH + 76],
-                      [cx(1), R2 + IH + 76], [cx(1), R2 + IH + 48]],
-               wire(RED, true), "FAIL — regenerate / fetch context / replan"));
-  /* no cross badge here: at this size it lands on the Validator's caption, and
-   * the retry edge is already red and labelled FAIL, so it earns nothing. */
+  c.push(fedge("f21", [[X[1], mid(R2)], [X[0] + IW + 6, mid(R2)]], arrow(GRN)));
+  c.push(icon("okb", U.ok, "", (X[0] + IW + X[1]) / 2 - 22, mid(R2) - 22, 44, 44));
 
-  return doc(c, 1300, 404);
+  c.push(fedge("wrap", [[X[4] + IW, mid(R1)], [1212, mid(R1)], [1212, mid(R2)],
+                        [X[4] + IW + 6, mid(R2)]], wire()));
+
+  /* The retrieval query and the retry both touch the Generator. They leave from
+   * opposite sides of it and run at different heights, or they overlap into one
+   * unreadable knot at the node's top centre. */
+  /* wire() defaults to a 10px label, which on this canvas scales to about
+   * 3.6pt in print. Edge labels here carry real content, so they are sized to
+   * match the node captions. */
+  const bigLbl = s => s + "fontSize=19;";
+
+  c.push(fedge("rag", [[cx(2) + 24, R2 - 6], [cx(2) + 24, 276], [cx(4), 276],
+                       [cx(4), R1 + IH + 48]],
+               bigLbl(wire(TEAL, true)), "search_lecture retrieval tool"));
+
+  c.push(fedge("retry", [[cx(1), R2 - 6], [cx(1), 306], [cx(2) - 24, 306],
+                         [cx(2) - 24, R2 - 6]],
+               bigLbl(wire(RED, true)), "Refiner: regenerate, fetch context or replan"));
+
+  c.push(fedge("back", [[X[0], mid(R2)], [26, mid(R2)], [26, mid(R1)], [X[0] - 6, mid(R1)]],
+               wire("#1B4F72")));
+  /* kept left of the retry rail's x range so the two never share a line */
+  c.push(text("backt", "personalised quiz returns to the learner", 44, 262, 330,
+              { fs: 17, color: "#1B4F72", bold: true }));
+
+  const specs = ["Ollama runtime, fully local", "gemma3:4b generator, pinned",
+                 "gemma3:12b judge and grader", "MiniLM + FAISS retrieval",
+                 "single NVIDIA T4, no paid API"];
+  specs.forEach((s, i) => {
+    const w = 240, gap = 12, x0 = 26 + i * (w + gap);
+    c.push(`<mxCell id="sp${i}" value="${esc(s)}" style="rounded=1;arcSize=40;html=1;`
+      + `whiteSpace=wrap;fillColor=#FFFFFF;strokeColor=#9AA7B2;strokeWidth=1.2;`
+      + `fontSize=17;fontColor=#3A4A57;fontFamily=Calibri;" vertex="1" parent="1">`
+      + `<mxGeometry x="${x0}" y="548" width="${w}" height="34" as="geometry"/></mxCell>`);
+  });
+
+  return doc(c, 1300, 600);
 }
 
+fs.writeFileSync(path.join(OUT, "lectureassist-architecture-illustrated.drawio"), architecture(), "utf8");
 fs.writeFileSync(path.join(OUT, "pipeline-merge-illustrated.drawio"), merges(), "utf8");
 fs.writeFileSync(path.join(OUT, "synopsis-architecture.drawio"), synopsisFigure(), "utf8");
-console.log("wrote illustrated .drawio files to", OUT);
+console.log("wrote three illustrated .drawio files to", OUT);
