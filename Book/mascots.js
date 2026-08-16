@@ -33,9 +33,6 @@ function robot(accent = "#2E86C1", badge = "") {
     check: `<g transform="translate(44,44)">
 <circle cx="9" cy="9" r="9" fill="#FFFFFF" stroke="${DARK}" stroke-width="1.4"/>
 <path d="M5.2 9.2l2.6 2.6 5-5.4" fill="none" stroke="#1E8449" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>`,
-    wave: `<g transform="translate(44,44)">
-<circle cx="9" cy="9" r="9" fill="#FFFFFF" stroke="${DARK}" stroke-width="1.4"/>
-<path d="M5 9h1.4M8.2 5.6v6.8M11 7.2v3.6M13.6 8.2v1.6" stroke="${DARK}" stroke-width="1.7" stroke-linecap="round"/></g>`,
     merge: `<g transform="translate(44,44)">
 <circle cx="9" cy="9" r="9" fill="#FFFFFF" stroke="${DARK}" stroke-width="1.4"/>
 <path d="M4 5h2.2c1 0 1.9.6 2.4 1.5l1 1.7c.5.9 1.4 1.5 2.4 1.5H14" fill="none" stroke="${DARK}" stroke-width="1.5" stroke-linecap="round"/>

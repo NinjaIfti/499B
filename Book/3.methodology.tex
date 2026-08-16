@@ -21,10 +21,7 @@ on free-tier hardware.
 
 \begin{figure}[h]
     \centering
-    % PDF rather than SVG: draw.io exports HTML labels as <foreignObject>,
-    % which Inkscape (what the svg package invokes) does not render, so an SVG
-    % export would silently lose every caption in the figure.
-    \includegraphics[width=\linewidth]{lectureassist-architecture-illustrated.pdf}
+    \includegraphics[width=\textwidth,height=30cm,keepaspectratio]{lectureassist-architecture-illustrated.pdf}
     \caption{System architecture of LectureAssist. The orchestrator coordinates
     specialist agents across ingestion, representation and generation: the
     Controller routes each slot to one of three cognitive tracks, the Validator

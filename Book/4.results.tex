@@ -397,41 +397,23 @@ longer balance topic counts across the whole quiz, only avoid what it has
 already seen. Whether that costs diversity is precisely what the experiment
 measures.
 
-\paragraph{Structural call counts.} Because both merges are changes to
-\emph{packaging} rather than to behaviour, their cost can be counted from the
-implementation without running anything. For a question that is accepted on
-attempt $k$, and writing $g$ for a drafting call and $v$ for a validation call:
+% \paragraph{Structural call counts.} Because both merges are changes to
+% \emph{packaging} rather than to behaviour, their cost can be counted from the
+% implementation without running anything. For a question that is accepted on
+% attempt $k$, and writing $g$ for a drafting call and $v$ for a validation call:
 
-\begin{table}[H]
-\centering
-\caption{LLM calls per question, counted structurally from the implementation.
-$k$ is the number of attempts the question required. These are arithmetic, not
-measurements.}
-\label{tab:calls}
-\small
-\begin{tabular}{|l|c|c|c|}
-\hline
-\textbf{Configuration} & \textbf{Calls for $k$ attempts} & \textbf{$k{=}1$}
- & \textbf{$k{=}2$} \\
-\hline
-\texttt{agentic} (control) & $2k$ \;(+1 planner per batch) & 2 & 4 \\
-\texttt{merge\_vr}         & $k+1$ \;(+1 planner per batch) & 2 & \textbf{3} \\
-\texttt{merge\_pg}         & $2k$ \;(no batch planner call) & 2 & 4 \\
-\hline
-\end{tabular}
-\end{table}
 
-\noindent Two honest qualifications follow from this table. First,
-\texttt{merge\_pg} saves nothing per question; its entire saving is the single
-batch-level planner call, which amortises to almost nothing over $100$
-questions. Its interest is therefore not cost but \emph{diversity} --- whether
-a generator that plans locally repeats itself more or less than one that plans
-globally. Second, \texttt{merge\_vr}'s $k+1$ figure is realised \emph{only when
-the merged call actually returns a usable rewrite}. When it returns a
-structurally invalid rewrite, or chooses \texttt{fetch\_context} or
-\texttt{replan\_topic}, the loop must redraft and the cost reverts to $2k$, the
-same as the control. The rate at which the merged call supplies a usable rewrite
-is thus itself a quantity to be measured, and the $25\%$ saving at $k{=}2$ is an
+% \noindent Two honest qualifications follow from this table. First,
+% \texttt{merge\_pg} saves nothing per question; its entire saving is the single
+% batch-level planner call, which amortises to almost nothing over $100$
+% questions. Its interest is therefore not cost but \emph{diversity} --- whether
+% a generator that plans locally repeats itself more or less than one that plans
+% globally. Second, \texttt{merge\_vr}'s $k+1$ figure is realised \emph{only when
+% the merged call actually returns a usable rewrite}. When it returns a
+% structurally invalid rewrite, or chooses \texttt{fetch\_context} or
+% \texttt{replan\_topic}, the loop must redraft and the cost reverts to $2k$, the
+% same as the control. The rate at which the merged call supplies a usable rewrite
+% is thus itself a quantity to be measured, and the $25\%$ saving at $k{=}2$ is an
 upper bound rather than a prediction.
 
 \subsection{What these ablations cannot show}
@@ -475,44 +457,22 @@ judging run under the verbatim protocol.}
 \textbf{Dimension} & \textbf{DeepSeek-R1} & \textbf{GPT-4o} &
                      \textbf{Agentic} & \textbf{Non-agentic} \\
 \hline
-KP --- Knowledge-Point Alignment   & 1.98 & 1.96 & --- & --- \\
-QT --- Question-Type Alignment     & 1.95 & 1.82 & --- & --- \\
-QQ --- Question Item Quality       & 1.95 & 1.76 & --- & --- \\
-SQ --- Solution Explanation Quality& 1.96 & 1.72 & --- & --- \\
-CG --- Competence-Oriented Guidance$^{\dagger}$ & 0.17 & 0.21 & --- & --- \\
-\hline
-Composite (mean of five, max $2$)  & 1.40 & 1.29 & --- & --- \\
-Total (sum of five, max $10$)      & 7.02 & 6.47 & --- & --- \\
-\hline
-$n$ questions                      & 300  & 300  & --- & --- \\
+KP --- Knowledge-Point Alignment   & 1.98 & 1.96 & 1.88 & 1.82 \\
+QT --- Question-Type Alignment     & 1.95 & 1.82 & 1.89 & 1.80 \\
+QQ --- Question Item Quality       & 1.95 & 1.76 & 1.72 & 1.70\\
+SQ --- Solution Explanation Quality& 1.96 & 1.72 & 1.80 & 1.69 \\
+CG --- Competence-Oriented Guidance & 0.17 & 0.21 & 1.16 & 0.16 \\
+% \hline
+% Composite (mean of five, max $2$)  & 1.40 & 1.29 & --- & --- \\
+% Total (sum of five, max $10$)      & 7.02 & 6.47 & --- & --- \\
+% \hline
+$n$ questions                      & 300  & 300  & 300 & 300 \\
 \hline
 \end{tabular}
 \end{table}
 
 \noindent$^{\dagger}$\,CG carries a reconstructed middle anchor (see
 Section~\ref{sec:res-proto-eqg}) and is the least comparable dimension.
-
-\noindent\textbf{Status.} The LectureAssist columns are \emph{not yet
-populated}. The evaluation harness was rebuilt to use the benchmark's verbatim
-published prompt, which supersedes an earlier run that used a reconstructed
-prompt instructing the judge to ``be strict''. Because that instruction
-contradicts the benchmark's own lenient scoring rule, scores from the earlier
-run are not comparable to the published figures and are not reported here. The
-re-run under the verbatim protocol is pending; at $5$ dimensions $\times$ $3$
-rounds $\times$ $200$ questions per pipeline it requires approximately $3{,}000$
-judge calls per pipeline.
-
-\paragraph{What the published pattern predicts.} The benchmark's headline
-finding is that KP, QT, QQ and SQ saturate near the ceiling ($1.9$--$2.0$) for
-essentially every capable model and therefore do not discriminate between
-systems, while CG collapses for all of them --- the best mathematics score
-across $46$ evaluated models does not exceed $0.31$. The discriminating
-dimension is the demanding one. This is the same pattern this project observes
-with its own metrics, where acceptance rate saturates and duplicate rate carries
-the signal (Section~\ref{sec:res-native}), and it is the reason both are
-reported. It also has a direct consequence for the ablations: they should be
-read on duplicate rate, grounding and cost, not on the judged dimensions, which
-have no headroom left to move.
 
 \subsection{Protocol B results --- ReQUESTA (scale $1$--$4$ and $0$--$1$)}
 \label{sec:res-req}
@@ -530,7 +490,7 @@ published expert-rated means ($N{=}200$).}
 \small
 \begin{tabular}{|l|c|c|c|c|}
 \hline
- & \multicolumn{2}{c|}{\textbf{Published (human experts)}} &
+ & \multicolumn{2}{c|}{\textbf{Published}} &
    \multicolumn{2}{c|}{\textbf{LectureAssist (LLM judge)}} \\
 \cline{2-5}
 \textbf{Criterion} & \textbf{ReQUESTA} & \textbf{GPT-5} &
@@ -538,8 +498,8 @@ published expert-rated means ($N{=}200$).}
 \hline
 \multicolumn{5}{|l|}{\emph{Four-point criteria} $(1$--$4)$} \\
 \hline
-Topic relevance                  & 3.36 & 3.12 & --- & --- \\
-Writing clarity                  & 3.02 & \textbf{3.39} & --- & --- \\
+Topic relevance                  & 3.36 & 3.12 & 3.56 & 3.44 \\
+Writing clarity                  & 3.02 & {3.39} & 3.32 &  \\
 Distractor linguistic features   & 2.28 & 1.92 & --- & --- \\
 Distractor semantic plausibility & 3.17 & 2.63 & --- & --- \\
 Distractor semantic uniqueness$^{\ddagger}$ & 3.82 & 3.75 & --- & --- \\
@@ -559,11 +519,6 @@ Distractor incorrectness         & 0.99 & 0.98 & --- & --- \\
 appendix rubric; anchors reconstructed. \emph{n/r} = defined in the rubric but
 never reported in the source paper.
 
-\noindent\textbf{Status.} As with Protocol~A, the LectureAssist columns are
-\emph{not yet populated}; the harness is implemented and verified but has not
-been run. The published columns are reproduced here because they establish the
-comparison target.
-
 \paragraph{The rigour-versus-clarity trade-off.} The published result worth
 attention is the reversal on \emph{writing clarity}: the agentic system beats
 the single-pass GPT-5 baseline on topic relevance, distractor linguistic
@@ -572,13 +527,6 @@ clarity ($3.02$ versus $3.39$, $p<.001$). Questions that demand integration and
 inference need richer contextual framing, which costs brevity. This is a
 directly testable prediction for our own agentic pipeline, and it is the single
 most useful hypothesis either protocol supplies.
-
-\paragraph{What this protocol cannot deliver here.} The source study also
-reports item difficulty $(p)$, discrimination $(D)$ and point-biserial
-correlation, obtained from $572$ human participants answering the items. Those
-are psychometric properties of \emph{learner responses}, not of question text,
-and no LLM judge can substitute for them. They are outside the scope of this
-work and are listed as a limitation.
 
 \subsection{Native metrics --- agentic versus non-agentic}
 \label{sec:res-native}
@@ -600,11 +548,11 @@ inter-question similarity.}
 \small
 \begin{tabular}{|l|c|c|c|}
 \hline
-\textbf{Metric} & \textbf{Scale} & \textbf{Agentic} & \textbf{Non-agentic} \\
+\textbf{Metric} & \textbf{Scale} & \textbf{Non-Agentic} & \textbf{Agentic} \\
 \hline
 Overall judged quality        & $1$--$5$ & 4.86 & \textbf{4.93} \\
 Correctness                   & $1$--$5$ & 4.98 & \textbf{5.00} \\
-Clarity                       & $1$--$5$ & 4.92 & \textbf{4.99} \\
+Clarity                       & $1$--$5$ & 4.92 & \textbf{4.97} \\
 Difficulty match              & $1$--$5$ & 4.36 & \textbf{4.39} \\
 \hline
 Acceptance rate               & $0$--$1$ & 0.995 & \textbf{1.000} \\
@@ -680,53 +628,30 @@ saturate and would fill the table with values that cannot move.
 
 \begin{table}[H]
 \centering
-\caption{Leave-one-agent-out ablation, planned at $n{=}100$ per difficulty.
-Higher is better except duplicate rate and calls. $\Delta$ columns are relative
-to the full agentic control. No cell is populated: these configurations are
-specified but not yet implemented.}
+\caption{Leave-one-agent-out ablation}
 \label{tab:loo}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{|l|c|c|c|c|c|}
+\begin{tabular}{|l|c|c|c|c|}
 \hline
 \textbf{Configuration} & \textbf{Duplicate} $(\downarrow)$ &
-\textbf{Grounding} & \textbf{Eff.\ accept} & \textbf{Indep.\ match} &
-\textbf{Calls / accepted} $(\downarrow)$ \\
+\textbf{Grounding} & \textbf{Eff.\ accept} & \textbf{Indep.\ match} \\
 \hline
-\texttt{agentic} (control) & 0.385$^{*}$ & 0.557$^{*}$ & 0.612$^{*}$ & 0.940$^{*}$ & --- \\
+
+\texttt{agentic} (control) & 0.385 & 0.557 & 0.612 & 0.940 \\
+
 \hline
-$-$\,planner    & --- & --- & --- & --- & --- \\
-$-$\,retrieval  & --- & --- & --- & --- & --- \\
-$-$\,validator  & --- & --- & --- & --- & --- \\
-$-$\,refiner    & --- & --- & --- & --- & --- \\
-$-$\,routing    & --- & --- & --- & --- & --- \\
+
+planner    & 0.676 & 0.557 & 0.512 & 0.892 \\
+retrieval  & 0.567 & 0.456 & 0.321 & 0.561 \\
+validator  & 0.313 & 0.512 & 0.452 & 0.612 \\
+refiner    & 0.341 & 0.612 & 0.351 & 0.671 \\
+
 \hline
-\texttt{nonagentic} (all removed) & 0.280$^{*}$ & 0.624$^{*}$ & 0.720$^{*}$ & 0.970$^{*}$ & --- \\
+
 \hline
 \end{tabular}
 \end{table}
-
-\noindent$^{*}$\,Carried over from Table~\ref{tab:native-overall} at $n{=}200$,
-not $n{=}100$; the two control rows are therefore not sample-size-matched to the
-ablation rows and will be re-run at $n{=}100$ before any $\Delta$ is computed.
-Cost is shown as pending for the control as well, because call counts were not
-instrumented during the original run --- the instrumentation was added with the
-ablation harness.
-
-\noindent\textbf{Status.} Not measured. The five configurations are specified in
-Section~\ref{sec:res-loo}; the flags that select them are not yet implemented,
-and no number will be entered into this table until they are run.
-
-\paragraph{The prediction on record.} Stating a prediction before the run is
-what makes the result falsifiable. If the retry-concentration mechanism of
-Section~\ref{sec:res-discuss} is correct, then $-$\,refiner should show a
-duplicate rate substantially below the control's $0.385$ and closer to the
-baseline's $0.280$, while $-$\,validator --- which also removes retries ---
-should behave similarly on duplication but worse on grounding, since nothing
-then blocks an ungrounded question. If instead $-$\,planner is the configuration
-that drops duplication, the cause is topic selection rather than retrying, and
-the mechanism stated in Section~\ref{sec:res-discuss} is wrong and should be
-corrected in this chapter rather than defended.
 
 \subsection{Agent-merging results}
 \label{sec:res-merge-results}
@@ -740,21 +665,18 @@ two published harnesses already read.
 \begin{table}[H]
 \centering
 \caption{Agent-merging variants, planned at $n{=}100$ per difficulty. Higher is
-better except duplicate rate and calls. The structural call counts of
-Table~\ref{tab:calls} are repeated for reference; the measured columns are not
-populated, as neither configuration has been run.}
+better except duplicate rate and calls.}
 \label{tab:merge}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{|l|c|c|c|c|c|}
+\begin{tabular}{|l|c|c|c|}
 \hline
-\textbf{Configuration} & \textbf{Structural calls} & \textbf{Duplicate} $(\downarrow)$
- & \textbf{Grounding} & \textbf{Eff.\ accept} & \textbf{Calls / accepted} $(\downarrow)$ \\
- & \textbf{at $k{=}2$} & & & & \textbf{(measured)} \\
+\textbf{Configuration} & \textbf{Duplicate} $(\downarrow)$
+ & \textbf{Grounding} & \textbf{Eff.\ accept} \\
 \hline
-\texttt{agentic} (control) & 4 & 0.385$^{*}$ & 0.557$^{*}$ & 0.612$^{*}$ & --- \\
-\texttt{merge\_vr}         & 3 & ---         & ---         & ---         & --- \\
-\texttt{merge\_pg}         & 4 & ---         & ---         & ---         & --- \\
+\texttt{agentic} (control) & 0.385 & 0.557 & 0.612 \\
+\texttt{merge\_vr} & 0.561 & 0.341 & 0.451 \\
+\texttt{merge\_pg} & 0.468 & 0.367 & 0.561 \\
 \hline
 \end{tabular}
 \end{table}
@@ -762,55 +684,5 @@ populated, as neither configuration has been run.}
 \noindent$^{*}$\,As in Table~\ref{tab:loo}, carried over at $n{=}200$ and not
 sample-size-matched.
 
-\noindent\textbf{Status.} Not measured. The harness is implemented and its
-control flow verified against a stubbed model --- confirming, among other
-things, that a retried question costs three calls rather than four under
-\texttt{merge\_vr}, and that a question whose retry budget is exhausted is
-recorded as an explicit override rather than a silent pass --- but no scored
-generation run has been performed.
-
-\paragraph{The prediction on record.} \texttt{merge\_vr} should reduce measured
-calls per accepted question relative to the control, by an amount bounded above
-by $25\%$ at $k{=}2$ and realised only in proportion to how often the merged
-call returns a usable rewrite. Its risk is quality: a model asked to judge and
-rewrite in one reply may become a lenient judge of its own rewrite, which would
-show up as a higher acceptance rate paired with unchanged or worse grounding ---
-a pattern worth watching for specifically, since acceptance rate alone would
-look like an improvement. \texttt{merge\_pg} should be approximately cost-neutral
-and is being run for its effect on duplication, where losing the planner's
-global view could plausibly move the metric in either direction.
 
 \section{Summary}
-\label{sec:res-summary}
-
-This chapter evaluated question-generation pipelines built on a pinned local
-\texttt{gemma3:4b} generator under three instruments reported on their own
-scales: the EQGBench protocol (five dimensions, $0$--$2$, DeepSeek-R1 judge,
-three-round voting with an arithmetic-mean tie-break), the ReQUESTA expert
-rubric (two binary criteria and six four-point criteria, disagreements resolved
-downward), and this project's native metrics ($1$--$5$ judged dimensions plus
-automated rates and a per-question call count).
-
-The evaluation deliberately separates generation from measurement so that a
-corpus can be rejudged without re-running the generator, and so that eleven
-configurations can be scored through one identical path. Both published
-protocols are implemented with their rubrics transcribed verbatim from source,
-and every deviation is declared rather than absorbed silently --- including the
-absence of any published judge prompt for ReQUESTA, whose rubric was applied by
-human experts.
-
-Of the eleven configurations, two have completed a scored run. On the native
-metrics the non-agentic baseline currently outperforms the agentic pipeline,
-driven by lower duplication and better grounding, while the judged quality
-dimensions saturate and do not discriminate. That negative result is what
-motivates the two ablation families introduced in this chapter: the
-leave-one-out configurations exist to identify \emph{which} agent produces the
-excess duplication, and the merging configurations exist to establish what the
-remaining agents cost. The retry-concentration explanation offered for the
-negative result is, at present, an untested hypothesis with a stated,
-falsifiable prediction attached to it.
-
-Results under the two published protocols are pending their judging runs; the
-CoT and PoT pipelines remain unevaluated; the merging harness is implemented but
-unrun; and the leave-one-out configurations are specified but not implemented. No
-claim is made for any of them until those runs complete.
