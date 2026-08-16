@@ -2087,6 +2087,51 @@ class DocParserAgent(BaseAgent):
 
 
 
+def _looks_like_review_not_summary(text):
+    """True when the model reviewed a summary instead of writing one.
+
+    The reduce step of summarize_document() is the only summarisation call whose
+    payload is already-polished summary prose rather than raw source text. Given
+    that, gemma3 sometimes reads the message as "here is a document produced from
+    that instruction -- comment on it" and replies with praise plus improvement
+    suggestions. That reply is long and contains none of the refusal phrases
+    SummaryAgent.validate looks for, so without this check it reaches the user as
+    the summary.
+
+    Deliberately self-contained (patterns and import inside the function) so it
+    can be extracted and unit-tested without importing colab.py, which is not
+    importable outside Colab. See tools/test_summary_guard.py.
+    """
+    import re as _re
+
+    if not text or len(text) < 80:
+        return False
+
+    # Strong signals: evaluating a document as an artifact.
+    strong = [
+        r"you'?ve\s+successfully",
+        r"here are\s+(?:a few|some)[^.]{0,40}suggestions",
+        r"overall,?\s+this is an?\b",
+        r"great job",
+        r"(?:outstanding|excellent|comprehensive|well-structured|fantastic)\s+summary",
+        r"summary!",
+        r"could further enhance",
+    ]
+    # Weak signals: suggestion-giving language aimed at the text's author.
+    weak = [
+        r"\byour summary\b",
+        r"\bthe summary\s+(?:feel|would|could)\b",
+        r"consider adding\b",
+        r"striving for\b",
+        r"\bminor suggestions?\b",
+    ]
+
+    low = text.lower()
+    score = sum(2 for p in strong if _re.search(p, low))
+    score += sum(1 for p in weak if _re.search(p, low))
+    return score >= 2
+
+
 def summarize_document(doc_text, chunk_size=10000):
     """Summarise a WHOLE document, not just its first pages.
 
@@ -2121,13 +2166,47 @@ def summarize_document(doc_text, chunk_size=10000):
         print(f"    part {i}/{len(chunks)} summarised")
 
     combined = "\n\n".join(partials)
-    return call_ollama(
-        "Combine these partial summaries into ONE detailed, structured summary of the "
-        "whole document. Preserve every distinct topic, definition, theorem and example "
-        "— do not drop later sections in favour of earlier ones.\n\n"
-        f"{combined[:20000]}",
-        system="You are an expert educational content summarizer.",
-    ) or combined[:8000]
+
+    # Every other summarisation call in this file feeds the model RAW source text.
+    # This one feeds it already-polished summary prose, which the model can read as
+    # a finished artifact submitted for review. Two things prevent that, both
+    # patterns this file already uses elsewhere: fence the data in === markers (as
+    # generate_summary does) and state the output constraint explicitly (as the
+    # pinned-generator retry at call_ollama_json_quiz does).
+    merge_system = (
+        "You are an expert educational content summarizer. You output only the "
+        "summary document itself. You never comment on, critique, or evaluate the "
+        "text you are given."
+    )
+    merge_prompt = (
+        "Between the markers below are partial summaries of consecutive sections "
+        "of ONE document.\n\n"
+        "Rewrite them as a single continuous summary of the whole document. "
+        "Preserve every distinct topic, definition, theorem and worked example — "
+        "do not drop later sections in favour of earlier ones.\n\n"
+        "Output ONLY the merged summary itself. Do not introduce it, do not "
+        "describe what you did, and do not comment on the quality of the input.\n\n"
+        f"=== PARTIAL SUMMARIES ===\n{combined[:20000]}\n=== END PARTIAL SUMMARIES ==="
+    )
+
+    merged = call_ollama(merge_prompt, system=merge_system)
+
+    if _looks_like_review_not_summary(merged):
+        print("  ⚠ summary merge replied with a review instead of a summary — retrying")
+        merged = call_ollama(
+            merge_prompt
+            + "\n\nDo NOT reply with feedback, praise or suggestions. Begin your "
+              "reply with the first heading of the summary itself.",
+            system=merge_system,
+        )
+
+    if _looks_like_review_not_summary(merged):
+        # Two reviewer-mode replies in a row. Show the user the real partial
+        # summaries rather than commentary about a summary.
+        print("  ⚠ merge still reviewing — falling back to concatenated partials")
+        return combined[:8000]
+
+    return merged or combined[:8000]
 
 
 class SummaryAgent(BaseAgent):
@@ -2154,6 +2233,12 @@ class SummaryAgent(BaseAgent):
         low_quality = ["i don't have enough", "i cannot", "no content provided"]
         if any(phrase in ctx.summary.lower() for phrase in low_quality):
             issues.append("summary appears to be a refusal or low-quality response")
+        # Reviewer-mode output is long and contains none of the phrases above, so
+        # it passed both checks and reached the user as the summary. Catch it here
+        # too, not only inside summarize_document, so the video path and any future
+        # summary source are covered by the same gate.
+        if _looks_like_review_not_summary(ctx.summary):
+            issues.append("summary is commentary ABOUT a summary, not a summary")
         return len(issues) == 0, issues
 
 
