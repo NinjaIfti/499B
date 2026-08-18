@@ -52,16 +52,20 @@
 % ── Column geometry: narrow text | WIDE diagram | results ────────────────
 \newlength{\sepwidth}
 \newlength{\colA}\newlength{\colB}\newlength{\colC}
-\setlength{\sepwidth}{0.02\paperwidth}
-% colA drives the screenshot size: they are 2:1, they sit at 0.97\linewidth, and
-% the department floor for a photograph is 12cm x 18cm. At 0.25 paperwidth the
-% column is 29.7cm, so each screenshot renders 28.8 x 14.3cm -- clear of the
-% 12cm height. Narrowing this column shrinks them; below about 0.21 they fall
-% under spec. colB was reduced to fund the widening; its two diagrams are
-% scaled up to 0.96\linewidth so that column stays full.
-\setlength{\colA}{0.25\paperwidth}   % problem + setup + UI screenshots
-\setlength{\colB}{0.36\paperwidth}   % BOTH methodology diagrams, full width
-\setlength{\colC}{0.31\paperwidth}   % all results
+% Separators trimmed from 0.02 to 0.013 (4 of them, so this reclaims 2.8% of the
+% page = 3.3cm) and handed to columns A and B. Every figure here is WIDTH-limited
+% -- each already sits at ~99% of its column -- so the only way to make them
+% taller is to make their column wider. Total width is conserved, so A and B can
+% only grow at the expense of the separators and C.
+\setlength{\sepwidth}{0.013\paperwidth}
+% colA drives the screenshot size: they are 2:1, they sit at 0.99\linewidth, and
+% the department floor for a photograph is 12cm x 18cm. At 0.265 paperwidth the
+% column is 31.5cm, so each screenshot renders 31.2 x 15.5cm -- clear of the 12cm
+% height. Narrowing this column shrinks them; below about 0.21 they fall under
+% spec.
+\setlength{\colA}{0.265\paperwidth}  % problem + setup + UI screenshots
+\setlength{\colB}{0.383\paperwidth}  % BOTH methodology diagrams, full width
+\setlength{\colC}{0.300\paperwidth}  % all results
 \newcommand{\separatorcolumn}{\begin{column}{\sepwidth}\end{column}}
 
 % ── Spec-compliant type sizes ────────────────────────────────────────────
@@ -169,14 +173,14 @@
 
     \begin{figure}
       \centering
-      \includegraphics[width=0.97\linewidth]{ss1.png}
+      \includegraphics[width=0.99\linewidth]{ss1.png}
       \caption{Upload page. Drag-and-drop for video or documents; the four
       counters fill in from the run once processing completes.}
     \end{figure}
 
     \begin{figure}
       \centering
-      \includegraphics[width=0.97\linewidth]{ss2.png}
+      \includegraphics[width=0.99\linewidth]{ss2.png}
       \caption{Quiz Engine. Four question types, generation modes, and a timer;
       the agent workspace streams the pipeline live during generation.}
     \end{figure}
@@ -194,7 +198,7 @@
 
     \begin{figure}
       \centering
-      \includegraphics[width=\linewidth]{Book/lectureassist-architecture-illustrated.pdf}
+      \includegraphics[width=0.99\linewidth]{Book/lectureassist-architecture-illustrated.pdf}
       \caption{Multimodal extraction feeds a grounded knowledge base; the
       orchestrator coordinates the specialist agents that produce every study
       artifact. Independent agents run concurrently and any agent crash is
@@ -207,7 +211,7 @@
 
     \begin{figure}
       \centering
-      \includegraphics[width=0.96\linewidth]{figs/agentic-loop.pdf}
+      \includegraphics[width=0.99\linewidth]{figs/agentic-loop.pdf}
       \caption{One question per slot; each must pass validation before the next
       begins. An exhausted retry budget flags an override, never a pass.}
     \end{figure}
