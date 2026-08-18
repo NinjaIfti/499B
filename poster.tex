@@ -2,41 +2,34 @@
 %  LectureAssist -- Senior Design Project (499) poster
 %
 %  Build:  lualatex poster.tex        (luainputenc requires LuaLaTeX)
+%  Depends on: figs/agentic-loop.pdf  (build first, see that file's header)
+%
+%  POSTER SPEC (from the department brief) and how it is met:
+%    A0                       -> beamerposter size=a0, landscape
+%    Headings 48-60 pt        -> block title set to 52 pt; headline title 58 pt
+%    Content 24-32 pt         -> \normalsize is 27.4 pt at scale=1.1; every
+%                                table uses \tbl = 24 pt, the spec minimum.
+%                                Do NOT use \small (22.8 pt) or \footnotesize
+%                                (19.0 pt) anywhere -- both are under spec.
+%    Graphs >= 12cm x 18cm    -> results chart is ~35cm x 14cm
+%    Photographs >= 12cm x 18cm -> architecture figure spans the 47.5cm column
 %
 %  DATA PROVENANCE -- read before editing any number in this file.
-%  Every figure on this poster comes from the ONE evaluation run that actually
-%  completed: the native-metrics run, n=200 MCQ per pipeline, reported in
-%  Book/4.results.tex Tables tab:native-overall and tab:native-difficulty.
+%  Every figure comes from the ONE evaluation run that completed: the native
+%  metrics run, n=200 MCQ per pipeline, in Book/4.results.tex tables
+%  tab:native-overall and tab:native-difficulty.
 %
-%  NOTE ON PIPELINE LABELS -- CHANGED 2026-08-17, READ BEFORE TRUSTING EITHER ARM.
-%  The author reports that the two arms were INTERCHANGED at generation time, i.e.
-%  the group recorded as "agentic" in the source artifact was in fact produced by
-%  the non-agentic pipeline and vice versa. This poster now applies that swap:
-%  the column carrying 0.280 duplicate / 0.624 grounding / 0.720 effective accept
-%  is labelled AGENTIC here.
+%  COLUMN ORDER: Book/4.results.tex tab:native-overall has its two data columns
+%  swapped relative to its headers. Grounding and independent-answer match are
+%  plain means, so the per-difficulty table must pool exactly: the rows labelled
+%  "Agentic" there pool to 0.5567 and 0.9403 -- the values printed under the
+%  book's "Non-Agentic" heading. The book's own prose (4.results.tex:596-601)
+%  and its tab:loo control row (agentic = 0.385 / 0.557 / 0.612 / 0.940) agree
+%  with the pooling, not the headers. THIS POSTER USES THE CORRECTED ASSIGNMENT.
 %
-%  This correction is NOT verifiable from anything in the repository, and it
-%  INVERTS the headline finding. What is on disk still says the opposite:
-%    - result/bulk_eval_results.json (recovered from git) keys these values under
-%      "nonagentic", not "agentic";
-%    - Book/4.results.tex tab:native-difficulty still labels 0.385/0.557/0.612
-%      as Agentic, and its prose at :596-601 still reads "Non-agentic ... produces
-%      fewer duplicates (0.280 versus 0.385)".
-%  The artifact that assigned these labels (evaluategemma.py) has been deleted, so
-%  the assignment cannot be re-derived. UNTIL A CONFIRMING RUN EXISTS, treat the
-%  direction of this result as unsettled, and keep the book and this poster in
-%  agreement -- right now they are not.
-%
-%  Deliberately NOT on this poster:
-%    - EQGBench figures (Book tab:eqg-compare). No completed run backs them; the
-%      only artifact is eval_out_eqgbench_OLD-unfaithful-protocol/, a repudiated
-%      protocol whose log ends in continuous 429 judge failures and which
-%      contains 1 successfully-judged agentic row and zero non-agentic rows.
-%    - ReQUESTA figures (tab:req-compare). Mostly pending cells upstream.
-%    - Leave-one-out and agent-merging figures (tab:loo, tab:merge). Chapter 4
-%      states at :118-127 that these configurations are "built, unrun" / "not yet
-%      implemented". They are shown here as PENDING, which is what that text
-%      promises.
+%  Deliberately NOT shown: EQGBench and ReQUESTA figures (no completed run
+%  backs them) and the leave-one-out / merging figures (chapter 4 states those
+%  configurations are "built, unrun" / "not yet implemented").
 % ============================================================================
 
 \documentclass[final]{beamer}
@@ -54,58 +47,80 @@
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.14}
 \usepackage{anyfontsize}
-\usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc, fit, backgrounds}
+\usetikzlibrary{arrows.meta, positioning, calc}
 
+% ── Column geometry: narrow text | WIDE diagram | results ────────────────
 \newlength{\sepwidth}
-\newlength{\colwidth}
-\setlength{\sepwidth}{0.025\paperwidth}
-\setlength{\colwidth}{0.3\paperwidth}
-
+\newlength{\colA}\newlength{\colB}\newlength{\colC}
+\setlength{\sepwidth}{0.02\paperwidth}
+\setlength{\colA}{0.17\paperwidth}   % problem + evaluation setup + stack
+\setlength{\colB}{0.44\paperwidth}   % BOTH methodology diagrams, full width
+\setlength{\colC}{0.31\paperwidth}   % all results
 \newcommand{\separatorcolumn}{\begin{column}{\sepwidth}\end{column}}
 
+% ── Spec-compliant type sizes ────────────────────────────────────────────
+% 24 pt is the department's floor for body content. Tables sit exactly on it.
+\newcommand{\tbl}{\fontsize{24}{30}\selectfont}
+\setbeamerfont{block title}{family=\Raleway,size=\fontsize{52}{62}\selectfont,series=\bfseries}
+\setbeamerfont{caption}{size=\fontsize{24}{29}\selectfont}
+\setbeamerfont{headline title}{size=\fontsize{58}{68}\selectfont,series=\bfseries}
+\setbeamerfont{headline author}{size=\fontsize{30}{36}\selectfont}
+\setbeamerfont{headline institute}{size=\fontsize{28}{34}\selectfont}
+
 \definecolor{LAindigo}{HTML}{6366F1}
-\definecolor{LAviolet}{HTML}{A78BFA}
-\definecolor{LAcyan}{HTML}{38BDF8}
-\definecolor{LAgreen}{HTML}{34D399}
-\definecolor{LAamber}{HTML}{FBBF24}
-\definecolor{LAred}{HTML}{F87171}
-\definecolor{LAink}{HTML}{2B2C45}
-\definecolor{LAmist}{HTML}{EEF0FD}
+\definecolor{LAgreen}{HTML}{047857}
+\definecolor{LAamber}{HTML}{B45309}
 \definecolor{LAslate}{HTML}{64748B}
 
-\tikzset{
-  labox/.style={rectangle, rounded corners=8pt, draw=LAindigo, line width=1.2pt,
-    fill=white, text=LAink, align=center, inner sep=7pt, minimum height=1.5cm,
-    font=\bfseries},
-  lain/.style={labox, draw=LAcyan, fill=LAcyan!10},
-  laproc/.style={labox, draw=LAviolet, fill=LAviolet!8},
-  lallm/.style={labox, draw=LAamber, fill=LAamber!15},
-  laout/.style={labox, draw=LAgreen, fill=LAgreen!12},
-  laval/.style={labox, draw=LAred, fill=LAred!8},
-  laarr/.style={-{Stealth[length=5mm,width=4mm]}, line width=1.6pt, draw=LAindigo},
-  laarrg/.style={-{Stealth[length=5mm,width=4mm]}, line width=1.6pt, draw=LAgreen},
-  laloop/.style={-{Stealth[length=5mm,width=4mm]}, line width=1.4pt, draw=LAred},
-  lalbl/.style={font=\small\itshape, text=LAink, fill=white, inner sep=2pt},
-}
-
-% Marks the pipeline that wins a row. Used ONLY where the measurement supports it.
+% Marks the better value in a results row. Used only where the data supports it.
 \newcommand{\win}[1]{\textbf{\textcolor{LAgreen}{#1}}}
-\newcommand{\pend}{\textcolor{LAslate}{\emph{pending}}}
 
-\title{LectureAssist: An Agentic, Multimodal AI Assistant that Turns Lectures into Adaptive Study Material}
-
-\author{%
-  \begin{tabular}{c@{\hspace{4cm}}c@{\hspace{4cm}}c}
-    Iftikhar Ahmed & Salman Shafi & Jarinah Tasnim \\[2pt]
-    {\normalsize\texttt{iftikhar.ahmed@northsouth.edu}} &
-    {\normalsize\texttt{salman.shafi@northsouth.edu}} &
-    {\normalsize\texttt{jarinah.tasnim@northsouth.edu}} \\
-  \end{tabular}
+% ── Compact headline ─────────────────────────────────────────────────────
+% The stock gemini headline spends 5ex + 3ex + 5ex of vertical space plus three
+% 1ex line gaps. This override trims those to roughly a third, which is the
+% "shorter navbar" the brief asks for, and drops the department/SDP line so only
+% the supervisor credit remains.
+\setbeamertemplate{headline}
+{
+  \begin{beamercolorbox}{headline}
+    \begin{columns}
+      \begin{column}{\maxlogowidth}
+        \vskip1ex
+        \ifdefined\insertlogoleft
+          \vspace*{\fill}\hspace{6ex}\raggedright\insertlogoleft\vspace*{\fill}
+        \else\fi
+      \end{column}
+      \begin{column}{\dimexpr\paperwidth-\maxlogowidth-\maxlogowidth}
+        \usebeamerfont{headline}
+        \vskip1ex
+        \centering
+        {\usebeamerfont{headline title}\usebeamercolor[fg]{headline title}\inserttitle\par}
+        \vskip0.6ex
+        {\usebeamerfont{headline author}\usebeamercolor[fg]{headline author}\insertauthor\par}
+        \vskip0.4ex
+        {\usebeamerfont{headline institute}\usebeamercolor[fg]{headline institute}\insertinstitute\par}
+      \end{column}
+      \begin{column}{\maxlogowidth}
+        \vskip1ex
+        \ifdefined\insertlogoright
+          \vspace*{\fill}\raggedleft\insertlogoright\hspace{6ex}\vspace*{\fill}
+        \else\fi
+      \end{column}
+    \end{columns}
+    \vspace{1.5ex}
+    \ifbeamercolorempty[bg]{headline rule}{}{
+      \begin{beamercolorbox}[wd=\paperwidth,colsep=0.35ex]{headline rule}\end{beamercolorbox}
+    }
+  \end{beamercolorbox}
 }
 
-\institute[NSU]{Dept.\ of Electrical and Computer Engineering, North South University \;\textbullet\; Senior Design Project (499) \;\textbullet\; Supervisor: Dr.\ Adnan Areefen}
+\title{LectureAssist: An Agentic, Multimodal AI Assistant for Lecture-Grounded Study Material}
 
-\IfFileExists{uni.png}{\logoleft{\includegraphics[height=8.5cm]{uni.png}}}{}
+\author{Iftikhar Ahmed \quad\textbullet\quad Salman Shafi \quad\textbullet\quad Jarinah Tasnim}
+
+\institute[NSU]{Supervisor: Dr.\ Adnan Areefen}
+
+\IfFileExists{uni.png}{\logoleft{\includegraphics[height=7cm]{uni.png}}}{}
 
 \begin{document}
 
@@ -113,61 +128,46 @@
 \begin{columns}[t]
 \separatorcolumn
 
-% ══════════════════════════ COLUMN 1 ══════════════════════════
-\begin{column}{\colwidth}
+% ══════════════════════ COLUMN 1 — problem + loop ══════════════════════
+\begin{column}{\colA}
 
-  \begin{block}{Problem \& Goal}
-
-    Recorded lectures pack speech, slides and board work into one video, and that
-    content stays \textbf{locked and unsearchable}. Students re-watch hours of
-    footage to find a single concept and have no fast way to self-test on what
-    the lecturer actually emphasised.
+  \begin{block}{Problem}
 
     \begin{itemize}
-      \item Lecture knowledge lives in \textbf{video, speech and board writing},
-        rarely as clean text.
-      \item Generic quiz tools \textbf{hallucinate} off-topic, ungrounded questions.
-      \item One-size-fits-all difficulty ignores \textbf{each student's weak spots}.
+      \item Lecture knowledge is locked in \textbf{video, speech and board writing}.
+      \item Generic quiz tools produce \textbf{ungrounded, off-topic} questions.
+      \item Fixed difficulty ignores \textbf{each student's weak topics}.
     \end{itemize}
 
-    \textbf{Goal.} A system that \emph{reads the board and hears the lecture}, and
-    produces \emph{grounded, validated, adaptive} study material entirely on a
-    free Colab T4 at \textbf{zero API cost}.
+    \textbf{Goal.} Grounded, validated, adaptive study material --- fully local,
+    \textbf{zero API cost}, on one free Colab T4.
 
   \end{block}
 
-  \begin{block}{System Architecture}
+  \begin{block}{Evaluation Setup}
 
-    A lecture video or document is extracted, indexed, and handed to an
-    orchestrator that supervises specialist agents. Independent agents run
-    concurrently; any agent crash is caught and logged so the pipeline
-    \textbf{degrades gracefully} rather than failing outright.
-
-    \begin{figure}
-      \centering
-      \includegraphics[width=\linewidth]{Book/lectureassist-architecture-illustrated.pdf}
-      \caption{LectureAssist system architecture. Multimodal extraction feeds a
-      grounded knowledge base; the orchestrator coordinates the specialist agents
-      that produce every study artifact.}
-    \end{figure}
+    \begin{itemize}
+      \item \textbf{Source.} OpenStax \emph{Calculus Vol.\,1}, Limits chapter
+        ($\approx$112k characters), also given to the judge as ground truth.
+      \item \textbf{Scale.} $n{=}200$ MCQ per pipeline --- easy 68, medium 66,
+        hard 66.
+      \item \textbf{Fairness.} Identical sliding window for both pipelines, so
+        any difference reflects \textbf{prompting strategy alone}.
+      \item \textbf{Models.} Generator \texttt{gemma3:4b}, judge
+        \texttt{gemma3:12b}, both local.
+    \end{itemize}
 
   \end{block}
 
   \begin{block}{Stack}
 
     \begin{itemize}
-      \item \textbf{Vision / OCR.} EasyOCR, frames sampled ${\sim}5$\,s apart and
-        classified (slide / blackboard / whiteboard / scene) with per-class
-        preprocessing --- CLAHE, sharpening, Otsu, chalk inversion.
-      \item \textbf{Speech.} Faster-Whisper, GPU \texttt{float16} with CPU
-        \texttt{int8} fallback, per-segment timestamps.
-      \item \textbf{Retrieval.} Sentence-Transformers (\texttt{MiniLM}) embeddings
-        in a \textbf{FAISS} cosine index; every artifact retrieves top-$k$ chunks
-        before generation.
-      \item \textbf{Models.} Generator \texttt{gemma3:4b} (pinned), judge and
-        answer-generation \texttt{gemma3:12b}, served locally by Ollama.
+      \item \textbf{Vision.} EasyOCR, per-surface preprocessing for slides,
+        chalkboards and whiteboards.
+      \item \textbf{Speech.} Faster-Whisper with per-segment timestamps.
+      \item \textbf{Retrieval.} MiniLM embeddings in a FAISS cosine index.
       \item \textbf{Serving.} Flask on Colab $\rightarrow$ ngrok $\rightarrow$
-        single-page browser UI.
+        browser UI.
     \end{itemize}
 
   \end{block}
@@ -176,106 +176,30 @@
 
 \separatorcolumn
 
-% ══════════════════════════ COLUMN 2 ══════════════════════════
-\begin{column}{\colwidth}
+% ══════════════════ COLUMN 2 — the big methodology diagrams ══════════════
+\begin{column}{\colB}
 
-  \begin{block}{The Agentic Loop}
-
-    Questions are built \textbf{one at a time} and must \emph{pass validation}
-    before the next slot begins. On failure the validator selects a remediation
-    --- regenerate, fetch more context, or replan the topic. When the retry budget
-    is exhausted the best attempt is kept and \textbf{marked as an override};
-    a failed question is never silently relabelled as a pass.
+  \begin{block}{System Architecture}
 
     \begin{figure}
       \centering
-      \begin{tikzpicture}[node distance=1.6cm and 1.6cm]
-        \node[laproc, text width=8cm] (plan){\textbf{Planner}\\{\normalfont\small topics, mix}};
-        \node[lallm, right=of plan, text width=8cm] (gen){\textbf{Generator}\\{\normalfont\small ONE question}};
-        \node[laval, right=of gen, text width=9cm] (val){\textbf{Validator}\\{\normalfont\small grounded, difficulty, unique}};
-        \node[lallm, below=1.9cm of gen, text width=8cm] (refine){\textbf{Refiner}\\{\normalfont\small targeted fix}};
-        \node[laout, below=1.9cm of val, text width=8cm] (pass){\textbf{Accept}\\{\normalfont\small next slot}};
-        \draw[laarr](plan)--(gen);
-        \draw[laarr](gen)--(val);
-        \draw[laarrg](val)--(pass) node[lalbl, midway, right]{PASS};
-        \draw[laloop](val)--(refine) node[lalbl, midway, above]{FAIL};
-        \draw[laloop](refine)--(gen) node[lalbl, midway, left]{retry $\le 3$};
-      \end{tikzpicture}
-      \caption{Plan $\rightarrow$ Generate $\rightarrow$ Validate $\rightarrow$
-      Retry, budget-capped at three attempts per slot.}
+      \includegraphics[width=\linewidth]{Book/lectureassist-architecture-illustrated.pdf}
+      \caption{Multimodal extraction feeds a grounded knowledge base; the
+      orchestrator coordinates the specialist agents that produce every study
+      artifact. Independent agents run concurrently and any agent crash is
+      isolated.}
     \end{figure}
 
   \end{block}
 
-  \begin{block}{How We Evaluated It}
+  \begin{block}{Agentic Quiz Generation}
 
-    Generation and measurement are kept \textbf{strictly separate}: the Colab run
-    only emits questions, and judging happens offline on the exported artifact.
-
-    \begin{itemize}
-      \item \textbf{Source.} \emph{Limits} chapter of OpenStax \emph{Calculus,
-        Vol.~1} (${\approx}112$k characters), ingested through the standard
-        document pipeline and also supplied to the judge as ground truth.
-      \item \textbf{Scale.} $n{=}200$ MCQ per pipeline, split across three target
-        difficulties (easy $68$, medium $66$, hard $66$).
-      \item \textbf{Fairness.} Both pipelines read the document through an
-        identical sliding window with a uniform batch size, so neither sees more
-        or different content --- any difference reflects \textbf{prompting
-        strategy alone}.
-      \item \textbf{Judge.} \texttt{gemma3:12b}, scoring questions written by the
-        \texttt{gemma3:4b} generator.
-    \end{itemize}
-
-  \end{block}
-
-  \begin{block}{Results by Difficulty}
-
-    \begin{table}
+    \begin{figure}
       \centering
-      \small
-      \setlength{\tabcolsep}{5pt}
-      \begin{tabular}{llccccc}
-        \toprule
-        \textbf{Diff.} & \textbf{Pipeline} & \textbf{$n$} &
-        \textbf{Dup.}$\downarrow$ & \textbf{Ground.} &
-        \textbf{Eff.\ acc.} & \textbf{Match} \\
-        \midrule
-        Easy   & Non-agentic & 68 & 0.353 & 0.562 & 0.647 & 0.971 \\
-               & Agentic     & 68 & \win{0.324} & \win{0.642} & \win{0.676} & 0.971 \\
-        \midrule
-        Medium & Non-agentic & 66 & 0.379 & 0.595 & 0.612 & 0.879 \\
-               & Agentic     & 66 & \win{0.227} & \win{0.614} & \win{0.773} & \win{0.955} \\
-        \midrule
-        Hard   & Non-agentic & 66 & 0.288 & 0.513 & 0.712 & 0.970 \\
-               & Agentic     & 66 & \win{0.182} & \win{0.616} & \win{0.818} & \win{0.985} \\
-        \bottomrule
-      \end{tabular}
-      \caption{The pattern is consistent at every difficulty level: the agentic
-      pipeline leads on duplicate rate, grounding and effective acceptance
-      throughout.}
-    \end{table}
-
-  \end{block}
-
-  \begin{block}{Status \& Next Steps}
-
-    \begin{table}
-      \centering
-      \small
-      \begin{tabular}{ll}
-        \toprule
-        \textbf{Configuration} & \textbf{Status} \\
-        \midrule
-        \texttt{agentic}, \texttt{nonagentic} & scored, $n{=}200$ each \\
-        \texttt{cot}, \texttt{pot}            & implemented, not judged \\
-        \texttt{merge\_vr}, \texttt{merge\_pg} & built, \pend \\
-        5 leave-one-agent-out configs         & specified, \pend \\
-        EQGBench / ReQUESTA protocols         & harnesses built, \pend \\
-        \bottomrule
-      \end{tabular}
-      \caption{No number is claimed for a run that has not completed. Next up are
-      the leave-one-out ablations, which test the duplication hypothesis.}
-    \end{table}
+      \includegraphics[width=0.80\linewidth]{figs/agentic-loop.pdf}
+      \caption{One question per slot; each must pass validation before the next
+      begins. An exhausted retry budget flags an override, never a pass.}
+    \end{figure}
 
   \end{block}
 
@@ -283,104 +207,117 @@
 
 \separatorcolumn
 
-% ══════════════════════════ COLUMN 3 ══════════════════════════
-\begin{column}{\colwidth}
+% ══════════════════════ COLUMN 3 — all results ══════════════════════════
+\begin{column}{\colC}
 
-  \begin{block}{Headline Results}
+  \begin{block}{Results}
 
-    \begin{table}
+    \begin{minipage}[t]{0.48\colC}
       \centering
-      \small
-      \begin{tabular}{lccc}
+      {\tbl
+      \begin{tabular}{lcc}
         \toprule
-        \textbf{Metric} & \textbf{Scale} & \textbf{Non-agentic} & \textbf{Agentic} \\
+        \textbf{Metric} & \textbf{Agen.} & \textbf{Non-ag.} \\
         \midrule
-        \multicolumn{4}{l}{\emph{Judged quality --- all four saturate}} \\
-        Overall quality            & $1$--$5$ & 4.86  & \win{4.93} \\
-        Correctness                & $1$--$5$ & 4.98  & \win{5.00} \\
-        Clarity                    & $1$--$5$ & 4.92  & \win{4.97} \\
-        Difficulty match           & $1$--$5$ & 4.36  & \win{4.39} \\
+        \multicolumn{3}{l}{\emph{Judged $1$--$5$ (saturated)}} \\
+        Overall     & 4.86 & \win{4.93} \\
+        Correctness & 4.98 & \win{5.00} \\
+        Clarity     & 4.92 & \win{4.97} \\
+        Difficulty  & 4.36 & \win{4.39} \\
         \midrule
-        \multicolumn{4}{l}{\emph{Automated --- these actually discriminate}} \\
-        Duplicate rate $\downarrow$        & $0$--$1$ & 0.385 & \win{0.280} \\
-        Semantic grounding                 & $0$--$1$ & 0.557 & \win{0.624} \\
-        Effective acceptance               & $0$--$1$ & 0.612 & \win{0.720} \\
-        Independent answer match           & $0$--$1$ & 0.940 & \win{0.970} \\
-        Inter-question similarity $\downarrow$ & $0$--$1$ & 0.932 & \win{0.894} \\
+        \multicolumn{3}{l}{\emph{Automated $0$--$1$}} \\
+        Duplicate $\downarrow$  & 0.385 & \win{0.280} \\
+        Grounding               & 0.557 & \win{0.624} \\
+        Eff.\ accept            & 0.612 & \win{0.720} \\
+        Answer match            & 0.940 & \win{0.970} \\
+        Similarity $\downarrow$ & 0.932 & \win{0.894} \\
+        Accept rate             & 0.995 & \win{1.000} \\
+        Verified                & 0.995 & 0.995 \\
+        \bottomrule
+      \end{tabular}}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.48\colC}
+      \centering
+      {\tbl
+      \begin{tabular}{llcc}
+        \toprule
+        \textbf{Diff.} & \textbf{Pipe.} & \textbf{Dup.}$\downarrow$ & \textbf{Grnd.} \\
         \midrule
-        Acceptance rate            & $0$--$1$ & 0.995 & \win{1.000} \\
-        Judge-verified correctness & $0$--$1$ & 0.995 & 0.995 \\
+        Easy   & Agen.   & 0.353 & 0.562 \\
+               & Non-ag. & \win{0.324} & \win{0.642} \\
+        \midrule
+        Medium & Agen.   & 0.379 & 0.595 \\
+               & Non-ag. & \win{0.227} & \win{0.614} \\
+        \midrule
+        Hard   & Agen.   & 0.288 & 0.513 \\
+               & Non-ag. & \win{0.182} & \win{0.616} \\
         \bottomrule
       \end{tabular}
-      \caption{Native metrics, $n{=}200$ per pipeline. Green marks the better
-      value; arrows mark rows where lower is better.}
-    \end{table}
+
+      \vspace{6mm}
+      \begin{tabular}{llcc}
+        \toprule
+        \textbf{Diff.} & \textbf{Pipe.} & \textbf{Eff.} & \textbf{Match} \\
+        \midrule
+        Easy   & Agen.   & 0.647 & 0.971 \\
+               & Non-ag. & \win{0.676} & 0.971 \\
+        \midrule
+        Medium & Agen.   & 0.612 & 0.879 \\
+               & Non-ag. & \win{0.773} & \win{0.955} \\
+        \midrule
+        Hard   & Agen.   & 0.712 & 0.970 \\
+               & Non-ag. & \win{0.818} & \win{0.985} \\
+        \bottomrule
+      \end{tabular}}
+    \end{minipage}
+
+    \vspace{4mm}
+    {\tbl\textcolor{LAslate}{$n{=}200$ per pipeline. Green marks the better
+    value; $\downarrow$ marks rows where lower is better. Per-difficulty
+    $n{=}68/66/66$.}}
 
     \begin{figure}
       \centering
       \begin{tikzpicture}
         \begin{axis}[
-          width=0.95\colwidth, height=13cm,
-          ybar, bar width=1.5cm,
-          ymin=0, ymax=0.85,
-          enlarge x limits=0.22,
+          width=0.97\colC, height=15cm,
+          ybar, bar width=2.2cm,
+          ymin=0, ymax=0.88,
+          enlarge x limits=0.25,
           symbolic x coords={Duplicate,Grounding,Eff. accept},
           xtick=data,
-          ylabel={score},
-          legend style={at={(0.5,1.06)}, anchor=south, legend columns=2, draw=none,
-            column sep=1.2cm, /tikz/every even column/.append style={column sep=1.2cm}},
-          nodes near coords, nodes near coords style={font=\small},
-          every node near coord/.append style={/pgf/number format/fixed,
-            /pgf/number format/precision=3, /pgf/number format/fixed zerofill},
-          tick label style={font=\small},
-          label style={font=\small},
-          ymajorgrids=true, grid style={LAmist},
+          legend style={at={(0.5,1.04)}, anchor=south, legend columns=2,
+            draw=none, font=\fontsize{24}{29}\selectfont, column sep=1.5cm},
+          nodes near coords,
+          every node near coord/.append style={font=\fontsize{24}{29}\selectfont,
+            /pgf/number format/fixed, /pgf/number format/precision=3,
+            /pgf/number format/fixed zerofill},
+          tick label style={font=\fontsize{24}{29}\selectfont},
+          ymajorgrids=true, grid style={LAslate!25},
           axis lines*=left,
         ]
-          \addplot[fill=LAamber!70, draw=LAamber] coordinates
+          \addplot[fill=LAamber!75, draw=LAamber] coordinates
             {(Duplicate,0.385) (Grounding,0.557) (Eff. accept,0.612)};
-          \addplot[fill=LAindigo!70, draw=LAindigo] coordinates
+          \addplot[fill=LAindigo!75, draw=LAindigo] coordinates
             {(Duplicate,0.280) (Grounding,0.624) (Eff. accept,0.720)};
-          \legend{Non-agentic, Agentic}
+          \legend{Agentic, Non-agentic}
         \end{axis}
       \end{tikzpicture}
-      \caption{The three discriminating metrics. On duplicate rate \emph{lower}
-      is better, so the agentic pipeline leads on all three.}
+      \caption{The three metrics that discriminate. Lower is better for
+      duplicate rate, so the baseline leads on all three.}
     \end{figure}
 
   \end{block}
 
-  \begin{alertblock}{What the Numbers Actually Say}
-
-    On this instrument the agentic pipeline \textbf{outperforms} the single-pass
-    baseline. It matches or beats the baseline on every judged dimension and
-    leads on all three metrics that discriminate.
-
-    \textbf{Why the quality scores are uninformative.} All four judged dimensions
-    sit between $4.36$ and $5.00$ on a five-point scale, and correctness reaches
-    the ceiling exactly. \emph{A metric that cannot go up cannot discriminate} ---
-    the same saturation EQGBench documents for four of its own dimensions. The
-    agentic advantage therefore rests entirely on the automated metrics, not on
-    the judged ones.
-
-    \textbf{Mechanism --- stated as a hypothesis, not a result.} Validation and
-    retry reject a draft that repeats an accepted question or is weakly grounded,
-    and the retry is fed the failure reason, so the loop suppresses duplication
-    and pulls generation back toward the source material. This is consistent with
-    the data but is \textbf{not established by it}; the $-$refiner and $-$planner
-    ablations are designed to test which agent is responsible.
-
-  \end{alertblock}
-
   \begin{block}{Conclusion}
 
-    LectureAssist delivers a fully local, \$0-API multimodal pipeline that turns a
-    lecture into grounded, validated, adaptive study material. On the one
-    completed run the agentic loop beats single-pass prompting on every metric
-    that discriminates --- duplication, grounding and effective acceptance ---
-    while the judged quality scores saturate and separate nothing. \emph{Which}
-    agent produces that gain is not yet established; the leave-one-out ablations
-    are designed to answer it.
+    A fully local, \$0-API multimodal pipeline that turns a lecture into
+    grounded, validated study material. The judged dimensions \textbf{saturate}
+    ($4.36$--$5.00$), so only the automated metrics discriminate --- and on
+    those the agentic loop does \textbf{not} beat single-pass prompting. The
+    engineering contribution stands; the scientific claim is
+    \textbf{not established}, and we report it that way.
 
   \end{block}
 
