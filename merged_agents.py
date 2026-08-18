@@ -1,20 +1,5 @@
 #!/usr/bin/env python3
 """
-merged_agents.py — agent-MERGING ablation runner for LectureAssist.
-
-STANDALONE. This file never imports colab.py and never modifies it. colab.py
-carries `!pip` magics, so it is not importable as a plain module anyway; the
-pieces it shares with the production pipeline (LLM wrapper, JSON repair chain,
-prompts, schemas, cognitive router) are therefore PORTED here verbatim so the
-two merged pipelines stay byte-comparable with the existing `agentic` control
-run. If you change a prompt in colab.py, mirror it here or the comparison dies.
-
-------------------------------------------------------------------------------
-WHAT THIS RUNS
-------------------------------------------------------------------------------
-Two pipelines, each merging exactly ONE pair of agents relative to the full
-agentic control. Everything else is held identical, so any difference is
-attributable to the merge and nothing else.
 
   merge_vr : Validator + Refiner merged into ONE call.
              Control does: validate (call 1) -> if FAIL, regenerate (call 2).
@@ -33,6 +18,23 @@ attributable to the merge and nothing else.
              and cognitive routing UNCHANGED.
 
 ------------------------------------------------------------------------------
+ONE COMMAND, TWO STAGES
+------------------------------------------------------------------------------
+    py merged_agents.py --content chapter.txt --n 100 --evaluate both
+
+Stage 1 generates on the local Ollama instance; stage 2 judges the result with
+the standalone harnesses (evaluate_eqgbench.py / evaluate_requesta.py).
+
+The two stages remain SEPARATE PROGRAMS. The artifact is written to disk before
+any judging starts, and the evaluators are invoked against that file, so the
+same corpus can be re-judged, or judged under a different protocol, without
+regenerating a single question. Everything the judging stage needs — the API
+key above all — is verified BEFORE generation begins, because generation takes
+hours and finding out afterwards that the key was missing would waste the run.
+
+Use --evaluate none (the default) to generate only.
+
+------------------------------------------------------------------------------
 WHY COST IS RECORDED
 ------------------------------------------------------------------------------
 The point of merging is to cut LLM calls. Quality alone cannot show that, so
@@ -40,28 +42,6 @@ every question records `llm_calls`, and the artifact carries calls-per-accepted
 -question per group. Report that column beside quality or the result is
 unreadable: "merging barely hurt quality" only means something next to "and it
 halved the calls".
-
-------------------------------------------------------------------------------
-OUTPUT
-------------------------------------------------------------------------------
-Writes the SAME artifact shape the existing harnesses already read:
-
-    {"questions": {"<pipeline>:<difficulty>": [ {question, options, ...}, ... ]},
-     "meta": {...}}
-
-so evaluate_eqgbench.py and evaluate_requesta.py score it unchanged --
-they split the group key on ":" into (pipeline, difficulty).
-
-------------------------------------------------------------------------------
-USAGE
-------------------------------------------------------------------------------
-    python merged_agents.py --content chapter.txt --n 100 --pipeline both
-    python merged_agents.py --content chapter.txt --n 100 --pipeline merge_vr
-    python merged_agents.py --content chapter.txt --n 100 --resume   # continue
-
-Then judge the output exactly as before:
-    python evaluate_eqgbench.py --questions merged_eval_questions.json
-    python evaluate_requesta.py --questions merged_eval_questions.json
 """
 
 from __future__ import annotations
@@ -76,39 +56,29 @@ import time
 
 import requests as http_requests
 
-# Windows consoles default to cp1252 and raise UnicodeEncodeError on the
-# box-drawing/arrow characters in this file's progress output, killing a run
-# mid-generation. Colab is already UTF-8; force it everywhere else rather than
-# degrading the output.
+
 for _stream in (sys.stdout, sys.stderr):
     try:
         _stream.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
         pass
 
-# ─────────────────────────────────────────────────────────────────────────────
-# CONFIG — mirrors colab.py. Keep these in sync or runs are not comparable.
-# ─────────────────────────────────────────────────────────────────────────────
 OLLAMA_BASE   = os.environ.get("OLLAMA_BASE", "http://localhost:11434")
 OLLAMA_MODEL  = "gemma3:12b"     # primary (unused on the generation path here)
 QUIZ_MODEL    = "gemma3:4b"      # generator/validator — PINNED, never escalates
 QUIZ_CTX      = 16384
 PIN_QUIZ_MODEL = True
-
-# Cognitive routing is ON in the control run, so it is ON here too.
 COGNITIVE_ROUTING = True
 
 EMBED_MODEL   = "all-MiniLM-L6-v2"
 RAG_TOP_K     = 5
-RAG_CHUNK     = 900              # chars per chunk
+RAG_CHUNK     = 900              
 RAG_OVERLAP   = 150
 
 DIFFICULTIES  = ("easy", "medium", "hard")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# LLM CALL COUNTER — the whole point of the merge experiment
-# ─────────────────────────────────────────────────────────────────────────────
+
 class _Calls:
     def __init__(self):
         self.total = 0
@@ -127,11 +97,6 @@ class _Calls:
 CALLS = _Calls()
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# LLM WRAPPER + JSON REPAIR CHAIN — ported verbatim from colab.py
-# Do not "clean this up": every branch here exists because gemma3:4b produced
-# the exact malformation it repairs.
-# ─────────────────────────────────────────────────────────────────────────────
 def call_ollama(prompt, system="You are an expert educational AI assistant.",
                 json_mode=False, max_retries=3, timeout=300,
                 model=None, num_ctx=None):
@@ -141,17 +106,11 @@ def call_ollama(prompt, system="You are an expert educational AI assistant.",
         "prompt": prompt,
         "system": system,
         "stream": False,
-        # num_predict is an OUTPUT-token ceiling. Without it Ollama caps
-        # generation at ~128-256 tokens, which truncated MCQ JSON mid-object
-        # and made the pinned 4B "return no questions".
         "options": {"num_ctx": num_ctx or 16384, "num_predict": 8192,
                     "temperature": 0.2},
     }
     if json_mode:
-        # Deliberately NOT sending Ollama's format="json" grammar — under the
-        # grammar, gemma's typographic quotes stall generation and the reply
-        # arrives truncated and unrepairable. Without it the reply arrives
-        # COMPLETE and the repair chain below fixes the quoting afterwards.
+
         payload["prompt"] = re.sub(r"[‘’‚‛]", "'", re.sub(r'[“”„‟]', "'", prompt))
         payload["system"] = system + (' In JSON output use the plain ASCII double-'
                                       'quote character (") for JSON syntax only. '
@@ -278,10 +237,6 @@ def call_ollama_json(prompt, system="You are an expert educational AI assistant.
         print(f"  JSON parse error (attempt {attempt}/2): {last_err} — near: …{snippet}…")
     return fallback if fallback is not None else {}
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# SHARED PROMPT MATERIAL — ported verbatim from colab.py
-# ─────────────────────────────────────────────────────────────────────────────
 MCQ_SCHEMA = ('{"questions":[{"question":"","options":{"A":"","B":"","C":"","D":""},'
               '"correct_answer":"A","explanation":"","topic":"","difficulty":"",'
               '"bloom_level":"","source_timestamp":""}]}')
@@ -330,9 +285,6 @@ def _topic_coverage(topic, content_snip):
     return sum(1 for w in words if w in low) / len(words)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# RETRIEVAL — same embedder and index type as the control run
-# ─────────────────────────────────────────────────────────────────────────────
 class LectureRAG:
     """SentenceTransformer + FAISS inner-product index over L2-normalised
     vectors, so inner product == cosine similarity. Same configuration as the
@@ -1098,6 +1050,112 @@ def write_artifact(path, groups, meta):
     os.replace(tmp, path)
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 2 — JUDGING
+# ─────────────────────────────────────────────────────────────────────────────
+# Generation and measurement stay SEPARATE PROGRAMS even when driven from one
+# command. The artifact is written to disk first and the evaluators are invoked
+# as subprocesses against that file, so a corpus can always be re-judged, or
+# judged under a different protocol, without regenerating a single question.
+# Inlining the judging logic here would duplicate two harnesses and quietly
+# break that guarantee.
+
+EVALUATORS = {
+    "eqgbench": "evaluate_eqgbench.py",
+    "requesta": "evaluate_requesta.py",
+}
+
+
+def _resolve_evaluators(which):
+    """Map --evaluate to (name, script_path) pairs, or exit with a clear error."""
+    if which == "none":
+        return []
+    names = list(EVALUATORS) if which == "both" else [which]
+    here = os.path.dirname(os.path.abspath(__file__))
+    picked = []
+    for n in names:
+        path = os.path.join(here, EVALUATORS[n])
+        if not os.path.exists(path):
+            sys.exit(f"--evaluate {which}: cannot find {EVALUATORS[n]} next to "
+                     f"this script (looked in {here})")
+        picked.append((n, path))
+    return picked
+
+
+def _preflight_judging(evaluators, args):
+    """Check everything the judging stage needs BEFORE generation starts.
+
+    Generation takes hours on a T4. Discovering a missing API key afterwards
+    would waste the entire run, so every judging precondition is verified up
+    front and the whole command aborts early if one fails.
+    """
+    if not evaluators:
+        return
+    if not os.environ.get(args.api_key_env):
+        sys.exit(
+            f"--evaluate {args.evaluate} needs an API key, but ${args.api_key_env} "
+            f"is not set.\n"
+            f"  PowerShell:  $env:{args.api_key_env} = \"sk-...\"\n"
+            f"Aborting BEFORE generation so hours of work are not wasted.\n"
+            f"(Use --evaluate none to generate only, then judge later.)"
+        )
+    if args.content and not os.path.exists(args.content):
+        sys.exit(f"--content file not found: {args.content}")
+    print(f"  [preflight] judging OK: {', '.join(n for n, _ in evaluators)} "
+          f"via ${args.api_key_env}")
+
+
+def _eval_command(name, script, artifact, args):
+    cmd = [sys.executable, script,
+           "--from-bulk", artifact,
+           "--out", f"{args.eval_out_prefix}_{name}",
+           "--judge-model", args.judge_model,
+           "--rounds", str(args.eval_rounds),
+           "--api-key-env", args.api_key_env]
+    if args.content:
+        # Without ground-truth material the grounding-sensitive criteria (KP,
+        # topic relevance, coverage) are judged blind and mean much less.
+        cmd += ["--content", args.content]
+    if args.base_url:
+        cmd += ["--base-url", args.base_url]
+    if args.eval_sleep:
+        cmd += ["--sleep", str(args.eval_sleep)]
+    if args.eval_limit:
+        cmd += ["--limit", str(args.eval_limit)]
+    if name == "requesta":
+        # Paper's conservative disagreement rule; eqgbench has no such flag.
+        cmd += ["--tie-break", args.requesta_tie_break]
+    return cmd
+
+
+def run_judging(evaluators, artifact, args):
+    """Run each evaluator as a subprocess. Returns True if all succeeded."""
+    import subprocess
+
+    all_ok = True
+    for name, script in evaluators:
+        cmd = _eval_command(name, script, artifact, args)
+        print(f"\n{'='*66}\nJUDGING: {name}\n{'='*66}")
+        print("  " + " ".join(cmd))
+        try:
+            proc = subprocess.run(cmd, cwd=os.path.dirname(os.path.abspath(__file__)))
+            rc = proc.returncode
+        except Exception as e:
+            print(f"  ⚠ could not launch {script}: {e}", file=sys.stderr)
+            all_ok = False
+            continue
+        if rc != 0:
+            # Do NOT abort the other evaluator: a rate-limited eqgbench run
+            # should not cost you the requesta results too. Both harnesses
+            # checkpoint, so a failed run resumes rather than restarts.
+            print(f"  ⚠ {name} exited with code {rc}. Its rows are checkpointed; "
+                  f"re-run the same command to resume.", file=sys.stderr)
+            all_ok = False
+        else:
+            print(f"  ✓ {name} finished → {args.eval_out_prefix}_{name}/")
+    return all_ok
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1118,7 +1176,39 @@ def main():
                          "experiment: this is then an ablation, not a merge)")
     ap.add_argument("--resume", action="store_true",
                     help="continue from an existing --out file")
+
+    g = ap.add_argument_group(
+        "judging (stage 2)",
+        "Runs the standalone evaluators on the artifact after generation. The "
+        "artifact is still written to disk first, so the same corpus can be "
+        "re-judged later without regenerating it.")
+    g.add_argument("--evaluate", default="none",
+                   choices=["none", "eqgbench", "requesta", "both"],
+                   help="judge the generated corpus after the run (default: none)")
+    g.add_argument("--judge-model", default="deepseek-reasoner",
+                   help="judge model id (default: the model EQGBench uses)")
+    g.add_argument("--eval-rounds", type=int, default=3,
+                   help="independent judging rounds; both papers use 3")
+    g.add_argument("--api-key-env", default="DEEPSEEK_API_KEY",
+                   help="env var holding the judge API key")
+    g.add_argument("--base-url", default="",
+                   help="OpenAI-compatible endpoint override; note that changing "
+                        "it means the judge is no longer the paper's model")
+    g.add_argument("--eval-sleep", type=float, default=0.0,
+                   help="seconds between judge calls, for rate-limited tiers")
+    g.add_argument("--eval-limit", type=int, default=0,
+                   help="judge only the first N questions per group (smoke test)")
+    g.add_argument("--eval-out-prefix", default="merged_eval_out",
+                   help="output dirs are <prefix>_eqgbench / <prefix>_requesta")
+    g.add_argument("--requesta-tie-break", default="lower",
+                   choices=["lower", "mode", "mean"],
+                   help="ReQUESTA disagreement rule; 'lower' is the paper's")
+
     args = ap.parse_args()
+
+    # Resolve and preflight the judging stage BEFORE any generation happens.
+    evaluators = _resolve_evaluators(args.evaluate)
+    _preflight_judging(evaluators, args)
 
     if not os.path.exists(args.content):
         sys.exit(f"content file not found: {args.content}")
@@ -1190,9 +1280,22 @@ def main():
     for key, c in sorted(summarise_cost(groups).items()):
         print(f"{key:<22}{c['n']:>5}{c['pass']:>6}{c['calls_per_question']:>9}"
               f"{str(c['calls_per_accepted']):>11}{c['mean_secs']:>8}")
-    print("\nNow judge it with the existing harnesses:")
-    print(f"  python evaluate_eqgbench.py --questions {args.out}")
-    print(f"  python evaluate_requesta.py --questions {args.out}")
+    if evaluators:
+        ok = run_judging(evaluators, args.out, args)
+        print(f"\n{'='*66}")
+        print("GENERATION + JUDGING COMPLETE" if ok else
+              "GENERATION COMPLETE — one or more judging runs did not finish")
+        print(f"  corpus:  {args.out}")
+        for name, _ in evaluators:
+            print(f"  {name:9s} {args.eval_out_prefix}_{name}/results.json")
+        print("\nReport calls_per_accepted (above) BESIDE the quality scores. "
+              "Merging is only\ninteresting if the calls it saves cost little "
+              "or no quality.")
+    else:
+        print("\nNo judging run (--evaluate none). Judge it later with:")
+        content_flag = f" --content {args.content}" if args.content else ""
+        print(f"  python evaluate_eqgbench.py --from-bulk {args.out}{content_flag}")
+        print(f"  python evaluate_requesta.py --from-bulk {args.out}{content_flag}")
 
 
 if __name__ == "__main__":

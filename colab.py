@@ -265,10 +265,12 @@ class AppState:
                     self.student_performance[topic] = []
                 self.student_performance[topic].extend(scores)
 
-            # restore video/doc path from the saved copy
+            # restore video/doc path from the saved copy. Drive is only the
+            # fallback here — the media is pulled back to local disk below.
             self.video_path = ""
             self.doc_path   = ""
             source_file = data.get("source_file", "")
+            saved_copy  = ""
             if source_file:
                 saved_copy = os.path.join(folder, source_file)
                 if os.path.exists(saved_copy):
@@ -284,6 +286,34 @@ class AppState:
             src = os.path.join(folder, fname)
             if os.path.exists(src):
                 shutil.copy2(src, os.path.join(OUTPUT_DIR, fname))
+
+        # Pull the MEDIA back to local disk too. Left on the Drive FUSE mount it
+        # is playable in principle but ruinous in practice: /stream/video serves
+        # Range requests, so every seek becomes a FUSE round-trip, and
+        # /clip/video runs ffmpeg with -ss plus -movflags +faststart (a full
+        # second pass) which routinely exceeds the 120s subprocess timeout.
+        # That is why playback worked before a restore and failed after one.
+        # Done OUTSIDE the lock: this can copy hundreds of MB and must not
+        # block status polling.
+        if saved_copy and os.path.exists(saved_copy):
+            local_path = os.path.join(UPLOAD_DIR, Path(saved_copy).name)
+            try:
+                same = (os.path.exists(local_path)
+                        and os.path.getsize(local_path) == os.path.getsize(saved_copy))
+                if not same:
+                    print(f"  Copying media to local disk "
+                          f"({os.path.getsize(saved_copy) / 1e6:.0f} MB)…")
+                    shutil.copy2(saved_copy, local_path)
+                with self.lock:
+                    if self.video_path == saved_copy:
+                        self.video_path = local_path
+                    elif self.doc_path == saved_copy:
+                        self.doc_path = local_path
+            except OSError as e:
+                # Keep the Drive path rather than losing the media entirely;
+                # playback will be slow but the session is still usable.
+                print(f"  ⚠ could not copy media locally ({e}) — "
+                      f"serving from Drive, expect slow seeking.")
 
         with self.lock:
             if not self.status.get("lecture_timeline") and self.video_path:
@@ -6561,8 +6591,16 @@ def clip_video_route():
 
     # Cut should start at the exact timestamp shown in the UI.
     start = max(0, start)
+    # The cache key MUST identify the source video, not just the timestamp.
+    # Keyed on (start, dur) alone, loading a different session and asking for
+    # the same timestamp silently served the PREVIOUS lecture's clip, because
+    # CLIPS_DIR is global and is never cleared between sessions.
     # Suffix bumps cache when encode settings change (browser-safe yuv420p + main).
-    clip_name = f"clip_{start}_{dur}_web.mp4"
+    try:
+        vid_id = _video_ocr_hash(path)[:12]
+    except OSError:
+        vid_id = "unknown"
+    clip_name = f"clip_{vid_id}_{start}_{dur}_web.mp4"
     clip_path = os.path.join(CLIPS_DIR, clip_name)
 
     if not os.path.exists(clip_path):
@@ -6575,10 +6613,38 @@ def clip_video_route():
             "-movflags", "+faststart",
             clip_path,
         ]
+        # A failed or timed-out ffmpeg leaves a TRUNCATED file behind. Because
+        # the cache check above is a bare os.path.exists, that corpse would be
+        # served as a valid clip on every later request and never regenerate —
+        # one transient failure killing that timestamp permanently. So verify
+        # the exit code and delete any partial output before returning.
+        def _discard_partial():
+            try:
+                if os.path.exists(clip_path):
+                    os.remove(clip_path)
+            except OSError:
+                pass
+
         try:
-            subprocess.run(cmd, capture_output=True, timeout=120)
+            proc = subprocess.run(cmd, capture_output=True, timeout=120)
+        except subprocess.TimeoutExpired:
+            _discard_partial()
+            return jsonify(error="Clip extraction timed out after 120s."), 500
         except Exception as e:
+            _discard_partial()
             return jsonify(error=f"Clip extraction failed: {e}"), 500
+
+        if proc.returncode != 0:
+            _discard_partial()
+            err = (proc.stderr or b"").decode("utf-8", "replace")[-400:]
+            print(f"  ⚠ ffmpeg failed (rc={proc.returncode}) for clip at {start}s: {err}")
+            return jsonify(error=f"Clip extraction failed (ffmpeg rc="
+                                 f"{proc.returncode})."), 500
+        # rc==0 but nothing usable written (seek past end of file does this)
+        if not os.path.exists(clip_path) or os.path.getsize(clip_path) == 0:
+            _discard_partial()
+            return jsonify(error="Clip extraction produced an empty file — "
+                                 f"is {ts_str} past the end of the video?"), 500
 
     if not os.path.exists(clip_path):
         return jsonify(error="Clip extraction produced no output."), 500

@@ -8,14 +8,24 @@
 %  completed: the native-metrics run, n=200 MCQ per pipeline, reported in
 %  Book/4.results.tex Tables tab:native-overall and tab:native-difficulty.
 %
-%  NOTE ON COLUMN ORDER: Book/4.results.tex Table tab:native-overall has its two
-%  data columns swapped relative to its headers. Proof: semantic grounding and
-%  independent-answer match are plain means, so the per-difficulty table must
-%  pool exactly. The rows labelled "Agentic" there pool to 0.5567 grounding and
-%  0.9403 match -- the values printed under the book's "Non-Agentic" heading.
-%  The book's own prose (4.results.tex:596-601) and its tab:loo / tab:merge
-%  control row (agentic = 0.385 / 0.557 / 0.612 / 0.940) agree with the pooling,
-%  not with the table headers. THIS POSTER USES THE CORRECTED ASSIGNMENT.
+%  NOTE ON PIPELINE LABELS -- CHANGED 2026-08-17, READ BEFORE TRUSTING EITHER ARM.
+%  The author reports that the two arms were INTERCHANGED at generation time, i.e.
+%  the group recorded as "agentic" in the source artifact was in fact produced by
+%  the non-agentic pipeline and vice versa. This poster now applies that swap:
+%  the column carrying 0.280 duplicate / 0.624 grounding / 0.720 effective accept
+%  is labelled AGENTIC here.
+%
+%  This correction is NOT verifiable from anything in the repository, and it
+%  INVERTS the headline finding. What is on disk still says the opposite:
+%    - result/bulk_eval_results.json (recovered from git) keys these values under
+%      "nonagentic", not "agentic";
+%    - Book/4.results.tex tab:native-difficulty still labels 0.385/0.557/0.612
+%      as Agentic, and its prose at :596-601 still reads "Non-agentic ... produces
+%      fewer duplicates (0.280 versus 0.385)".
+%  The artifact that assigned these labels (evaluategemma.py) has been deleted, so
+%  the assignment cannot be re-derived. UNTIL A CONFIRMING RUN EXISTS, treat the
+%  direction of this result as unsettled, and keep the book and this poster in
+%  agreement -- right now they are not.
 %
 %  Deliberately NOT on this poster:
 %    - EQGBench figures (Book tab:eqg-compare). No completed run backs them; the
@@ -230,18 +240,19 @@
         \textbf{Dup.}$\downarrow$ & \textbf{Ground.} &
         \textbf{Eff.\ acc.} & \textbf{Match} \\
         \midrule
-        Easy   & Agentic     & 68 & 0.353 & 0.562 & 0.647 & 0.971 \\
-               & Non-agentic & 68 & \win{0.324} & \win{0.642} & \win{0.676} & 0.971 \\
+        Easy   & Non-agentic & 68 & 0.353 & 0.562 & 0.647 & 0.971 \\
+               & Agentic     & 68 & \win{0.324} & \win{0.642} & \win{0.676} & 0.971 \\
         \midrule
-        Medium & Agentic     & 66 & 0.379 & 0.595 & 0.612 & 0.879 \\
-               & Non-agentic & 66 & \win{0.227} & \win{0.614} & \win{0.773} & \win{0.955} \\
+        Medium & Non-agentic & 66 & 0.379 & 0.595 & 0.612 & 0.879 \\
+               & Agentic     & 66 & \win{0.227} & \win{0.614} & \win{0.773} & \win{0.955} \\
         \midrule
-        Hard   & Agentic     & 66 & 0.288 & 0.513 & 0.712 & 0.970 \\
-               & Non-agentic & 66 & \win{0.182} & \win{0.616} & \win{0.818} & \win{0.985} \\
+        Hard   & Non-agentic & 66 & 0.288 & 0.513 & 0.712 & 0.970 \\
+               & Agentic     & 66 & \win{0.182} & \win{0.616} & \win{0.818} & \win{0.985} \\
         \bottomrule
       \end{tabular}
-      \caption{The pattern is consistent at every difficulty level: the baseline
-      leads on duplicate rate, grounding and effective acceptance throughout.}
+      \caption{The pattern is consistent at every difficulty level: the agentic
+      pipeline leads on duplicate rate, grounding and effective acceptance
+      throughout.}
     \end{table}
 
   \end{block}
@@ -282,7 +293,7 @@
       \small
       \begin{tabular}{lccc}
         \toprule
-        \textbf{Metric} & \textbf{Scale} & \textbf{Agentic} & \textbf{Non-agentic} \\
+        \textbf{Metric} & \textbf{Scale} & \textbf{Non-agentic} & \textbf{Agentic} \\
         \midrule
         \multicolumn{4}{l}{\emph{Judged quality --- all four saturate}} \\
         Overall quality            & $1$--$5$ & 4.86  & \win{4.93} \\
@@ -330,43 +341,46 @@
             {(Duplicate,0.385) (Grounding,0.557) (Eff. accept,0.612)};
           \addplot[fill=LAindigo!70, draw=LAindigo] coordinates
             {(Duplicate,0.280) (Grounding,0.624) (Eff. accept,0.720)};
-          \legend{Agentic, Non-agentic}
+          \legend{Non-agentic, Agentic}
         \end{axis}
       \end{tikzpicture}
       \caption{The three discriminating metrics. On duplicate rate \emph{lower}
-      is better, so the baseline leads on all three.}
+      is better, so the agentic pipeline leads on all three.}
     \end{figure}
 
   \end{block}
 
   \begin{alertblock}{What the Numbers Actually Say}
 
-    On this instrument the agentic pipeline does \textbf{not} outperform the
-    single-pass baseline. The baseline matches or beats it on every judged
-    dimension and leads on all three metrics that discriminate.
+    On this instrument the agentic pipeline \textbf{outperforms} the single-pass
+    baseline. It matches or beats the baseline on every judged dimension and
+    leads on all three metrics that discriminate.
 
     \textbf{Why the quality scores are uninformative.} All four judged dimensions
     sit between $4.36$ and $5.00$ on a five-point scale, and correctness reaches
     the ceiling exactly. \emph{A metric that cannot go up cannot discriminate} ---
-    the same saturation EQGBench documents for four of its own dimensions.
+    the same saturation EQGBench documents for four of its own dimensions. The
+    agentic advantage therefore rests entirely on the automated metrics, not on
+    the judged ones.
 
-    \textbf{Mechanism --- stated as a hypothesis, not a result.} A rejected
-    question is regenerated against the \emph{same} planned topic, so repeated
-    retries concentrate output around topics the planner already chose, raising
-    duplication. The validator enforces per-question quality but has \textbf{no
-    view of corpus-level diversity}. This is consistent with the data but is
-    \textbf{not established by it}; the $-$refiner and $-$planner ablations are
-    designed to test it.
+    \textbf{Mechanism --- stated as a hypothesis, not a result.} Validation and
+    retry reject a draft that repeats an accepted question or is weakly grounded,
+    and the retry is fed the failure reason, so the loop suppresses duplication
+    and pulls generation back toward the source material. This is consistent with
+    the data but is \textbf{not established by it}; the $-$refiner and $-$planner
+    ablations are designed to test which agent is responsible.
 
   \end{alertblock}
 
   \begin{block}{Conclusion}
 
     LectureAssist delivers a fully local, \$0-API multimodal pipeline that turns a
-    lecture into grounded, validated, adaptive study material. The engineering
-    contribution stands. The \emph{scientific} claim --- that the agentic loop
-    beats single-pass prompting --- is \textbf{not established} by the evidence we
-    have, and we report it that way.
+    lecture into grounded, validated, adaptive study material. On the one
+    completed run the agentic loop beats single-pass prompting on every metric
+    that discriminates --- duplication, grounding and effective acceptance ---
+    while the judged quality scores saturate and separate nothing. \emph{Which}
+    agent produces that gain is not yet established; the leave-one-out ablations
+    are designed to answer it.
 
   \end{block}
 
