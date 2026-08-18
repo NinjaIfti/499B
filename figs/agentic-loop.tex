@@ -1,17 +1,19 @@
-% Standalone figure: the agentic quiz-generation loop.
+% Standalone figure: the agentic quiz-generation loop, illustrated.
 %
 % Build:  lualatex -output-directory=figs figs/agentic-loop.tex
 % Included by poster.tex as figs/agentic-loop.pdf
 %
-% Journal conventions used here: restrained palette, hairline rules, one accent
-% colour per semantic role, no gradients or drop shadows, every arc labelled,
-% and the failure paths visually subordinate (dashed, thinner) to the main path.
-% Each remediation re-enters the pipeline at a DIFFERENT stage, so each gets its
-% own return bus at a distinct x offset -- overlapping arcs make routing
-% unreadable, which is the usual failure of this kind of figure.
+% The robot mascot is a native TikZ port of robot() in Book/mascots.js, so this
+% figure matches the avatar style of the architecture diagram without needing an
+% SVG converter (none is installed, and drawio has no CLI export here).
 %
-% Two-line node labels go through \stg, which uses a tabular. A bare \\ inside a
-% tikz node is fragile here; tabular's row break is not.
+% Coordinate note: mascots.js draws in SVG space, where y grows DOWNWARD, on a
+% 64x68 canvas. TikZ y grows UPWARD, so every y below is written as (68 - y_svg).
+% The unit vectors are set to 0.2mm each so one SVG unit = 0.2mm and the mascot
+% lands at roughly 13.6mm tall.
+%
+% Two-line box labels go through a tabular; a bare \\ inside a tikz node is
+% unreliable in this toolchain.
 \documentclass[border=8pt]{standalone}
 
 \usepackage[T1]{fontenc}
@@ -20,6 +22,11 @@
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta, positioning, calc}
 
+% palette lifted from mascots.js so the avatars match the other figures
+\definecolor{NAVY}{HTML}{1F4E79}
+\definecolor{DARK}{HTML}{143A5C}
+\definecolor{SCRN}{HTML}{EAF2FB}
+
 \definecolor{JInk}{HTML}{111827}
 \definecolor{JLine}{HTML}{374151}
 \definecolor{JBlue}{HTML}{1D4ED8}
@@ -27,23 +34,98 @@
 \definecolor{JGreen}{HTML}{047857}
 \definecolor{JRed}{HTML}{B91C1C}
 \definecolor{JGrey}{HTML}{6B7280}
+\definecolor{BULB}{HTML}{F4C542}
 
-% title over muted caption, centred
-\newcommand{\stg}[2]{%
-  \begin{tabular}{@{}c@{}}
-    \textbf{#1}\\[2pt]
-    {\scriptsize\color{JGrey}#2}
+% Per-agent accent colours. mascots.js recolours one body to read as a
+% different agent; these are the names passed to \agentbot as #1.
+\definecolor{AccPlan}{HTML}{2E86C1}
+\definecolor{AccRet}{HTML}{16A085}
+\definecolor{AccGen}{HTML}{7D3C98}
+\definecolor{AccVal}{HTML}{E67E22}
+\definecolor{AccOK}{HTML}{1E8449}
+\definecolor{AccBad}{HTML}{C0392B}
+
+% ── the mascot ───────────────────────────────────────────────────────────
+% #1 accent colour (antenna bulb + chest light), #2 badge: bulb|lens|q|check|none
+\newcommand{\agentbot}[2]{%
+\begin{tikzpicture}[x=0.2mm, y=0.2mm, baseline=(current bounding box.center),
+                    line join=round, line cap=round]
+  % antenna
+  \draw[DARK, line width=0.4pt] (32,61) -- (32,53);
+  \filldraw[fill=#1, draw=DARK, line width=0.3pt] (32,63) circle (3.6);
+  % arms
+  \filldraw[fill=NAVY, draw=DARK, line width=0.3pt, rounded corners=0.6mm]
+    (5,30) rectangle (11,42);
+  \filldraw[fill=NAVY, draw=DARK, line width=0.3pt, rounded corners=0.6mm]
+    (53,30) rectangle (59,42);
+  % head
+  \filldraw[fill=NAVY, draw=DARK, line width=0.35pt, rounded corners=1.8mm]
+    (11,24) rectangle (53,54);
+  % screen
+  \filldraw[fill=SCRN, draw=DARK, line width=0.3pt, rounded corners=1.2mm]
+    (16,29) rectangle (48,49);
+  % eyes with highlights
+  \fill[NAVY] (25.5,40) circle (3.4);
+  \fill[NAVY] (38.5,40) circle (3.4);
+  \fill[white] (26.7,41.2) circle (1.1);
+  \fill[white] (39.7,41.2) circle (1.1);
+  % smile (SVG quadratic, control point mirrored into TikZ space)
+  \draw[NAVY, line width=0.4pt] (27,34.5) .. controls (32,31.1) .. (37,34.5);
+  % body + chest light
+  \filldraw[fill=NAVY, draw=DARK, line width=0.35pt, rounded corners=1.2mm]
+    (18,4) rectangle (46,21);
+  \filldraw[fill=#1, draw=DARK, line width=0.25pt, rounded corners=0.6mm]
+    (26,8) rectangle (38,17);
+  % Role badge hung off the lower right, exactly as mascots.js does.
+  % Numeric codes rather than string compare: \pdfstrcmp does not exist under
+  % LuaLaTeX, and a number needs no extra package.
+  %   0 = none   1 = bulb (planning)   2 = lens (retrieval)
+  %   3 = q (question writing)         4 = check (validation)
+  \ifnum#2>0
+    \filldraw[fill=white, draw=DARK, line width=0.3pt] (53,15) circle (9);
+    \ifnum#2=1
+      \filldraw[fill=BULB, draw=DARK, line width=0.25pt] (53,17) circle (3.6);
+      \draw[DARK, line width=0.3pt] (51.4,11.8) -- (54.6,11.8);
+      \draw[DARK, line width=0.3pt] (51.8,10.1) -- (54.2,10.1);
+    \fi
+    \ifnum#2=2
+      \draw[DARK, line width=0.45pt] (52,16) circle (4);
+      \draw[DARK, line width=0.5pt] (55.2,12.8) -- (58.3,9.7);
+    \fi
+    \ifnum#2=3
+      % Drawn as paths, not a text node: a \node inside this 0.2mm-unit picture
+      % contributes its full typeset size to the bounding box, which inflates
+      % the whole box the mascot sits in.
+      \draw[DARK, line width=0.45pt]
+        (50.8,17.2) .. controls (51.2,19.8) and (55.2,19.4) .. (54.4,16.6)
+                    .. controls (54.0,14.9) and (52.9,14.7) .. (52.9,13.0);
+      \fill[DARK] (52.9,10.8) circle (1.1);
+    \fi
+    \ifnum#2=4
+      \draw[JGreen, line width=0.55pt] (49.2,14.8) -- (51.8,12.2) -- (56.8,17.6);
+    \fi
+  \fi
+\end{tikzpicture}}
+
+% stage label: avatar beside a title over a muted caption
+\newcommand{\stg}[4]{%
+  \begin{tabular}{@{}c@{\hspace{3mm}}l@{}}
+    \raisebox{-0.5\height}{\agentbot{#1}{#2}} &
+    \begin{tabular}{@{}l@{}}
+      \textbf{#3}\\[2pt]
+      {\scriptsize\color{JGrey}#4}
+    \end{tabular}
   \end{tabular}}
 
 \begin{document}
 \begin{tikzpicture}[
   font=\sffamily\small,
   stage/.style={rectangle, draw=JLine, line width=0.7pt, fill=white,
-                text=JInk, minimum width=62mm, minimum height=16mm,
+                text=JInk, minimum width=76mm, minimum height=20mm,
                 inner sep=3mm},
   decision/.style={stage, draw=JAmber, line width=1pt},
-  accept/.style={stage, draw=JGreen, line width=1pt, minimum width=44mm},
-  override/.style={stage, draw=JRed, line width=1pt, minimum width=52mm,
+  accept/.style={stage, draw=JGreen, line width=1pt, minimum width=54mm},
+  override/.style={stage, draw=JRed, line width=1pt, minimum width=62mm,
                    densely dashed},
   num/.style={circle, fill=JBlue, text=white,
               font=\sffamily\bfseries\scriptsize, inner sep=0pt,
@@ -56,11 +138,11 @@
 ]
 
 % ── main vertical path ───────────────────────────────────────────────────
-\node[stage]                     (plan) {\stg{Planner}{topic $+$ target difficulty}};
-\node[stage, below=13mm of plan] (ret)  {\stg{Retriever}{FAISS top-$k$ chunks}};
-\node[stage, below=13mm of ret]  (gen)  {\stg{Generator}{exactly ONE question}};
+\node[stage]                     (plan) {\stg{AccPlan}{1}{Planner}{topic $+$ target difficulty}};
+\node[stage, below=13mm of plan] (ret)  {\stg{AccRet}{2}{Retriever}{FAISS top-$k$ chunks}};
+\node[stage, below=13mm of ret]  (gen)  {\stg{AccGen}{3}{Generator}{exactly ONE question}};
 \node[decision, below=13mm of gen] (val)
-  {\stg{Validator}{grounded $\cdot$ difficulty $\cdot$ unique}};
+  {\stg{AccVal}{4}{Validator}{grounded $\cdot$ difficulty $\cdot$ unique}};
 
 \draw[flow] (plan) -- (ret);
 \draw[flow] (ret)  -- (gen);
@@ -72,13 +154,13 @@
 \node[num] at (val.north west)  {4};
 
 % ── accept branch ────────────────────────────────────────────────────────
-\node[accept, below=15mm of val] (acc) {\stg{Accept}{next slot}};
+\node[accept, below=16mm of val] (acc) {\stg{AccOK}{0}{Accept}{next slot}};
 \draw[pass] (val) -- (acc)
   node[lbl, midway, right=2mm, text=JGreen] {\textbf{PASS}};
 
 % ── remediation router ───────────────────────────────────────────────────
-\node[stage, draw=JRed, line width=1pt, right=30mm of val, minimum width=52mm]
-  (rem) {\stg{Remediation}{validator picks one}};
+\node[stage, draw=JRed, line width=1pt, right=32mm of val, minimum width=62mm]
+  (rem) {\stg{AccBad}{0}{Remediation}{validator picks one}};
 \draw[fail] (val) -- (rem)
   node[lbl, midway, above, text=JRed] {\textbf{FAIL}};
 
@@ -96,8 +178,8 @@
   node[lbl, pos=0.95, above, text=JRed] {\texttt{replan\_topic}};
 
 % ── budget exhaustion ────────────────────────────────────────────────────
-\node[override, below=15mm of rem] (ovr)
-  {\stg{Override}{best attempt kept, flagged}};
+\node[override, below=16mm of rem] (ovr)
+  {\stg{AccBad}{0}{Override}{best attempt kept, flagged}};
 \draw[fail] (rem) -- (ovr)
   node[lbl, midway, right=2mm, text=JRed] {retry budget exhausted};
 

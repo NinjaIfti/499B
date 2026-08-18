@@ -172,6 +172,34 @@
 
   \end{block}
 
+  \begin{block}{End-to-End Flow}
+
+    \begin{figure}
+      \centering
+      \begin{tikzpicture}[
+        node distance=7mm,
+        stp/.style={rectangle, rounded corners=4mm, draw=LAslate,
+                    line width=1pt, fill=white, align=center,
+                    text width=0.72\colA, minimum height=17mm,
+                    font=\fontsize{24}{28}\selectfont},
+        arr/.style={-{Stealth[length=5mm,width=4mm]}, draw=LAindigo,
+                    line width=1.6pt},
+      ]
+        \node[stp, draw=LAindigo] (a) {\textbf{Lecture}\\ video or document};
+        \node[stp, below=of a]    (b) {\textbf{Extraction}\\ OCR $+$ Whisper};
+        \node[stp, below=of b]    (c) {\textbf{Knowledge Base}\\ summary $+$ FAISS};
+        \node[stp, below=of c, draw=LAamber] (d) {\textbf{Agent Orchestrator}\\ plan, generate, validate};
+        \node[stp, below=of d, draw=LAgreen] (e) {\textbf{Study Material}\\ quiz, cards, tutor};
+        \draw[arr] (a) -- (b);
+        \draw[arr] (b) -- (c);
+        \draw[arr] (c) -- (d);
+        \draw[arr, draw=LAgreen] (d) -- (e);
+      \end{tikzpicture}
+      \caption{Everything runs locally on one free Colab T4.}
+    \end{figure}
+
+  \end{block}
+
 \end{column}
 
 \separatorcolumn
@@ -212,7 +240,7 @@
 
   \begin{block}{Results}
 
-    \begin{minipage}[t]{0.48\colC}
+    \begin{minipage}[t]{0.44\colC}
       \centering
       {\tbl
       \begin{tabular}{lcc}
@@ -237,39 +265,29 @@
       \end{tabular}}
     \end{minipage}
     \hfill
-    \begin{minipage}[t]{0.48\colC}
+    \begin{minipage}[t]{0.54\colC}
       \centering
-      {\tbl
-      \begin{tabular}{llcc}
+      {\tbl\setlength{\tabcolsep}{4pt}
+      \begin{tabular}{llcccc}
         \toprule
-        \textbf{Diff.} & \textbf{Pipe.} & \textbf{Dup.}$\downarrow$ & \textbf{Grnd.} \\
+        \textbf{Diff.} & \textbf{Pipe.} & \textbf{Dup.}$\downarrow$
+          & \textbf{Grnd.} & \textbf{Eff.} & \textbf{Match} \\
         \midrule
-        Easy   & Agen.   & 0.353 & 0.562 \\
-               & Non-ag. & \win{0.324} & \win{0.642} \\
+        Easy   & Agen.   & 0.353 & 0.562 & 0.647 & 0.971 \\
+               & Non-ag. & \win{0.324} & \win{0.642} & \win{0.676} & 0.971 \\
         \midrule
-        Medium & Agen.   & 0.379 & 0.595 \\
-               & Non-ag. & \win{0.227} & \win{0.614} \\
+        Medium & Agen.   & 0.379 & 0.595 & 0.612 & 0.879 \\
+               & Non-ag. & \win{0.227} & \win{0.614} & \win{0.773} & \win{0.955} \\
         \midrule
-        Hard   & Agen.   & 0.288 & 0.513 \\
-               & Non-ag. & \win{0.182} & \win{0.616} \\
-        \bottomrule
-      \end{tabular}
-
-      \vspace{6mm}
-      \begin{tabular}{llcc}
-        \toprule
-        \textbf{Diff.} & \textbf{Pipe.} & \textbf{Eff.} & \textbf{Match} \\
-        \midrule
-        Easy   & Agen.   & 0.647 & 0.971 \\
-               & Non-ag. & \win{0.676} & 0.971 \\
-        \midrule
-        Medium & Agen.   & 0.612 & 0.879 \\
-               & Non-ag. & \win{0.773} & \win{0.955} \\
-        \midrule
-        Hard   & Agen.   & 0.712 & 0.970 \\
-               & Non-ag. & \win{0.818} & \win{0.985} \\
+        Hard   & Agen.   & 0.288 & 0.513 & 0.712 & 0.970 \\
+               & Non-ag. & \win{0.182} & \win{0.616} & \win{0.818} & \win{0.985} \\
         \bottomrule
       \end{tabular}}
+
+      \vspace{5mm}
+      {\tbl\textcolor{LAslate}{The pattern holds at every difficulty:
+      the baseline leads on duplicate rate, grounding and effective
+      acceptance in all three bands.}}
     \end{minipage}
 
     \vspace{4mm}
@@ -318,6 +336,39 @@
     those the agentic loop does \textbf{not} beat single-pass prompting. The
     engineering contribution stands; the scientific claim is
     \textbf{not established}, and we report it that way.
+
+    \begin{figure}
+      \centering
+      \begin{tikzpicture}
+        \begin{axis}[
+          width=0.97\colC, height=12.2cm,
+          ybar, bar width=1.5cm,
+          ymin=0, ymax=0.48,
+          enlarge x limits=0.22,
+          symbolic x coords={Easy,Medium,Hard},
+          xtick=data,
+          ylabel={duplicate rate $\downarrow$},
+          legend style={at={(0.5,1.04)}, anchor=south, legend columns=2,
+            draw=none, font=\fontsize{24}{29}\selectfont, column sep=1.5cm},
+          nodes near coords,
+          every node near coord/.append style={font=\fontsize{24}{29}\selectfont,
+            /pgf/number format/fixed, /pgf/number format/precision=3,
+            /pgf/number format/fixed zerofill},
+          tick label style={font=\fontsize{24}{29}\selectfont},
+          label style={font=\fontsize{24}{29}\selectfont},
+          ymajorgrids=true, grid style={LAslate!25},
+          axis lines*=left,
+        ]
+          \addplot[fill=LAamber!75, draw=LAamber] coordinates
+            {(Easy,0.353) (Medium,0.379) (Hard,0.288)};
+          \addplot[fill=LAindigo!75, draw=LAindigo] coordinates
+            {(Easy,0.324) (Medium,0.227) (Hard,0.182)};
+          \legend{Agentic, Non-agentic}
+        \end{axis}
+      \end{tikzpicture}
+      \caption{Duplicate rate by difficulty --- the agentic loop duplicates more
+      in every band.}
+    \end{figure}
 
   \end{block}
 
