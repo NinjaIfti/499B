@@ -66,7 +66,17 @@ body{
   max-width:480px;width:90%;
   box-shadow:var(--shadow-lg);
   animation:slideUp .35s cubic-bezier(.4,0,.2,1);
+  position:relative;            /* anchor for .setup-close */
 }
+.setup-close{
+  position:absolute;top:14px;right:14px;
+  width:34px;height:34px;border-radius:9px;
+  border:1.5px solid var(--border2);background:var(--bg);
+  color:var(--ink2);font-size:16px;line-height:1;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all var(--tr);
+}
+.setup-close:hover{background:var(--red-s);border-color:var(--red);color:var(--red)}
 @keyframes slideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
 .setup-logo{
   width:52px;height:52px;border-radius:14px;
@@ -1235,6 +1245,7 @@ body{
 <!-- ══ NGROK SETUP MODAL ══ -->
 <div id="setupModal">
   <div class="setup-box">
+    <button class="setup-close" onclick="closeSetupModal()" title="Close" aria-label="Close">&#10005;</button>
     <div class="setup-logo">🎓</div>
     <div class="setup-title">Connect to LectureAssist Backend</div>
     <div class="setup-sub">Paste your <b>ngrok URL</b> from Google Colab to connect the UI to your backend.</div>
@@ -1913,6 +1924,15 @@ var marked = { parse: function(s) {
 // ═══════════════════════════════════════════════
 //  Backend connection
 // ═══════════════════════════════════════════════
+// Dismiss the connect dialog without connecting. The app is unusable without a
+// backend, so surface the not-connected banner on the way out -- that banner's
+// Connect button is how the user gets this dialog back.
+function closeSetupModal() {
+  var m = document.getElementById('setupModal');
+  if (m) m.style.display = 'none';
+  refreshConnBanner();
+}
+
 function connectBackend() {
   var raw = document.getElementById('ngrokInp').value.trim().replace(/\/$/, '');
   if (!raw) { setSetupStatus('Please enter a URL.', true); return; }
