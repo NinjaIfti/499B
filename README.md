@@ -1,4 +1,4 @@
-# LectureForge — How We Check Our Quiz Questions Are Actually Good
+# LectureForge How We Check Our Quiz Questions Are Actually Good
 
 ## What this is
 
