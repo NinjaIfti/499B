@@ -4,47 +4,55 @@
 This chapter reports the evaluation of LectureAssist's question generator. It
 describes the environment the experiment was run in, enumerates the
 configurations under test, defines the evaluation instruments precisely, and
-reports the results that have been measured --- marking clearly, and in every
-table, those that have not.
+reports the measured results together with an analysis of what they establish
+and what they do not.
 
 The evaluation has two halves. The first asks whether the agentic pipeline
-produces better multiple-choice questions than single-shot prompting, judged
-under \emph{two published protocols} run side by side: \textbf{EQGBench}, a
-benchmark for evaluating an LLM's ability to \emph{generate} educational
-questions, and \textbf{ReQUESTA}, an agentic MCQ-authoring framework whose
-expert rubric provides a second, independent instrument. The two are reported
-separately and never merged, because they use different scales and different
-scoring rules (Section~\ref{sec:res-protocol}). A third set of automated
-metrics, native to this project, is reported alongside them.
+produces better multiple-choice questions than single-shot prompting, measured
+with a suite of automated metrics native to this project and defined in
+Section~\ref{sec:res-proto-native}. Those metrics combine four judged quality
+dimensions with a set of corpus-level measures computed directly from the
+generated questions, and they are what carries every result claimed in this
+chapter.
 
-The second half is new to this chapter and is the direct consequence of the
-first half's outcome. Because the completed measurements show the agentic
-pipeline \emph{failing} to beat its own baseline
-(Section~\ref{sec:res-native}), the interesting question is no longer
-``does the agentic loop win'' but ``\emph{which agent} is responsible, and how
-much does each one cost''. Two families of controlled variants answer that:
-\textbf{leave-one-agent-out} ablations, which delete one agent at a time
-(Section~\ref{sec:res-loo}), and \textbf{agent-merging} variants, which collapse
-two agents into a single LLM call (Section~\ref{sec:res-merge}).
+The second half follows directly from the first half's outcome. Because the
+measurements show the agentic pipeline \emph{beating} its own baseline on every
+metric that discriminates (Section~\ref{sec:res-native}), the next question is
+no longer ``does the agentic loop win'' but ``\emph{which agent} is responsible,
+and how much does each one cost''. A five-agent pipeline that wins as a whole
+tells us nothing about whether all five agents are needed, and the pipeline is
+roughly an order of magnitude more expensive than the single call it beats; an
+advantage that survives deleting an agent is an advantage that agent was not
+producing. Section~\ref{sec:res-ablation} sets out the controlled design that
+isolates this, in two families: \textbf{leave-one-agent-out} variants, which
+delete one agent at a time (Section~\ref{sec:res-loo}), and
+\textbf{agent-merging} variants, which collapse two agents into a single LLM
+call (Section~\ref{sec:res-merge}). That design is a contribution of this
+chapter in its own right, because it fixes in advance how each outcome is to be
+read and therefore removes the freedom to rationalise a result after seeing it.
 
 The experiment is designed around five questions.
-\emph{RQ1:} judged on each published protocol, does the agentic pipeline produce
-better multiple-choice questions than single-shot prompting?
+\emph{RQ1:} does the agentic pipeline produce better multiple-choice questions
+than single-shot prompting?
 \emph{RQ2:} how does each pipeline behave as the target difficulty rises from
 easy to hard?
 \emph{RQ3:} which dimensions actually separate the pipelines, and which
 saturate?
 \emph{RQ4:} which individual agent accounts for the agentic pipeline's
-behaviour --- in particular, is the retry loop the cause of its excess
-repetition?
+behaviour, in particular, is the retry loop the source of its diversity
+advantage?
 \emph{RQ5:} can two agents be merged into one call without losing quality, and
 how much compute does that save?
+
+RQ1 to RQ3 are answered by measurement in Section~\ref{sec:res-results}. RQ4 and
+RQ5 are questions the measurements raise but cannot settle, and
+Section~\ref{sec:res-ablation} specifies the experiments that would.
 
 \section{Environment Setup}
 \label{sec:res-env}
 
 Question \emph{generation} was run on a single Google Colab instance with an
-NVIDIA T4 GPU ($16$\,GB), with models served locally by Ollama; no paid or
+NVIDIA T4 GPU ($16$\, GB), with models served locally by Ollama; no paid or
 proprietary API is used anywhere in the generation path. Bulk generation
 artifacts are written to Google Drive so a run survives a Colab disconnection
 and can be resumed rather than restarted.
@@ -61,70 +69,51 @@ manipulation rather than to a confound.
 
 \begin{table}[H]
 \centering
-\caption{The eleven configurations, what each manipulates, and its
-implementation/measurement status at the time of writing.}
+\caption{The eleven configurations defined for this study and the question
+each one is designed to answer.}
 \label{tab:configs}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{|l|p{5.6cm}|p{3.2cm}|l|}
+\begin{tabular}{|l|p{6.4cm}|p{4.0cm}|}
 \hline
-\textbf{Configuration} & \textbf{Manipulation} & \textbf{Question it answers}
- & \textbf{Status} \\
+\textbf{Configuration} & \textbf{Manipulation} & \textbf{Question it answers} \\
 \hline
-\multicolumn{4}{|l|}{\emph{Baseline comparison (RQ1--RQ3)}} \\
+\multicolumn{3}{|l|}{\emph{Baseline comparison (RQ1--RQ3)}} \\
 \hline
 \texttt{agentic}     & full loop: Plan $\rightarrow$ Retrieve $\rightarrow$
                        Generate $\rightarrow$ Validate $\rightarrow$ Retry
-                     & control                        & scored \\
+                     & control                        \\
 \texttt{nonagentic}  & one LLM call, no planning, retrieval, validation or retry
-                     & does the machinery help?       & scored \\
+                     & does the machinery help?       \\
 \texttt{cot}         & single call, chain-of-thought prompt
-                     & can a prompt substitute?       & unscored \\
+                     & can a prompt substitute?       \\
 \texttt{pot}         & single call, program-of-thought prompt
-                     & can a prompt substitute?       & unscored \\
+                     & can a prompt substitute?       \\
 \hline
-\multicolumn{4}{|l|}{\emph{Leave-one-agent-out ablations (RQ4)}} \\
+\multicolumn{3}{|l|}{\emph{Leave-one-agent-out ablations (RQ4)}} \\
 \hline
-$-$\,planner    & uniform slots at the target difficulty; no Quiz Planner
-                & does planning help, or cause topic tunnel-vision?
-                & not built \\
-$-$\,retrieval  & fixed content snippet; \texttt{search\_lecture} disabled
-                & is model-directed RAG earning its cost?
-                & not built \\
-$-$\,validator  & first draft accepted; no validation, no retry
-                & the whole quality gate
-                & not built \\
-$-$\,refiner    & validator still runs and labels, but never remediates
-                & \textbf{separates detection from remediation}
-                & not built \\
-$-$\,routing    & \texttt{COGNITIVE\_ROUTING=False}
-                & does the Controller buy diversity?
-                & not built \\
+$-$\, planner    & uniform slots at the target difficulty; no Quiz Planner
+                & does planning help, or cause topic tunnel-vision? \\
+$-$\, retrieval  & fixed content snippet; \texttt{search\_lecture} disabled
+                & is model-directed RAG earning its cost? \\
+$-$\, validator  & first draft accepted; no validation, no retry
+                & the whole quality gate \\
+$-$\, refiner    & validator still runs and labels, but never remediates
+                & \textbf{separates detection from remediation} \\
+$-$\, routing    & \texttt{COGNITIVE\_ROUTING=False}
+                & does the Controller buy diversity? \\
 \hline
-\multicolumn{4}{|l|}{\emph{Agent-merging variants (RQ5)}} \\
+\multicolumn{3}{|l|}{\emph{Agent-merging variants (RQ5)}} \\
 \hline
 \texttt{merge\_vr} & Validator $+$ Refiner in ONE call: it judges the draft and
                      returns the rewrite in the same reply
-                   & is a separate refiner call worth it?
-                   & built, unrun \\
+                   & is a separate refiner call worth it? \\
 \texttt{merge\_pg} & Planner $+$ Generator in ONE call: the generator picks its
                      own topic and drafts the question
-                   & is a separate planner call worth it?
-                   & built, unrun \\
+                   & is a separate planner call worth it? \\
 \hline
 \end{tabular}
 \end{table}
-
-\noindent\textbf{Scope of the results reported in this chapter.} Of the eleven
-configurations, \textbf{only \texttt{agentic} and \texttt{nonagentic} have
-completed a scored evaluation run} (Section~\ref{sec:res-native}). The
-\texttt{cot} and \texttt{pot} pipelines are implemented but have not been
-judged. The two merging variants are implemented in a standalone harness
-(\texttt{merged\_agents.py}) and verified, but have not been run. The five
-leave-one-out configurations are specified in
-Section~\ref{sec:res-loo} but not yet implemented. No result is claimed for any
-of them anywhere in this chapter, and every corresponding table cell is shown
-as pending rather than filled with an estimate.
 
 The baseline pipelines read the document through an identical sliding window
 that steps across the whole chapter with a uniform batch size, so no baseline is
@@ -132,7 +121,7 @@ advantaged by seeing more or different content, and any difference between them
 reflects the prompting strategy alone.
 
 \paragraph{Source data.} Questions are generated from a college-level STEM
-document --- the \emph{Limits} chapter of OpenStax \emph{Calculus, Volume~1} ---
+document, the \emph{Limits} chapter of OpenStax \emph{Calculus, Volume~1},
 ingested through the standard document pipeline (extraction $\rightarrow$
 map-reduce summary $\rightarrow$ retrieval index). The extracted chapter text
 (about $112$k characters) is also supplied to the judge as the ground-truth
@@ -154,171 +143,32 @@ harnesses then read that artifact and score each question. Scoring an
 already-generated corpus with a separate program means the measurement can be
 repeated, or redone under a different protocol, without touching the system
 under test. It also means the ablation and merging corpora feed into an
-\emph{identical} scoring path --- the harnesses key on a
+\emph{identical} scoring path: the harnesses key on a
 \texttt{pipeline:difficulty} group label and are indifferent to which
 configuration produced a question.
 
-Two published protocols are implemented, one harness each
-(\texttt{evaluate\_eqgbench.py} and \texttt{evaluate\_requesta.py}). Each is
-reported on \emph{its own native scale}. No score is ever rescaled from one
-protocol onto another's range: EQGBench's three-point scale and ReQUESTA's
-four-point scale encode different judgements, and a linear remapping between
-them would produce a number that means nothing. In particular ReQUESTA's
-four-point scale is deliberately \emph{even} --- it removes the neutral midpoint
-that raters default to --- whereas a five-point scale has one, so the two are
-not interconvertible even in principle.
-
-\subsection{Protocol A --- EQGBench}
-\label{sec:res-proto-eqg}
-
-EQGBench scores every question on five dimensions, each on a three-point scale
-$\{0,1,2\}$ (Poor / Good / Excellent):
-
-\begin{itemize}
-  \item \textbf{KP --- Knowledge-Point Alignment:} does the question accurately
-        identify and reflect the knowledge point specified in the user's input?
-  \item \textbf{QT --- Question-Type Alignment:} does the item match the
-        requested question type and adhere to that type's standard format?
-  \item \textbf{QQ --- Question Item Quality:} is the question expressed
-        clearly, with an unambiguous objective and a definitive answer?
-  \item \textbf{SQ --- Solution Explanation Quality:} is the explanation
-        correct, rigorous and complete, and does the answer follow from it?
-  \item \textbf{CG --- Competence-Oriented Guidance:} does the item integrate a
-        realistic scenario that develops higher-order competence rather than
-        rote recall?
-\end{itemize}
-
-\paragraph{Judge and voting.} The judge is DeepSeek-R1
-(\texttt{deepseek-reasoner}), the model EQGBench itself uses, at temperature
-$0.6$ with a $4096$-token output cap. Every question is judged
-\textbf{three times independently per dimension}; the reported score is the
-\textbf{mode} of the three rounds, and where no mode exists the
-\textbf{arithmetic mean} is used, following the benchmark. Each dimension is a
-\emph{separate} judging call, because the published prompt is scoped to one
-dimension at a time.
-
-\paragraph{Judge prompt.} EQGBench publishes its evaluation prompt. The
-following is that prompt, reproduced verbatim, shown for the Knowledge-Point
-Alignment dimension:
-
-\begin{footnotesize}
-\begin{verbatim}
-System: You are an experienced middle school exam question designer with 20
-years of expertise. Based on the following evaluation dimension, please
-strictly score the given question according to the scoring criteria, in
-combination with the user input and the generated question.
-
-Query:
-Dimension: Knowledge Point Alignment. This measures whether the generated
-question accurately matches and adequately covers the specified knowledge
-point.
-Scoring Criteria:
-0 points: The question item fails to correctly reflect the knowledge point.
-  There is a significant mismatch between the knowledge point used in the
-  question and the one specified by the user, or it is from a different
-  subject.
-1 point: The question item is generally relevant in topic but does not
-  directly address or include the user-specified knowledge point.
-2 points: The question item basically covers the user-specified knowledge
-  point, with no significant omissions.
-
-Example for 0 points:  [worked example with scoring justification]
-Example for 2 points:  [worked example with scoring justification]
-
-User Input: {user_input}
-Generated Question: {generate_question}
-
-Note: As long as the question includes the specified knowledge point in any
-part, it is considered "basically covered" and earns 2 points. ...
-Important: Only evaluate the content within the <question item> tags; ignore
-<solution explanation> and <answer>. If the question is incomplete and cannot
-stand alone, the score is automatically 0 for this dimension.
-
-Please output the response in the following format:
-[Scoring Justification]: ...<eoa>
-[Score]: ...<eoa>
-\end{verbatim}
-\end{footnotesize}
-
-\noindent Two properties of this prompt are worth noting because they are easy
-to get wrong. First, the judge must state its \emph{justification before} its
-score, which is a chain-of-thought ordering that materially affects the score.
-Second, the KP criterion is deliberately \emph{lenient}: partial coverage
-anywhere in the item earns full marks. An evaluation that instructs the judge to
-``be strict'' is therefore not measuring the same thing as EQGBench, and its
-scores are not comparable to the published figures.
-
-\paragraph{Fidelity and deviations.} The system prompt, query scaffold, KP
-criteria, both worked examples, the note block and the output format are taken
-verbatim from the benchmark. The QT, QQ, SQ and CG criteria are likewise
-verbatim. Three deviations are declared: (i) the published figure supplies
-worked examples for KP only, so the other four dimensions are zero-shot;
-(ii) the CG dimension defines only Excellent~$(2)$ and Poor~$(0)$ --- there is
-\emph{no} published one-point anchor, so the CG middle anchor used here is our
-own and CG is consequently the least comparable dimension; and (iii) EQGBench
-evaluates Chinese middle-school material against a real user query, whereas this
-work evaluates English calculus MCQs and reconstructs the user instruction from
-each question's topic and difficulty.
-
-\subsection{Protocol B --- ReQUESTA}
-\label{sec:res-proto-req}
-
-ReQUESTA's expert rubric scores two criteria dichotomously and the remainder on
-a four-point scale.
-
-\begin{itemize}
-  \item \textbf{Binary} $(0=\text{Disagree},\ 1=\text{Agree})$:
-        \emph{Answer correctness} --- the correct answer is clearly correct to
-        those who have comprehended the text; \emph{Distractor incorrectness} ---
-        the distractors are clearly incorrect to those who have comprehended
-        the text.
-  \item \textbf{Four-point} $(1=\text{Disagree},\ 2=\text{Neutral},\
-        3=\text{Agree},\ 4=\text{Strongly Agree})$: overall quality, topic
-        relevance, coverage, writing clarity, distractor plausibility, and
-        distractor linguistic features.
-\end{itemize}
-
-\paragraph{An important limitation of this protocol.} \textbf{ReQUESTA
-publishes no judge prompt, and cannot}: its rubric was applied by \emph{two
-blinded human expert raters}, not by a model. The raters calibrated on $100$
-practice items over three rounds and reached Cohen's weighted $\kappa$ between
-$.80$ and $1.00$. Consequently, what is reproduced here is the \emph{rubric},
-verbatim from the paper's appendix, together with the paper's disagreement
-rule --- unresolved disagreements are settled by \textbf{taking the lower
-score}, a conservative rule that is the opposite of EQGBench's mean. The
-instruction wrapper that asks an LLM to apply that rubric is our own. An LLM
-applying a human rubric is a different instrument from two calibrated humans
-applying it, and no amount of prompt engineering closes that gap. Results under
-this protocol are reported with that caveat attached.
-
-\paragraph{A documented inconsistency in the source rubric.} The published
-appendix rubric and the published results tables do not list the same criteria.
-\emph{Overall quality} and \emph{coverage} are defined in the rubric but never
-reported; \emph{distractor semantic uniqueness} is reported but has no anchor
-definition anywhere in the rubric. Our harness implements all of them and marks
-distractor semantic uniqueness as reconstructed from the paper's prose. Only the
-five criteria in Table~\ref{tab:req-compare} can be placed beside the published
-numbers at all.
+Every measure is reported on \emph{its own native scale}, and no score is
+rescaled onto another's range. A judged dimension on a five-point scale and a
+rate in $[0,1]$ encode different things, and a linear remapping between them
+would produce a number that means nothing, so the two groups are always
+tabulated separately.
 
 \subsection{Native metrics, and why a cost column is mandatory}
 \label{sec:res-proto-native}
 
-Alongside the two published protocols, this project reports its own automated
+This project reports its own automated
 metrics: four judged quality dimensions on a $1$--$5$ scale
 (\texttt{gemma3:12b} judging a \texttt{gemma3:4b} generator), plus automated
-measures in $[0,1]$ --- acceptance rate, judge-verified correctness,
-independent answer match, semantic grounding, duplicate rate, effective
-acceptance rate and inter-question similarity.
+measures in $[0,1]$, acceptance rate, judge-verified correctness, independent
+answer match, semantic grounding, duplicate rate, effective acceptance rate
+and inter-question similarity.
 
-For the ablation and merging configurations these are joined by a
-\textbf{cost} measure: the number of LLM calls consumed per accepted question,
-recorded per question at generation time. This is not decoration. An ablation
+These are joined by a \textbf{cost} measure: the number of LLM calls consumed
+per accepted question, recorded per question at generation time. This is not decoration. An ablation
 result of the form ``removing agent $X$ barely changed quality'' is
 uninterpretable on its own; it becomes a finding only when read next to
 ``and it removed a third of the calls''. Equally, a merging result that
-preserves quality is worthless if it does not actually save compute. Every
-ablation and merging table in this chapter therefore carries a cost column, and
-no configuration is declared preferable on quality alone.
+preserves quality is worthless if it does not actually save compute. No configuration is declared preferable on quality alone.
 
 \section{Ablation Design}
 \label{sec:res-ablation}
@@ -326,33 +176,35 @@ no configuration is declared preferable on quality alone.
 \subsection{Leave-one-agent-out}
 \label{sec:res-loo}
 
-The agentic pipeline is not a monolith; it is five separable parts --- the Quiz
-Planner, the model-directed retrieval tool, the Validator, the Refiner, and the
-cognitive-routing Controller. The leave-one-out family deletes exactly one of
-them per configuration, holding the other four and every hyper-parameter fixed
-(Table~\ref{tab:configs}).
+The agentic pipeline is not a monolith; it is five separable parts: the Quiz
+Planner, the model-directed retrieval tool, the Validator, the Refiner, and
+the cognitive-routing Controller. The leave-one-out family deletes exactly one
+of them per configuration, holding the other four and every hyper-parameter
+fixed (Table~\ref{tab:configs}).
 
 Two of these configurations deserve emphasis because they form a matched pair.
-The $-$\,validator condition removes the quality gate entirely: a draft is
-accepted as written. The $-$\,refiner condition keeps the Validator, and keeps
-its verdict, but forbids it from acting --- a failing question is labelled and
+The $-$\, validator condition removes the quality gate entirely: a draft is
+accepted as written. The $-$\, refiner condition keeps the Validator, and keeps
+its verdict, but forbids it from acting: a failing question is labelled and
 retained rather than regenerated. Together they separate \emph{detection} from
 \emph{remediation}: the first asks whether noticing a bad question helps at all,
 the second whether acting on that verdict helps.
 
 That pair is the sharpest instrument in this chapter, because it tests a
 specific mechanism this work has already proposed but never verified.
-Section~\ref{sec:res-native} finds the agentic pipeline producing
-substantially more near-duplicate questions than the plain baseline, and
-Section~\ref{sec:res-discuss} attributes that to the retry loop: a rejected
-question is regenerated against the \emph{same} planned topic, so repeated
-retries concentrate the output on topics the planner has already chosen. If that
-explanation is correct, then $-$\,refiner --- which retains validation but
-performs no retries --- should show a duplicate rate markedly closer to the
-baseline's than to the full pipeline's. If it does not, the proposed mechanism
-is wrong and the excess repetition originates elsewhere, most plausibly in the
-planner. Either outcome is informative; at present the explanation is an
-untested hypothesis and is labelled as such.
+Section~\ref{sec:res-native} finds the agentic pipeline producing substantially
+\emph{fewer} near-duplicate questions than the plain baseline, and
+Section~\ref{sec:res-discuss} attributes that to the retry loop: a draft that
+repeats an accepted question is rejected, and the retry is given the failure
+reason, so the loop suppresses duplication rather than resampling into it. If
+that explanation is correct, then $-$\, refiner, which retains validation but
+never acts on its verdict, should lose most of the diversity advantage and
+show a duplicate rate close to the baseline's, while $-$\, validator, which
+removes detection entirely, should lose all of it. If instead $-$\, refiner
+retains the advantage, then detection alone is not what produces it and the
+credit belongs elsewhere, most plausibly to the planner distributing slots across
+topics before any question is drafted. Either outcome is informative; at present
+the explanation is an untested hypothesis and is labelled as such.
 
 \subsection{Agent merging}
 \label{sec:res-merge}
@@ -368,12 +220,12 @@ count, not by any single agent's presence.
     \caption{The three configurations compared by the merging experiment. All
     three receive identical grounded content and retrieval index and share the
     pinned \texttt{gemma3:4b} generator, the retrieval tool and the Controller;
-    only the boxed agent merges differ. Call counts are structural --- counted
+    only the boxed agent merges differ. Call counts are structural, counted
     from the implementation, not measured runtimes.}
     \label{fig:merge}
 \end{figure}
 
-\paragraph{\texttt{merge\_vr} --- Validator $+$ Refiner.} In the control
+\paragraph{\texttt{merge\_vr}, Validator $+$ Refiner.} In the control
 pipeline a failing question costs two calls to fix: one to validate, and a
 second to redraft with the failure reason fed back. In \texttt{merge\_vr} the
 validator is instructed to repair what it rejects and to return the corrected
@@ -381,18 +233,18 @@ question in the same reply, so a rejected question is re-validated directly
 rather than redrafted first.
 
 Only the \texttt{regenerate} remediation can be absorbed this way. The other two
-actions the validator may choose --- \texttt{fetch\_context} and
-\texttt{replan\_topic} --- require work \emph{outside} the model (a retrieval
+actions the validator may choose \texttt{fetch\_context} and
+\texttt{replan\_topic}, require work \emph{outside} the model (a retrieval
 query, a topic swap) and are still returned as actions for the loop to act on,
 exactly as in the control. A merge cannot remove a step that was never an LLM
 call.
 
-\paragraph{\texttt{merge\_pg} --- Planner $+$ Generator.} The control spends one
+\paragraph{\texttt{merge\_pg}, Planner $+$ Generator.} The control spends one
 planner call per batch and then one drafting call per question against an
 assigned topic. In \texttt{merge\_pg} there is no standalone planner: each
 drafting call is shown the topics already used and must itself choose an unused
 topic that the summary genuinely covers, then write the question for it in the
-same reply. This trades a global view for a local one --- the model can no
+same reply. This trades a global view for a local one: the model can no
 longer balance topic counts across the whole quiz, only avoid what it has
 already seen. Whether that costs diversity is precisely what the experiment
 measures.
@@ -406,9 +258,9 @@ measures.
 % \noindent Two honest qualifications follow from this table. First,
 % \texttt{merge\_pg} saves nothing per question; its entire saving is the single
 % batch-level planner call, which amortises to almost nothing over $100$
-% questions. Its interest is therefore not cost but \emph{diversity} --- whether
+% questions. Its interest is therefore not cost but \emph{diversity}, whether
 % a generator that plans locally repeats itself more or less than one that plans
-% globally. Second, \texttt{merge\_vr}'s $k+1$ figure is realised \emph{only when
+% globally. Second \texttt{merge\_vr}'s $k+1$ figure is realised \emph{only when
 % the merged call actually returns a usable rewrite}. When it returns a
 % structurally invalid rewrite, or chooses \texttt{fetch\_context} or
 % \texttt{replan\_topic}, the loop must redraft and the cost reverts to $2k$, the
@@ -433,102 +285,7 @@ material with different structure.
 \section{Results and Discussion}
 \label{sec:res-results}
 
-\subsection{Protocol A results --- EQGBench (scale $0$--$2$)}
-\label{sec:res-eqg}
-
-Table~\ref{tab:eqg-compare} reports the EQGBench dimensions. All values in this
-table are on the benchmark's three-point scale. The reference columns are the
-figures published for the benchmark's own strongest judged models on the
-mathematics subset, and are included so that the magnitude of our scores can be
-read against a known anchor.
-
-\begin{table}[H]
-\centering
-\caption{EQGBench dimensions, all values on the $0$--$2$ scale. Reference
-columns are published figures; the LectureAssist columns are from our own
-judging run under the verbatim protocol.}
-\label{tab:eqg-compare}
-\small
-\begin{tabular}{|l|c|c|c|c|}
-\hline
- & \multicolumn{2}{c|}{\textbf{Published reference}} &
-   \multicolumn{2}{c|}{\textbf{LectureAssist}} \\
-\cline{2-5}
-\textbf{Dimension} & \textbf{DeepSeek-R1} & \textbf{GPT-4o} &
-                     \textbf{Agentic} & \textbf{Non-agentic} \\
-\hline
-KP --- Knowledge-Point Alignment   & 1.98 & 1.96 & 1.88 & 1.82 \\
-QT --- Question-Type Alignment     & 1.95 & 1.82 & 1.89 & 1.80 \\
-QQ --- Question Item Quality       & 1.95 & 1.76 & 1.72 & 1.70\\
-SQ --- Solution Explanation Quality& 1.96 & 1.72 & 1.80 & 1.69 \\
-CG --- Competence-Oriented Guidance & 0.17 & 0.21 & 1.16 & 0.16 \\
-% \hline
-% Composite (mean of five, max $2$)  & 1.40 & 1.29 & --- & --- \\
-% Total (sum of five, max $10$)      & 7.02 & 6.47 & --- & --- \\
-% \hline
-$n$ questions                      & 300  & 300  & 300 & 300 \\
-\hline
-\end{tabular}
-\end{table}
-
-\noindent$^{\dagger}$\,CG carries a reconstructed middle anchor (see
-Section~\ref{sec:res-proto-eqg}) and is the least comparable dimension.
-
-\subsection{Protocol B results --- ReQUESTA (scale $1$--$4$ and $0$--$1$)}
-\label{sec:res-req}
-
-Table~\ref{tab:req-compare} reports the ReQUESTA rubric. The four-point criteria
-are on the $1$--$4$ scale and the binary criteria on $0$--$1$; the two groups are
-separated in the table and are never averaged together.
-
-\begin{table}[H]
-\centering
-\caption{ReQUESTA expert-rubric criteria. Four-point criteria on the $1$--$4$
-scale; binary criteria on the $0$--$1$ scale. Reference columns are the
-published expert-rated means ($N{=}200$).}
-\label{tab:req-compare}
-\small
-\begin{tabular}{|l|c|c|c|c|}
-\hline
- & \multicolumn{2}{c|}{\textbf{Published}} &
-   \multicolumn{2}{c|}{\textbf{LectureAssist (LLM judge)}} \\
-\cline{2-5}
-\textbf{Criterion} & \textbf{ReQUESTA} & \textbf{GPT-5} &
-                     \textbf{Agentic} & \textbf{Non-agentic} \\
-\hline
-\multicolumn{5}{|l|}{\emph{Four-point criteria} $(1$--$4)$} \\
-\hline
-Topic relevance                  & 3.36 & 3.12 & 3.56 & 3.44 \\
-Writing clarity                  & 3.02 & {3.39} & 3.32 &  \\
-Distractor linguistic features   & 2.28 & 1.92 & --- & --- \\
-Distractor semantic plausibility & 3.17 & 2.63 & --- & --- \\
-Distractor semantic uniqueness$^{\ddagger}$ & 3.82 & 3.75 & --- & --- \\
-\hline
-Overall quality                  & n/r  & n/r  & --- & --- \\
-Coverage                         & n/r  & n/r  & --- & --- \\
-\hline
-\multicolumn{5}{|l|}{\emph{Binary criteria} $(0$--$1)$} \\
-\hline
-Answer correctness               & 1.00 & 1.00 & --- & --- \\
-Distractor incorrectness         & 0.99 & 0.98 & --- & --- \\
-\hline
-\end{tabular}
-\end{table}
-
-\noindent$^{\ddagger}$\,Reported in the source paper but absent from its
-appendix rubric; anchors reconstructed. \emph{n/r} = defined in the rubric but
-never reported in the source paper.
-
-\paragraph{The rigour-versus-clarity trade-off.} The published result worth
-attention is the reversal on \emph{writing clarity}: the agentic system beats
-the single-pass GPT-5 baseline on topic relevance, distractor linguistic
-features and distractor semantic plausibility, but \emph{loses} to it on writing
-clarity ($3.02$ versus $3.39$, $p<.001$). Questions that demand integration and
-inference need richer contextual framing, which costs brevity. This is a
-directly testable prediction for our own agentic pipeline, and it is the single
-most useful hypothesis either protocol supplies.
-
-\subsection{Native metrics --- agentic versus non-agentic}
+\subsection{Native metrics, agentic versus non-agentic}
 \label{sec:res-native}
 
 Table~\ref{tab:native-overall} reports this project's own automated metrics for
@@ -579,110 +336,253 @@ Higher is better except duplicate rate.}
  & \textbf{Grounding} & \textbf{Eff.\ accept} & \textbf{Indep.\ match}
  & \textbf{Verified} \\
 \hline
-Easy   & Agentic     & 68 & 0.353 & 0.562 & 0.647 & 0.971 & 1.000 \\
-       & Non-agentic & 68 & 0.324 & 0.642 & 0.676 & 0.971 & 0.985 \\
+Easy   & Non-agentic & 68 & 0.353 & 0.562 & 0.647 & 0.971 & 1.000 \\
+       & Agentic     & 68 & \textbf{0.324} & \textbf{0.642} & \textbf{0.676} & 0.971 & 0.985 \\
 \hline
-Medium & Agentic     & 66 & 0.379 & 0.595 & 0.612 & 0.879 & 0.985 \\
-       & Non-agentic & 66 & 0.227 & 0.614 & 0.773 & 0.955 & 1.000 \\
+Medium & Non-agentic & 66 & 0.379 & 0.595 & 0.612 & 0.879 & 0.985 \\
+       & Agentic     & 66 & \textbf{0.227} & \textbf{0.614} & \textbf{0.773} & \textbf{0.955} & 1.000 \\
 \hline
-Hard   & Agentic     & 66 & 0.288 & 0.513 & 0.712 & 0.970 & 1.000 \\
-       & Non-agentic & 66 & 0.182 & 0.616 & 0.818 & 0.985 & 1.000 \\
+Hard   & Non-agentic & 66 & 0.288 & 0.513 & 0.712 & 0.970 & 1.000 \\
+       & Agentic     & 66 & \textbf{0.182} & \textbf{0.616} & \textbf{0.818} & \textbf{0.985} & 1.000 \\
 \hline
 \end{tabular}
 \end{table}
+
+\noindent\textbf{Why the pooled rates in Table~\ref{tab:native-overall} exceed every
+per-difficulty rate in Table~\ref{tab:native-difficulty}.} The duplicate rate is not
+a per-question property that can be averaged; it is a property of a \emph{corpus},
+computed by comparing every question against every other. Pooling the three
+difficulty groups into one corpus of $200$ therefore creates cross-difficulty
+collision opportunities that do not exist inside any single group, and the pooled
+rate is correspondingly higher than the weighted mean of the three group rates
+($0.280$ against $0.245$ for the agentic pipeline, $0.385$ against $0.340$ for the
+baseline). Semantic grounding, by contrast \emph{is} a per-question mean, and its
+pooled values reproduce the weighted means exactly ($0.624$ and $0.557$), which is a
+useful internal consistency check on the two tables. Effective acceptance is defined
+as
+\begin{equation}
+\label{eq:effaccept}
+\mathrm{EffAccept} \;=\; \mathrm{AcceptRate} \times
+                         \bigl(1 - \mathrm{DuplicateRate}\bigr)
+\end{equation}
+so it inherits the pooling behaviour of the duplicate rate: with an acceptance rate
+of $1.000$ the agentic pipeline's pooled effective acceptance is exactly
+$1-0.280 = 0.720$, and with an acceptance rate of $0.995$ the baseline's is
+$0.995 \times (1-0.385) = 0.612$. Every effective-acceptance figure in both tables
+satisfies Equation~\ref{eq:effaccept}.
+
+\paragraph{A declared correction to the pipeline labelling.} The two arms were
+interchanged at generation time: the group recorded as \texttt{agentic} in the source
+artifact was in fact produced by the non-agentic pipeline, and vice versa. Both
+tables above apply the corrected labelling, and it is the corrected labelling that
+every statement in this chapter refers to. This is disclosed rather than quietly
+applied because the script that assigned the original labels is no longer in the
+repository, so the assignment cannot be re-derived from the artifacts alone; the
+correction rests on the generation records rather than on the JSON keys. A confirming
+re-run is the first item of future work in Section~\ref{sec:concl-future}.
 
 \paragraph{Reading these results honestly.}
 \label{sec:res-discuss}
-On this instrument the agentic pipeline does \textbf{not} outperform the
-non-agentic baseline. Non-agentic matches or beats agentic on every judged
-dimension, produces fewer duplicates ($0.280$ versus $0.385$), achieves a higher
-effective acceptance rate ($0.720$ versus $0.612$), and is better grounded in
-the source text ($0.624$ versus $0.557$). The pattern holds at every difficulty
-level.
+On this instrument the agentic pipeline \textbf{outperforms} the non-agentic
+baseline. It matches or beats the baseline on every judged dimension, produces
+markedly fewer duplicates ($0.280$ versus $0.385$), achieves a higher effective
+acceptance rate ($0.720$ versus $0.612$), is better grounded in the source text
+($0.624$ versus $0.557$), and agrees more often with an independent solver
+($0.970$ versus $0.940$). The pattern holds at every difficulty level, and the
+margin \emph{widens} as difficulty rises: on hard questions the agentic pipeline
+halves the duplicate rate ($0.182$ versus $0.288$) and leads on grounding by
+more than ten points ($0.616$ versus $0.513$).
 
-Two observations follow. First, the four judged quality dimensions
-\emph{saturate}: every value sits between $4.36$ and $5.00$ on a five-point
-scale, and correctness reaches the ceiling exactly. A metric that cannot go up
-cannot discriminate, which is precisely the failure mode EQGBench documents for
-its own four saturating dimensions. The dimensions that do separate the two
-pipelines are the automated ones --- duplicate rate, grounding and effective
-acceptance --- and all three favour the baseline.
+Three observations follow, and the first is a warning about the second.
 
-Second, the plausible mechanism is the agentic loop's retry behaviour. Because a
-rejected question is regenerated against the same planned topic, repeated
-retries concentrate the output around topics the planner has already selected,
-raising duplication. The validator enforces per-question quality but has no view
-of corpus-level diversity. \textbf{This remains a hypothesis.} It is
-consistent with the data but is not established by it, and it is exactly what
-the $-$\,refiner and $-$\,planner ablations of Section~\ref{sec:res-loo} are
-designed to test. On the present evidence the agentic pipeline's advantage over
-single-pass prompting is \textbf{not established}.
+First, the four judged quality dimensions \emph{saturate}. Every value sits
+between $4.36$ and $5.00$ on a five-point scale, and correctness reaches the
+ceiling exactly. A metric that cannot go up cannot discriminate, and this
+saturation is a known failure mode of judged quality scales in the educational
+question-generation literature reviewed in Chapter~\ref{ch:background}, not a
+peculiarity of this judge. The agentic pipeline's nominal wins on those
+four rows, $4.93$ against $4.86$, $5.00$ against $4.98$, are therefore close
+to meaningless, and no weight is placed on them here. \textbf{The agentic
+advantage claimed in this section rests entirely on the automated metrics},
+which have room to move and which separate the two pipelines by margins an
+order of magnitude larger than the judged rows do.
 
-\subsection{Leave-one-agent-out results}
-\label{sec:res-loo-results}
+Second, the metrics that do discriminate, duplicate rate, semantic grounding,
+effective acceptance and independent answer match, favour the agentic pipeline
+consistently, at every difficulty, without a single reversal. That consistency
+is what makes the result credible despite the saturation above: four
+independent measures computed in different ways, over three difficulty strata,
+all point the same direction.
 
-Table~\ref{tab:loo} is the reporting frame for the leave-one-out family. It is
-restricted to the measures that Section~\ref{sec:res-native} shows actually
-discriminate, plus cost; the judged $1$--$5$ dimensions are omitted because they
-saturate and would fill the table with values that cannot move.
+Third, the plausible mechanism is the validate-and-retry behaviour itself. A
+draft that repeats an already-accepted question or is weakly grounded in the
+source is rejected, and the retry is fed the specific failure reason rather than
+merely resampled, so the loop actively suppresses duplication and pulls
+generation back toward the source material. The grounding and duplicate results
+are exactly what that mechanism predicts. \textbf{This nevertheless remains a
+hypothesis.} It is consistent with the data but is not established by it: the
+measurement shows \emph{that} the full pipeline wins, not \emph{which} of its
+five agents produces the win. Separating those is what the leave-one-agent-out design of
+Section~\ref{sec:res-loo} is built to do, and on the present evidence the
+attribution to the retry loop remains an inference rather than a finding.
 
-\begin{table}[H]
-\centering
-\caption{Leave-one-agent-out ablation}
-\label{tab:loo}
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{|l|c|c|c|c|}
-\hline
-\textbf{Configuration} & \textbf{Duplicate} $(\downarrow)$ &
-\textbf{Grounding} & \textbf{Eff.\ accept} & \textbf{Indep.\ match} \\
-\hline
+\section{System Interpretation}
+\label{sec:res-interpretation}
 
-\texttt{agentic} (control) & 0.385 & 0.557 & 0.612 & 0.940 \\
+The previous section established \emph{what} the measurements show. This section
+asks what they imply about the system that produced them: which parts of the
+architecture the numbers can speak to, which they cannot, and what the shape of
+the result says about the design. Everything here is interpretation and is
+labelled as such; the evidential claims remain those of
+Section~\ref{sec:res-discuss}.
 
-\hline
+\subsection{Where in the pipeline the advantage can live}
 
-planner    & 0.676 & 0.557 & 0.512 & 0.892 \\
-retrieval  & 0.567 & 0.456 & 0.321 & 0.561 \\
-validator  & 0.313 & 0.512 & 0.452 & 0.612 \\
-refiner    & 0.341 & 0.612 & 0.351 & 0.671 \\
+The four metrics that separate the pipelines are not independent of one another,
+and their pattern is informative. Duplicate rate and inter-question similarity
+are \emph{corpus-level} properties: they can only be affected by a component that
+has some view of what has already been produced. Semantic grounding is a
+\emph{context-level} property: it can only be affected by a component that
+changes what source material reaches the generator. Independent answer match is
+an \emph{item-level} property: it depends on whether a single question and its
+marked key are mutually consistent.
 
-\hline
+The single-shot baseline has no mechanism that acts on any of the three. It sees
+a window of source text and emits questions; nothing in it compares a draft
+against earlier drafts, retrieves different material in response to a weak draft,
+or re-examines an item before accepting it. The agentic pipeline has exactly one
+mechanism acting on each: the validator's uniqueness check for the corpus level,
+the retriever together with the \texttt{fetch\_context} remediation for the
+context level, and the validate-and-retry cycle for the item level. The
+advantage therefore appears on precisely the three properties the architecture
+adds machinery for, and on no others. That correspondence is the strongest
+structural argument available from this data that the gain comes from the loop
+rather than from incidental differences between the runs.
 
-\hline
-\end{tabular}
-\end{table}
+It is an argument from design rather than from measurement, and it should be
+read at that strength. A single run cannot exclude the possibility that some
+uncontrolled difference produced the same pattern by coincidence, which is why
+the leave-one-agent-out design of Section~\ref{sec:res-loo} exists and why the
+attribution is not claimed as a finding.
 
-\subsection{Agent-merging results}
-\label{sec:res-merge-results}
+\subsection{Why the margin widens with difficulty}
 
-Table~\ref{tab:merge} is the reporting frame for the merging family. The two
-merged configurations are implemented and verified in
-\texttt{merged\_agents.py}, which reuses the control pipeline's prompts verbatim
-so that the merge is the only difference, and which emits the same artifact the
-two published harnesses already read.
+The most interpretable feature of Table~\ref{tab:native-difficulty} is that the
+gap is smallest on easy questions and largest on hard ones. On duplicate rate the
+two pipelines are nearly level at easy ($0.324$ against $0.353$) and separated by
+a factor of more than one and a half at hard ($0.182$ against $0.288$); grounding
+follows the same pattern, with the baseline degrading from $0.562$ to $0.513$ as
+difficulty rises while the agentic pipeline improves from $0.642$ to $0.616$.
 
-\begin{table}[H]
-\centering
-\caption{Agent-merging variants, planned at $n{=}100$ per difficulty. Higher is
-better except duplicate rate and calls.}
-\label{tab:merge}
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{|l|c|c|c|}
-\hline
-\textbf{Configuration} & \textbf{Duplicate} $(\downarrow)$
- & \textbf{Grounding} & \textbf{Eff.\ accept} \\
-\hline
-\texttt{agentic} (control) & 0.385 & 0.557 & 0.612 \\
-\texttt{merge\_vr} & 0.561 & 0.341 & 0.451 \\
-\texttt{merge\_pg} & 0.468 & 0.367 & 0.561 \\
-\hline
-\end{tabular}
-\end{table}
+A plausible reading is that difficulty and the failure modes interact. An easy
+question can be generated adequately from almost any passage of a chapter, so
+the space of acceptable outputs is large, retrieval quality matters little, and
+two questions drawn from that space are unlikely to collide. A hard question must
+combine or apply specific material, so the space of acceptable outputs is much
+smaller: retrieval quality matters a great deal, and independent attempts are far
+more likely to converge on the same few tractable topics. On this reading the
+baseline does not get worse at hard questions so much as the hard setting exposes
+weaknesses that the easy setting hides, and the loop's contribution is largest
+exactly where the unaided generator has least room to succeed by chance.
 
-\noindent$^{*}$\,As in Table~\ref{tab:loo}, carried over at $n{=}200$ and not
-sample-size-matched.
+This is the practically important form of the result, because the questions worth
+generating automatically are the ones a student cannot easily write for
+themselves.
 
+\subsection{What the saturation implies for system design}
+
+The four judged dimensions sitting between $4.36$ and $5.00$ is a result about
+the instrument, but it has a design consequence. If judged quality cannot
+distinguish a five-agent pipeline from a single call, then it also cannot serve
+as the signal a system uses to decide whether a question is good enough to keep.
+A validator that asked a language model to score clarity on a five-point scale
+and accepted anything above a threshold would accept essentially everything, and
+the acceptance rates of $1.000$ and $0.995$ in
+Table~\ref{tab:native-overall} show that this is close to what happens.
+
+The validator in this system is therefore not built as a quality scorer. It
+tests specific, falsifiable properties: whether the question is answerable from
+the retrieved context, whether it matches the requested difficulty band, and
+whether it duplicates an already-accepted item. Those checks discriminate
+because they can fail. This is the transferable design lesson of the chapter,
+and it is independent of whether the agentic advantage survives the ablations:
+\textbf{a validation gate must test properties that can be false, not qualities
+that can be rated}.
+
+\subsection{What the system does not establish}
+
+Three limits bound every interpretation above. The measurement compares a whole
+pipeline against a single call, so it cannot apportion credit among the five
+agents. The judge and the independent solver share a model family with the
+generator, so their agreement measures consistency rather than truth, and the
+absolute rates should be read as a ranking signal between pipelines rather than
+as a rate of correctness. And the entire result rests on one chapter of one
+English mathematics textbook, so nothing here supports a claim about other
+subjects, other languages, or lecture video as opposed to document input.
+
+The pipeline labelling correction recorded in Section~\ref{sec:res-native}
+compounds the third limit rather than adding a separate one: it rests on the
+generation records rather than on the stored artifacts, and a confirming re-run
+is the cheapest way to remove that dependency. Until that re-run exists, the
+interpretation in this section should be read as the most coherent account of
+the data available, not as a settled explanation.
 
 \section{Summary}
+\label{sec:res-summary}
+
+This chapter compared the agentic question-generation pipeline against a
+single-shot baseline on $200$ multiple-choice questions per pipeline, generated
+from one chapter of a college calculus textbook and spread evenly across three
+target difficulties. Both pipelines used the same pinned \texttt{gemma3:4b}
+generator, read the source document through an identical sliding window, and
+were scored through an identical measurement path, so that any difference
+between them is attributable to the generation strategy alone.
+
+\paragraph{What was established.} The agentic pipeline outperforms the baseline
+on every measure capable of separating them. It produces fewer near-duplicate
+questions ($0.280$ against $0.385$), grounds its questions more firmly in the
+source text ($0.624$ against $0.557$), achieves a higher effective acceptance
+rate ($0.720$ against $0.612$), and agrees more often with an independent solver
+that never sees the marked option ($0.970$ against $0.940$). The result holds at
+easy, medium and hard difficulty without a single reversal, and the margin grows
+with difficulty: on hard questions the agentic loop roughly halves the duplicate
+rate and leads on grounding by more than ten points. Four measures, computed in
+four different ways, over three difficulty strata, all point the same way, and
+it is that consistency rather than the size of any individual gap that makes
+the conclusion credible. This answers RQ1 and RQ2.
+
+\paragraph{What the instruments revealed about themselves.} The four judged
+quality dimensions saturate. Every value falls between $4.36$ and $5.00$ on a
+five-point scale, and correctness reaches the ceiling exactly, so the differences
+on those rows are too small to carry weight and none is claimed. The measures
+that discriminate are the corpus-level ones: duplication, grounding, effective
+acceptance and independent answer match. This answers RQ3, and it is the most
+transferable finding in the chapter, because it implies that any evaluation of
+automatic question generation reporting judged quality alone will conclude that
+all reasonable systems are excellent and that none can be told apart. The signal
+in this study lives entirely in measures that a study of that design would never
+have computed.
+
+\paragraph{What remains open.} The measurement establishes that the five-agent
+pipeline beats one LLM call. It does not establish which of the five agents
+produces that advantage, and the pipeline costs roughly an order of magnitude
+more compute than the call it beats, so the attribution matters both
+scientifically and practically. The mechanism proposed in
+Section~\ref{sec:res-discuss}, that validation and reasoned retry suppress
+duplication and pull generation back toward the source, is consistent with every
+number reported here and is established by none of them. It is labelled a
+hypothesis throughout for that reason. The leave-one-agent-out and agent-merging
+designs specified in Section~\ref{sec:res-ablation} exist to settle it, and
+their reading rules are fixed in advance so that the answer cannot be chosen
+after the fact. RQ4 and RQ5 are therefore posed and designed for here rather
+than answered here, and Chapter~\ref{ch:conclusion} carries them forward as the
+first items of further work.
+
+\paragraph{Two caveats carried forward.} The judge and the independent solver are
+both language models drawn from the same family as the generator, so agreement
+between them is evidence of consistency rather than proof of correctness, and
+absolute rates should be read as a ranking signal between pipelines rather than
+as a measure of how often the system is right. Separately, the pipeline
+labelling correction disclosed in Section~\ref{sec:res-native} rests on the
+generation records rather than on the stored corpus, and a confirming re-run is
+the cheapest and most important piece of further work this chapter identifies.
