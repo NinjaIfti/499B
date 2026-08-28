@@ -274,6 +274,131 @@ clean pass.}
 \label{fig:agentic-loop}
 \end{figure}
 
+\subsection{Agent contracts and failure behaviour}
+\label{sec:meth-contracts}
+
+Every agent in the system inherits from a common base class and honours the same
+four-stage contract: \texttt{should\_run}, which lets an agent decline work it
+has no input for; \texttt{plan}, which records what it intends to do;
+\texttt{execute}, which performs it; and \texttt{validate}, which checks its own
+output before the orchestrator accepts it. The contract matters more than any
+individual agent, because it is what makes the pipeline degrade rather than
+fail: an agent that raises is caught by the orchestrator, its failure is written
+to the agent log with the reason, and the remaining agents continue on whatever
+context exists. A lecture whose audio track is unreadable still produces a
+summary from board text alone.
+
+Table~\ref{tab:agents} lists the agents, what each consumes and produces, and
+what happens when it cannot do its job.
+
+\begin{table}[H]
+\centering
+\caption{Agent contracts. Every agent validates its own output; the orchestrator
+isolates failures so that one agent cannot abort the run.}
+\label{tab:agents}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|p{2.5cm}|p{3.1cm}|p{3.1cm}|p{4.0cm}|}
+\hline
+\textbf{Agent} & \textbf{Consumes} & \textbf{Produces} & \textbf{On failure} \\
+\hline
+Extractor & Video frames & Board and slide text, timestamped &
+Run continues on audio alone \\
+\hline
+Transcriber & Audio track & Transcript segments with timestamps &
+Run continues on board text alone \\
+\hline
+DocParser & PDF, DOCX, PPTX & Structured document text &
+Run aborts; there is no other source \\
+\hline
+Summarizer & Fused timeline or document text & Structured summary &
+Validated for length and refusal patterns, then retried \\
+\hline
+RAGBuilder & Summary and fused timeline & FAISS index over chunks &
+Generation falls back to the summary without retrieval \\
+\hline
+Hints & Summary and timeline & Ranked exam-focus topics &
+Planner falls back to summary topics \\
+\hline
+QuizPlanner & Summary, weak-topic profile & (topic, difficulty) slots &
+Falls back to an even spread over summary topics \\
+\hline
+Quiz generator (Easy / Medium / Hard) & One slot, retrieved context &
+One draft question & Retried under the loop of
+Section~\ref{sec:meth-agentic} \\
+\hline
+QuizValidator & Draft question, accepted set & PASS/FAIL plus a remediation
+action & A failed parse is treated as FAIL, never as PASS \\
+\hline
+QuizRefiner & Failed draft and its reason & Revised draft &
+Loop falls back to plain regeneration \\
+\hline
+Answer generator & Question without the marked key & Independently derived
+answer & Item is flagged unverified, not dropped \\
+\hline
+\end{tabular}
+\end{table}
+
+Two of these entries carry the project's central design commitments. The
+validator treats an unparseable response as \texttt{FAIL} rather than
+\texttt{PASS}, so a malformed reply can never inflate the acceptance rate; and
+the answer generator's disagreement flags an item rather than deleting it, so
+that the disagreement rate remains measurable instead of being silently
+engineered away.
+
+\subsection{Reproducibility and experimental control}
+\label{sec:meth-repro}
+
+Because the evaluation in Chapter~\ref{ch:results} compares two pipelines, the
+things held constant between them matter as much as the thing varied. This
+subsection records them.
+
+\paragraph{Models are pinned, not chosen at run time.} The generator is
+\texttt{gemma3:4b} and the primary model, used for summarisation, judging and
+grading, is \texttt{gemma3:12b}; both are open-weight and served locally through
+Ollama. The generator is \emph{pinned}: when it returns unusable structured
+output the system retries the same model with a stricter instruction rather than
+escalating to the larger one. Escalation would have been the better engineering
+choice for output reliability, and it was deliberately rejected, because a
+pipeline that silently falls back to a $12$B model when the $4$B model struggles
+would no longer be measuring what it claims to measure. Every question in
+Chapter~\ref{ch:results} was written by the model the chapter names.
+
+\paragraph{Decoding parameters.} All calls use temperature $0.2$, a context
+window of $16{,}384$ tokens, and an output ceiling of $8{,}192$ tokens. The low
+temperature reflects the task: structured assessment items with a single defensible
+key, not creative text. The output ceiling is a correctness requirement rather
+than a tuning choice --- without it the server truncates generation at a few
+hundred tokens, which silently cuts structured output mid-object and presents as
+the generator having produced nothing.
+
+\paragraph{Thresholds are fixed in advance.} The uniqueness check rejects a draft
+whose similarity to any already-accepted question exceeds $0.85$; the retry
+budget is three attempts per slot; frame de-duplication during extraction
+suppresses consecutive frames above $0.97$ similarity; and short-answer grading
+accepts a fuzzy match above $0.80$. These values were set before the evaluation
+run and were not adjusted after seeing results.
+
+\paragraph{What is \emph{not} controlled, and why it matters.} Generation is
+sampled rather than greedy, and no random seed is fixed, so the run is not
+bit-for-bit reproducible: repeating it produces a different question set with
+similar statistics. This is a real limitation for exact replication and is
+stated rather than hidden. It is mitigated by sample size, $200$ questions per
+pipeline, and by the fact that the reported differences are consistent across
+three difficulty strata rather than resting on a single aggregate. Fixing a seed
+is a cheap improvement and is listed among the further work in
+Section~\ref{sec:concl-future}.
+
+\paragraph{The artifact trail.} Each run writes the generated questions, the
+per-question validator verdicts with attempt counts and timings, and the full
+agent decision log. Measurement is performed offline on those artifacts rather
+than inside the generating session, so that scoring cannot influence generation
+and so that a scoring change can be re-applied to an existing run without
+regenerating it. The labelling correction disclosed in
+Section~\ref{sec:res-native} is the one place where this separation proved
+insufficient, and it is the reason a confirming re-run is the first item of
+further work.
+
 \subsection{The four generation pipelines}
 \label{sec:meth-pipelines}
 
