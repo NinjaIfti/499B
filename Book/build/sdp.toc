@@ -1,0 +1,63 @@
+\contentsline {chapter}{Table of Contents}{iv}{chapter*.2}%
+\contentsline {chapter}{List of Figures}{v}{section*.3}%
+\contentsline {chapter}{List of Tables}{vi}{section*.5}%
+\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Background and Motivation}{1}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Purpose and Goal of the Project}{2}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Organization of the Report}{3}{section.1.3}%
+\contentsline {chapter}{\numberline {2}Background and Literature Review}{4}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Preliminaries}{4}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Large Language Models and Prompting}{5}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Agent Based Architectures}{6}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}Evaluation of Educational Question Generation}{7}{subsection.2.1.3}%
+\contentsline {section}{\numberline {2.2}Literature Review}{9}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Evolution of Educational Question Generation}{9}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Large Language Model Based Educational Question Generation}{10}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Evaluation Frameworks for Educational Question Generation}{12}{subsection.2.2.3}%
+\contentsline {section}{\numberline {2.3}Research Gap}{13}{section.2.3}%
+\contentsline {chapter}{\numberline {3}Methodology}{15}{chapter.3}%
+\contentsline {section}{\numberline {3.1}System Design}{15}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Data flow}{15}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Scene-adaptive extraction}{16}{subsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.1.3}Retrieval}{17}{subsection.3.1.3}%
+\contentsline {section}{\numberline {3.2}Hardware and/or Software Components}{17}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Hardware and/or Software Implementation}{18}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}The agentic question-generation loop}{18}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}The four generation pipelines}{19}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}Answer correctness: two agents that must agree}{21}{subsection.3.3.3}%
+\contentsline {subsection}{\numberline {3.3.4}Multi-tier grading and adaptation}{21}{subsection.3.3.4}%
+\contentsline {chapter}{\numberline {4}Investigation/Experiment, Result, Analysis and Discussion}{23}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Environment Setup}{24}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Configurations under test}{24}{subsection.4.1.1}%
+\contentsline {paragraph}{Source data.}{25}{section*.10}%
+\contentsline {paragraph}{Question count.}{25}{section*.11}%
+\contentsline {section}{\numberline {4.2}Evaluation Protocols}{25}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Protocol A --- EQGBench}{25}{subsection.4.2.1}%
+\contentsline {paragraph}{Judge and voting.}{26}{section*.12}%
+\contentsline {paragraph}{Judge prompt.}{26}{section*.13}%
+\contentsline {paragraph}{Fidelity and deviations.}{27}{section*.14}%
+\contentsline {subsection}{\numberline {4.2.2}Protocol B --- ReQUESTA}{27}{subsection.4.2.2}%
+\contentsline {paragraph}{An important limitation of this protocol.}{27}{section*.15}%
+\contentsline {paragraph}{A documented inconsistency in the source rubric.}{28}{section*.16}%
+\contentsline {subsection}{\numberline {4.2.3}Native metrics, and why a cost column is mandatory}{28}{subsection.4.2.3}%
+\contentsline {section}{\numberline {4.3}Ablation Design}{28}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Leave-one-agent-out}{28}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Agent merging}{29}{subsection.4.3.2}%
+\contentsline {paragraph}{\texttt {merge\_vr} --- Validator $+$ Refiner.}{29}{section*.17}%
+\contentsline {paragraph}{\texttt {merge\_pg} --- Planner $+$ Generator.}{30}{section*.18}%
+\contentsline {paragraph}{Structural call counts.}{30}{section*.19}%
+\contentsline {subsection}{\numberline {4.3.3}What these ablations cannot show}{30}{subsection.4.3.3}%
+\contentsline {section}{\numberline {4.4}Results and Discussion}{31}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Protocol A results --- EQGBench (scale $0$--$2$)}{31}{subsection.4.4.1}%
+\contentsline {paragraph}{What the published pattern predicts.}{31}{section*.20}%
+\contentsline {subsection}{\numberline {4.4.2}Protocol B results --- ReQUESTA (scale $1$--$4$ and $0$--$1$)}{32}{subsection.4.4.2}%
+\contentsline {paragraph}{The rigour-versus-clarity trade-off.}{32}{section*.21}%
+\contentsline {paragraph}{What this protocol cannot deliver here.}{32}{section*.22}%
+\contentsline {subsection}{\numberline {4.4.3}Native metrics --- agentic versus non-agentic}{33}{subsection.4.4.3}%
+\contentsline {paragraph}{Reading these results honestly.}{33}{section*.23}%
+\contentsline {subsection}{\numberline {4.4.4}Leave-one-agent-out results}{34}{subsection.4.4.4}%
+\contentsline {paragraph}{The prediction on record.}{34}{section*.24}%
+\contentsline {subsection}{\numberline {4.4.5}Agent-merging results}{35}{subsection.4.4.5}%
+\contentsline {paragraph}{The prediction on record.}{35}{section*.25}%
+\contentsline {section}{\numberline {4.5}Summary}{35}{section.4.5}%
+\contentsline {chapter}{References}{36}{section.4.5}%

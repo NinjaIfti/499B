@@ -1,0 +1,6 @@
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces System architecture of LectureAssist. The orchestrator coordinates specialist agents across ingestion, representation and generation: the Controller routes each slot to one of three cognitive tracks, the Validator accepts or rejects each drafted question, and a rejected question is diagnosed and returned to the Refiner rather than discarded. The dashed module on the right is the model-directed \texttt {search\_lecture} retrieval tool.}}{16}{figure.3.1}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces The three configurations compared by the merging experiment. All three receive identical grounded content and retrieval index and share the pinned \texttt {gemma3:4b} generator, the retrieval tool and the Controller; only the boxed agent merges differ. Call counts are structural --- counted from the implementation, not measured runtimes.}}{29}{figure.4.1}%
