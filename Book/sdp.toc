@@ -1,63 +1,143 @@
-\contentsline {chapter}{Table of Contents}{iv}{chapter*.2}%
-\contentsline {chapter}{List of Figures}{v}{section*.3}%
-\contentsline {chapter}{List of Tables}{vi}{section*.5}%
+\contentsline {chapter}{Table of Contents}{v}{chapter*.2}%
+\contentsline {chapter}{List of Figures}{vi}{section*.3}%
+\contentsline {chapter}{List of Tables}{viii}{section*.5}%
 \contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
 \contentsline {section}{\numberline {1.1}Background and Motivation}{1}{section.1.1}%
-\contentsline {section}{\numberline {1.2}Purpose and Goal of the Project}{2}{section.1.2}%
-\contentsline {section}{\numberline {1.3}Organization of the Report}{3}{section.1.3}%
-\contentsline {chapter}{\numberline {2}Background and Literature Review}{4}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Preliminaries}{4}{section.2.1}%
-\contentsline {subsection}{\numberline {2.1.1}Large Language Models and Prompting}{5}{subsection.2.1.1}%
-\contentsline {subsection}{\numberline {2.1.2}Agent Based Architectures}{6}{subsection.2.1.2}%
-\contentsline {subsection}{\numberline {2.1.3}Evaluation of Educational Question Generation}{7}{subsection.2.1.3}%
-\contentsline {section}{\numberline {2.2}Literature Review}{9}{section.2.2}%
-\contentsline {subsection}{\numberline {2.2.1}Evolution of Educational Question Generation}{9}{subsection.2.2.1}%
-\contentsline {subsection}{\numberline {2.2.2}Large Language Model Based Educational Question Generation}{10}{subsection.2.2.2}%
-\contentsline {subsection}{\numberline {2.2.3}Evaluation Frameworks for Educational Question Generation}{12}{subsection.2.2.3}%
-\contentsline {section}{\numberline {2.3}Research Gap}{13}{section.2.3}%
-\contentsline {chapter}{\numberline {3}Methodology}{15}{chapter.3}%
-\contentsline {section}{\numberline {3.1}System Design}{15}{section.3.1}%
-\contentsline {subsection}{\numberline {3.1.1}Data flow}{15}{subsection.3.1.1}%
-\contentsline {subsection}{\numberline {3.1.2}Scene-adaptive extraction}{16}{subsection.3.1.2}%
-\contentsline {subsection}{\numberline {3.1.3}Retrieval}{17}{subsection.3.1.3}%
-\contentsline {section}{\numberline {3.2}Hardware and/or Software Components}{17}{section.3.2}%
-\contentsline {section}{\numberline {3.3}Hardware and/or Software Implementation}{18}{section.3.3}%
-\contentsline {subsection}{\numberline {3.3.1}The agentic question-generation loop}{18}{subsection.3.3.1}%
-\contentsline {subsection}{\numberline {3.3.2}The four generation pipelines}{19}{subsection.3.3.2}%
-\contentsline {subsection}{\numberline {3.3.3}Answer correctness: two agents that must agree}{21}{subsection.3.3.3}%
-\contentsline {subsection}{\numberline {3.3.4}Multi-tier grading and adaptation}{21}{subsection.3.3.4}%
-\contentsline {chapter}{\numberline {4}Investigation/Experiment, Result, Analysis and Discussion}{23}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Environment Setup}{24}{section.4.1}%
-\contentsline {subsection}{\numberline {4.1.1}Configurations under test}{24}{subsection.4.1.1}%
-\contentsline {paragraph}{Source data.}{25}{section*.10}%
-\contentsline {paragraph}{Question count.}{25}{section*.11}%
-\contentsline {section}{\numberline {4.2}Evaluation Protocols}{25}{section.4.2}%
-\contentsline {subsection}{\numberline {4.2.1}Protocol A --- EQGBench}{25}{subsection.4.2.1}%
-\contentsline {paragraph}{Judge and voting.}{26}{section*.12}%
-\contentsline {paragraph}{Judge prompt.}{26}{section*.13}%
-\contentsline {paragraph}{Fidelity and deviations.}{27}{section*.14}%
-\contentsline {subsection}{\numberline {4.2.2}Protocol B --- ReQUESTA}{27}{subsection.4.2.2}%
-\contentsline {paragraph}{An important limitation of this protocol.}{27}{section*.15}%
-\contentsline {paragraph}{A documented inconsistency in the source rubric.}{28}{section*.16}%
-\contentsline {subsection}{\numberline {4.2.3}Native metrics, and why a cost column is mandatory}{28}{subsection.4.2.3}%
-\contentsline {section}{\numberline {4.3}Ablation Design}{28}{section.4.3}%
-\contentsline {subsection}{\numberline {4.3.1}Leave-one-agent-out}{28}{subsection.4.3.1}%
-\contentsline {subsection}{\numberline {4.3.2}Agent merging}{29}{subsection.4.3.2}%
-\contentsline {paragraph}{\texttt {merge\_vr} --- Validator $+$ Refiner.}{29}{section*.17}%
-\contentsline {paragraph}{\texttt {merge\_pg} --- Planner $+$ Generator.}{30}{section*.18}%
-\contentsline {paragraph}{Structural call counts.}{30}{section*.19}%
-\contentsline {subsection}{\numberline {4.3.3}What these ablations cannot show}{30}{subsection.4.3.3}%
-\contentsline {section}{\numberline {4.4}Results and Discussion}{31}{section.4.4}%
-\contentsline {subsection}{\numberline {4.4.1}Protocol A results --- EQGBench (scale $0$--$2$)}{31}{subsection.4.4.1}%
-\contentsline {paragraph}{What the published pattern predicts.}{31}{section*.20}%
-\contentsline {subsection}{\numberline {4.4.2}Protocol B results --- ReQUESTA (scale $1$--$4$ and $0$--$1$)}{32}{subsection.4.4.2}%
-\contentsline {paragraph}{The rigour-versus-clarity trade-off.}{32}{section*.21}%
-\contentsline {paragraph}{What this protocol cannot deliver here.}{32}{section*.22}%
-\contentsline {subsection}{\numberline {4.4.3}Native metrics --- agentic versus non-agentic}{33}{subsection.4.4.3}%
-\contentsline {paragraph}{Reading these results honestly.}{33}{section*.23}%
-\contentsline {subsection}{\numberline {4.4.4}Leave-one-agent-out results}{34}{subsection.4.4.4}%
-\contentsline {paragraph}{The prediction on record.}{34}{section*.24}%
-\contentsline {subsection}{\numberline {4.4.5}Agent-merging results}{35}{subsection.4.4.5}%
-\contentsline {paragraph}{The prediction on record.}{35}{section*.25}%
-\contentsline {section}{\numberline {4.5}Summary}{35}{section.4.5}%
-\contentsline {chapter}{References}{36}{section.4.5}%
+\contentsline {section}{\numberline {1.2}Problem Statement}{2}{section.1.2}%
+\contentsline {paragraph}{Grounded in that specific lecture.}{2}{section*.8}%
+\contentsline {paragraph}{Across speech, slides and board writing.}{2}{section*.9}%
+\contentsline {paragraph}{With no budget for commercial inference.}{2}{section*.10}%
+\contentsline {paragraph}{Verified for answer correctness.}{2}{section*.11}%
+\contentsline {paragraph}{Varied enough to practise on repeatedly.}{3}{section*.12}%
+\contentsline {section}{\numberline {1.3}Objectives}{3}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Scope and Delimitations}{3}{section.1.4}%
+\contentsline {section}{\numberline {1.5}Purpose and Goal of the Project}{4}{section.1.5}%
+\contentsline {section}{\numberline {1.6}Organization of the Report}{5}{section.1.6}%
+\contentsline {chapter}{\numberline {2}Background and Literature Review}{6}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Preliminaries}{6}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Large Language Models and Prompting}{7}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Agent Based Architectures}{8}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}Evaluation of Educational Question Generation}{9}{subsection.2.1.3}%
+\contentsline {section}{\numberline {2.2}Literature Review}{11}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Evolution of Educational Question Generation}{11}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Large Language Model Based Educational Question Generation}{13}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Evaluation Frameworks for Educational Question Generation}{14}{subsection.2.2.3}%
+\contentsline {section}{\numberline {2.3}Research Gap}{15}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Comparison of Existing Systems}{16}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}Saturation of Judged Quality Metrics}{17}{subsection.2.3.2}%
+\contentsline {chapter}{\numberline {3}Methodology}{19}{chapter.3}%
+\contentsline {section}{\numberline {3.1}System Design}{19}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Data flow}{19}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Scene-adaptive extraction}{20}{subsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.1.3}Retrieval}{21}{subsection.3.1.3}%
+\contentsline {section}{\numberline {3.2}Hardware and/or Software Components}{21}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Hardware and/or Software Implementation}{22}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}The agentic question-generation loop}{22}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Agent contracts and failure behaviour}{24}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}Reproducibility and experimental control}{25}{subsection.3.3.3}%
+\contentsline {paragraph}{Models are pinned, not chosen at run time.}{25}{section*.13}%
+\contentsline {paragraph}{Decoding parameters.}{26}{section*.14}%
+\contentsline {paragraph}{Thresholds are fixed in advance.}{26}{section*.15}%
+\contentsline {paragraph}{What is \emph {not} controlled, and why it matters.}{26}{section*.16}%
+\contentsline {paragraph}{The artifact trail.}{26}{section*.17}%
+\contentsline {subsection}{\numberline {3.3.4}The four generation pipelines}{26}{subsection.3.3.4}%
+\contentsline {subsection}{\numberline {3.3.5}Answer correctness: two agents that must agree}{28}{subsection.3.3.5}%
+\contentsline {subsection}{\numberline {3.3.6}System snapshot}{28}{subsection.3.3.6}%
+\contentsline {subsection}{\numberline {3.3.7}Multi-tier grading and adaptation}{32}{subsection.3.3.7}%
+\contentsline {chapter}{\numberline {4}Investigation/Experiment, Result, Analysis and Discussion}{33}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Environment Setup}{34}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Configurations under test}{34}{subsection.4.1.1}%
+\contentsline {paragraph}{Source data.}{35}{section*.20}%
+\contentsline {paragraph}{Question count.}{35}{section*.21}%
+\contentsline {section}{\numberline {4.2}Evaluation Protocols}{35}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Native metrics, and why a cost column is mandatory}{35}{subsection.4.2.1}%
+\contentsline {section}{\numberline {4.3}Ablation Design}{36}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Leave-one-agent-out}{36}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Agent merging}{36}{subsection.4.3.2}%
+\contentsline {paragraph}{\texttt {merge\_vr}, Validator $+$ Refiner.}{37}{section*.22}%
+\contentsline {paragraph}{\texttt {merge\_pg}, Planner $+$ Generator.}{37}{section*.23}%
+\contentsline {subsection}{\numberline {4.3.3}What these ablations cannot show}{38}{subsection.4.3.3}%
+\contentsline {section}{\numberline {4.4}Results and Discussion}{38}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Native metrics, agentic versus non-agentic}{38}{subsection.4.4.1}%
+\contentsline {paragraph}{A declared correction to the pipeline labelling.}{39}{section*.24}%
+\contentsline {paragraph}{Reading these results honestly.}{39}{section*.25}%
+\contentsline {section}{\numberline {4.5}System Interpretation}{40}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Where in the pipeline the advantage can live}{40}{subsection.4.5.1}%
+\contentsline {subsection}{\numberline {4.5.2}Why the margin widens with difficulty}{41}{subsection.4.5.2}%
+\contentsline {subsection}{\numberline {4.5.3}What the saturation implies for system design}{41}{subsection.4.5.3}%
+\contentsline {subsection}{\numberline {4.5.4}What the system does not establish}{42}{subsection.4.5.4}%
+\contentsline {section}{\numberline {4.6}Summary}{42}{section.4.6}%
+\contentsline {paragraph}{What was established.}{42}{section*.26}%
+\contentsline {paragraph}{What the instruments revealed about themselves.}{43}{section*.27}%
+\contentsline {paragraph}{What remains open.}{43}{section*.28}%
+\contentsline {paragraph}{Two caveats carried forward.}{43}{section*.29}%
+\contentsline {chapter}{\numberline {5}Impacts and Design Constraints of the Project}{44}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Economic Impact}{44}{section.5.1}%
+\contentsline {paragraph}{The constraint that drove the architecture.}{44}{section*.30}%
+\contentsline {paragraph}{Where the cost actually goes.}{44}{section*.31}%
+\contentsline {paragraph}{The compute cost of the agentic loop.}{45}{section*.32}%
+\contentsline {paragraph}{Institutional adoption.}{45}{section*.33}%
+\contentsline {section}{\numberline {5.2}Impact on Societal, Health, Safety, Legal and Cultural Issues}{45}{section.5.2}%
+\contentsline {paragraph}{Educational and societal impact.}{45}{section*.34}%
+\contentsline {paragraph}{Safety: the risk of confidently teaching the wrong thing.}{46}{section*.35}%
+\contentsline {paragraph}{Legal and privacy considerations.}{46}{section*.36}%
+\contentsline {paragraph}{Cultural and linguistic considerations.}{47}{section*.37}%
+\contentsline {section}{\numberline {5.3}Ethical Considerations}{47}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Research Ethics}{47}{subsection.5.3.1}%
+\contentsline {paragraph}{No fabricated results.}{47}{section*.38}%
+\contentsline {paragraph}{No misrepresentation of the system's capability.}{47}{section*.39}%
+\contentsline {subsection}{\numberline {5.3.2}Ethics of Deployment}{48}{subsection.5.3.2}%
+\contentsline {paragraph}{Academic integrity.}{48}{section*.40}%
+\contentsline {paragraph}{The obligation created by confident error.}{48}{section*.41}%
+\contentsline {paragraph}{Data, consent and ownership.}{48}{section*.42}%
+\contentsline {paragraph}{Bias, coverage and who the system serves.}{48}{section*.43}%
+\contentsline {paragraph}{Boundaries of responsible use.}{49}{section*.44}%
+\contentsline {section}{\numberline {5.4}Impact on Environment and Sustainability}{49}{section.5.4}%
+\contentsline {paragraph}{Small models, local inference.}{49}{section*.45}%
+\contentsline {paragraph}{Caching and resumability as energy savings.}{49}{section*.46}%
+\contentsline {paragraph}{The honest counterweight: the agentic loop is not free.}{49}{section*.47}%
+\contentsline {paragraph}{Sustainability of access.}{50}{section*.48}%
+\contentsline {chapter}{\numberline {6}Project Planning and Budget}{51}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Development Methodology}{51}{section.6.1}%
+\contentsline {paragraph}{Stages could be developed and debugged independently.}{51}{section*.49}%
+\contentsline {paragraph}{Expensive work became resumable.}{51}{section*.50}%
+\contentsline {paragraph}{Measurement was decoupled from generation.}{52}{section*.51}%
+\contentsline {section}{\numberline {6.2}Work Breakdown Structure}{52}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Project Schedule}{53}{section.6.3}%
+\contentsline {paragraph}{Extraction and retrieval overlap.}{53}{section*.52}%
+\contentsline {paragraph}{The interface was built early and in parallel.}{53}{section*.53}%
+\contentsline {paragraph}{Evaluation was given eight weeks, and needed them.}{54}{section*.54}%
+\contentsline {section}{\numberline {6.4}Team Roles and Responsibilities}{54}{section.6.4}%
+\contentsline {section}{\numberline {6.5}Risk Management}{55}{section.6.5}%
+\contentsline {section}{\numberline {6.6}Budget}{55}{section.6.6}%
+\contentsline {paragraph}{The system itself costs nothing to run.}{56}{section*.55}%
+\contentsline {paragraph}{The one paid line is a measurement cost, not a product cost.}{56}{section*.56}%
+\contentsline {paragraph}{The dominant real cost is human time, which does not appear in the table.}{57}{section*.57}%
+\contentsline {paragraph}{Cost avoided.}{57}{section*.58}%
+\contentsline {chapter}{\numberline {7}Complex Engineering Problems and Activities}{58}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Complex Engineering Problems (CEP)}{58}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Complex Engineering Activities (CEA)}{60}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Mapping to Knowledge Profiles}{61}{section.7.3}%
+\contentsline {chapter}{\numberline {8}Conclusion}{63}{chapter.8}%
+\contentsline {section}{\numberline {8.1}Summary}{63}{section.8.1}%
+\contentsline {section}{\numberline {8.2}Findings}{64}{section.8.2}%
+\contentsline {paragraph}{The agentic pipeline beats single-shot prompting on every metric that discriminates.}{64}{section*.59}%
+\contentsline {paragraph}{The most instructive finding is that the obvious metrics do not work.}{64}{section*.60}%
+\contentsline {paragraph}{Winning as a whole is not the same as knowing why.}{64}{section*.61}%
+\contentsline {section}{\numberline {8.3}Limitations}{64}{section.8.3}%
+\contentsline {paragraph}{The pipeline labelling rests on generation records, not on the artifacts.}{64}{section*.62}%
+\contentsline {paragraph}{The judge and the Answer Generator are language models, not humans.}{65}{section*.63}%
+\contentsline {paragraph}{Generator--solver agreement is not the same as correctness.}{65}{section*.64}%
+\contentsline {paragraph}{The result is a comparison of two pipelines, not an attribution.}{65}{section*.65}%
+\contentsline {paragraph}{Single domain, single document.}{65}{section*.66}%
+\contentsline {paragraph}{The extraction layer bounds everything above it.}{65}{section*.67}%
+\contentsline {paragraph}{Deployment is not production-grade.}{66}{section*.68}%
+\contentsline {section}{\numberline {8.4}Future Improvement}{66}{section.8.4}%
+\contentsline {paragraph}{Confirm the arm labelling before anything else.}{66}{section*.69}%
+\contentsline {paragraph}{Run the ablations, and read them against cost.}{66}{section*.70}%
+\contentsline {paragraph}{Evaluate under a published benchmark.}{66}{section*.71}%
+\contentsline {paragraph}{Strengthen answer verification.}{66}{section*.72}%
+\contentsline {paragraph}{Human evaluation.}{67}{section*.73}%
+\contentsline {paragraph}{Broaden the domain.}{67}{section*.74}%
+\contentsline {paragraph}{Close the loop on diversity.}{67}{section*.75}%
+\contentsline {chapter}{References}{67}{section*.75}%

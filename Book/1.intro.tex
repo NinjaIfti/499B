@@ -43,6 +43,115 @@ generation therefore has to be evaluated on answer correctness, and on whether i
 keeps producing genuinely different questions rather than paraphrasing the same one,
 not merely on whether its output is well written.
 
+\section{Problem Statement}
+\label{sec:intro-problem}
+
+The problem this project addresses can be stated precisely. Given a lecture
+delivered as a video, in which the instructional content is distributed across
+speech, slides and board writing, and given no budget for commercial inference,
+produce assessment material that is grounded in that specific lecture,
+controlled for difficulty, verified for answer correctness, and varied enough
+that a student can practise on it repeatedly without meeting the same question
+twice.
+
+Each clause in that statement rules out an existing class of solution.
+
+\paragraph{Grounded in that specific lecture.} A general-purpose model asked to
+write calculus questions will write calculus questions, but it will write them
+about calculus in general rather than about the material a particular instructor
+covered and emphasised. This is the difference between a question bank and a
+study aid. Meeting this clause requires the lecture content to be extracted,
+indexed and retrievable, which is why roughly half of the system described in
+Chapter~\ref{ch:methodology} is concerned with getting content out of media
+rather than with generating anything.
+
+\paragraph{Across speech, slides and board writing.} Transcription alone
+recovers what was said and silently discards what was written. In technical
+subjects that is precisely the wrong half to lose, because the derivations,
+notation and worked examples are on the board rather than in the sentence. A
+system that reads only audio will produce questions about the discussion around
+a derivation while remaining unaware of the derivation itself.
+
+\paragraph{With no budget for commercial inference.} This constraint is
+economic in origin and technical in consequence. It fixes the generator at a
+model small enough to serve locally on free-tier hardware, and a small model
+produces malformed output, drifts off the requested difficulty, and repeats
+itself more than a frontier model does. Every one of those failure modes has to
+be engineered against rather than avoided by paying for a larger model.
+
+\paragraph{Verified for answer correctness.} A question whose marked option is
+wrong is not merely useless but harmful, and no amount of fluency reveals the
+error. Meeting this clause requires an independent check that does not share the
+generator's reasoning, which is why answer generation is treated as a separate
+agent whose verdict is compared against the generator's.
+
+\paragraph{Varied enough to practise on repeatedly.} A generator that produces
+ten excellent but near-identical questions has failed at the task even though it
+would score well on any per-question quality metric. This clause is what forces
+diversity to be measured at the level of the corpus rather than the item, and it
+turns out to be the clause on which the pipelines in this study actually
+separate.
+
+\section{Objectives}
+\label{sec:intro-objectives}
+
+The project set out to meet six objectives, each of which maps onto a component
+of the delivered system and onto a section of this report.
+
+\begin{enumerate}
+  \item To build a dual-channel extraction layer that recovers instructional
+        content from both the visual and the audio channel of a lecture
+        recording, and to fuse the two into a single timestamped representation
+        (Sections~\ref{sec:meth-ocr} and~\ref{sec:meth-flow}).
+  \item To make that representation searchable, so that any downstream component
+        can retrieve the passage supporting a claim and any generated item can be
+        traced back to its source moment (Section~\ref{sec:meth-rag}).
+  \item To design a multi-agent generation pipeline that decomposes question
+        writing into planning, retrieval, drafting, validation and remediation,
+        with quality control applied per question rather than per batch
+        (Section~\ref{sec:meth-agentic}).
+  \item To treat answer correctness as a property requiring independent
+        verification rather than an assumption, by cross-checking every generated
+        answer against a separate solving agent (Section~\ref{sec:meth-answer}).
+  \item To close the loop from assessment back to practice, by grading free-text
+        responses and steering subsequent quizzes toward the topics on which a
+        student performs worst (Section~\ref{sec:meth-grading}).
+  \item To evaluate the resulting system against a controlled baseline on
+        measures capable of discriminating between them, and to report the
+        outcome whether or not it favours the more complex design
+        (Chapter~\ref{ch:results}).
+\end{enumerate}
+
+\section{Scope and Delimitations}
+\label{sec:intro-scope}
+
+Stating what the project does not attempt is as useful as stating what it does,
+and the boundaries below were fixed early and held throughout.
+
+The system targets a \textbf{single user on a single machine}. It is not a
+multi-tenant service, it has no authentication layer, and no work was done on
+concurrency, rate limiting or access control. These are real requirements for a
+deployed product and they are deliberately outside the scope of a system built
+to demonstrate and evaluate a generation pipeline.
+
+The generator is \textbf{fixed to one open-weight model family}. No model was
+trained or fine-tuned. The question of whether a fine-tuned generator would
+outperform a prompted one is interesting and is not asked here, because
+fine-tuning requires labelled data and compute that the zero-cost constraint
+excludes.
+
+Evaluation is confined to \textbf{multiple-choice questions on one document}.
+The system generates five question types, but only multiple choice supports the
+independent re-solving check that the correctness measurement depends on, and
+only one source document was evaluated at the scale required for the comparison
+to be meaningful. Chapter~\ref{ch:conclusion} treats the resulting limits on
+generality explicitly rather than leaving them implied.
+
+Finally, all quality judgements in this report are made by \textbf{models rather
+than by people}. A human study would anchor those judgements to ground truth and
+was beyond the time available. Where this bounds a conclusion, the bound is
+stated at the point the conclusion is drawn.
+
 \section{Purpose and Goal of the Project}
 \label{sec:intro-purpose}
 
@@ -93,8 +202,8 @@ The key contributions of this work are:
         storage.
 
   \item A large-scale evaluation harness that compares the agentic pipeline against
-        three direct-prompting baselines --- plain, chain-of-thought and
-        program-of-thought --- and which, unlike prior automatic question generation
+        three direct-prompting baselines, plain, chain-of-thought and
+        program-of-thought, and which, unlike prior automatic question generation
         evaluations, separates \emph{question quality} from \emph{answer
         correctness} by having a second, larger Answer Generator agent independently
         re-solve every generated question without seeing the marked option.
@@ -103,21 +212,22 @@ The key contributions of this work are:
 \section{Organization of the Report}
 \label{sec:intro-org}
 
-The remainder of this report is organised as follows. Chapter~\ref{ch:background}
-provides the background needed to follow the rest of the report --- large language
-models and the prompting strategies used as baselines, retrieval-augmented
-generation, agentic architectures, speech recognition and OCR --- then reviews the
-research literature and the existing commercial applications closest to this work,
-and identifies the gaps this project addresses. Chapter~\ref{ch:methodology}
-describes the system design: the extraction layer, the agent architecture, the four
-question-generation pipelines with their prompts given verbatim, the two-agent
-answer cross-check, and the software components used to build it.
-Chapter~\ref{ch:results} presents the evaluation: the environment, the metrics and
-exactly how each is computed, the large-scale multiple-choice results, and a
-discussion of what they show --- including a failure mode of the agentic pipeline
-that the evaluation exposed. Chapter~\ref{ch:impacts} discusses the societal,
-ethical and environmental implications and the design constraints they impose.
+The remainder of this report is organised as follows.
+Chapter~\ref{ch:background} provides the background needed to follow the rest
+of the report, large language models and the prompting strategies used as
+baselines, retrieval-augmented generation, agentic architectures, speech
+recognition and OCR, then reviews the research literature and the existing
+commercial applications closest to this work, and identifies the gaps this
+project addresses. Chapter~\ref{ch:methodology} describes the system design:
+the extraction layer, the agent architecture, the four question-generation
+pipelines with their prompts given verbatim, the two-agent answer cross-check,
+and the software components used to build it. Chapter~\ref{ch:results}
+presents the evaluation: the environment, the metrics and exactly how each is
+computed, the large-scale multiple-choice results, and a discussion of what
+they show, including a failure mode of the agentic pipeline that the
+evaluation exposed. Chapter~\ref{ch:impacts} discusses the societal, ethical
+and environmental implications and the design constraints they impose.
 Chapter~\ref{ch:planning} presents the project plan and budget.
 Chapter~\ref{ch:cep} maps the work onto the complex engineering problem and
-activity attributes. Chapter~\ref{ch:conclusion} summarises the project, states its
-limitations honestly, and sets out the work that follows from it.
+activity attributes. Chapter~\ref{ch:conclusion} summarises the project,
+states its limitations honestly, and sets out the work that follows from it.

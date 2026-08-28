@@ -1,146 +1,233 @@
-% \chapter{Complex Engineering Problems and Activities}
-% \label{ch:cep}
+\chapter{Complex Engineering Problems and Activities}
+\label{ch:cep}
 
-% This chapter maps LectureAssist onto the Complex Engineering Problem (CEP) and
-% Complex Engineering Activity (CEA) attributes, showing where the project required
-% depth of knowledge, resolution of conflicting requirements, and analysis beyond the
-% routine application of a known method.
+This chapter maps LectureAssist onto the Complex Engineering Problem (CEP) and
+Complex Engineering Activity (CEA) attributes, showing where the project required
+depth of knowledge, resolution of conflicting requirements, and analysis beyond the
+routine application of a known method. Each attribute is addressed with reference to
+the specific decision, defect or measurement in this report that exercises it, rather
+than by general assertion.
 
-% \section{Complex Engineering Problems (CEP)}
-% \label{sec:cep}
+\section{Complex Engineering Problems (CEP)}
+\label{sec:cep}
 
-% \begin{table}[H]
-% \centering
-% \caption{Complex Engineering Problem attributes addressed by LectureAssist.}
-% \label{tab:cep}
-% \footnotesize
-% \begin{tabular}{|c|p{3.4cm}|p{8.4cm}|}
-% \hline
-% \textbf{Attr.} & \textbf{Description} & \textbf{How the project addresses it} \\
-% \hline
-% P1 & Depth of knowledge required (K3--K8) &
-% The system spans computer vision and image preprocessing for scene-adaptive OCR
-% (K3--K4), automatic speech recognition, transformer language models, embeddings and
-% vector retrieval (K4--K5), multi-agent software architecture and API/system design
-% (K5--K6), statistical evaluation design --- LLM-as-judge, $F_1$ agreement, calibration
-% against a known-answer set (K5, K8) --- and the research literature on question
-% generation, chain-of-thought and program-of-thought prompting, and agentic
-% architectures (K8). \\
-% \hline
-% P2 & Range of conflicting requirements &
-% Several requirements pull directly against each other. \emph{Question quality vs.\
-% latency}: the agentic loop produces better and more answer-correct questions but costs
-% roughly seven times the wall-clock time of a single-shot call. \emph{Model size vs.\
-% VRAM}: a larger generator would produce better questions, but the generator, judge,
-% Whisper and the OCR and embedding models must all coexist on one $16$\,GB T4.
-% \emph{Yield vs.\ scientific honesty}: allowing the $4$B generator to escalate to the
-% $12$B model on malformed output would have raised yield, but would have falsified the
-% claim that the questions were written by the $4$B --- so escalation was disabled at a
-% known cost in yield. \emph{Accept rate vs.\ diversity}: a pipeline can maximise its
-% accept rate by repeating one good question, which forced the adoption of a
-% duplicate-penalised metric. \\
-% \hline
-% P3 & Depth of analysis required &
-% There is no unique correct design, and no off-the-shelf metric for ``is this a good
-% generated question''. Selecting a solution required analysing four generation
-% strategies (agentic, plain, CoT, PoT) against each other under a metric suite that
-% had itself to be designed, and it required identifying and eliminating confounds ---
-% unequal content coverage between pipelines, a truncated summary that made whole
-% sections of the chapter unreachable by the planner, and silent model escalation ---
-% any one of which would have invalidated the comparison. The finding that the ranking
-% of the pipelines \emph{reverses} at hard difficulty once repetition is discounted
-% emerged only from that analysis and is invisible to a quality-only evaluation. \\
-% \hline
-% P4 & Familiarity of issues &
-% The project integrates infrequently encountered components: EasyOCR with
-% scene-dependent preprocessing, Faster-Whisper, Gemma~3 served through Ollama,
-% Sentence-BERT embeddings, a FAISS index, an LLM-as-judge evaluation harness, SymPy
-% for machine-verified answer keys, and a Flask/ngrok deployment onto ephemeral
-% free-tier GPU infrastructure. \\
-% \hline
-% P5 & Extent of applicable codes &
-% No standard or code of practice exists for automatic educational question generation
-% or for the evaluation of LLM-generated assessment items. The evaluation protocol ---
-% what to measure, how to verify an answer, how to calibrate the judge --- had to be
-% designed from the research literature rather than taken from a standard. \\
-% \hline
-% P6 & Extent of stakeholder involvement &
-% Stakeholders include students (the primary users), instructors (whose lectures are
-% the input and whose assessments the tool must not undermine), institutions (which hold
-% copyright in lecture material and are accountable for academic integrity), and the
-% open-model community whose licences govern the deployed models. Their requirements
-% conflict: a student wants unlimited questions, while an instructor requires that the
-% tool not present unverified answers as authoritative. \\
-% \hline
-% P7 & Interdependence &
-% The subsystems are tightly coupled: OCR and ASR quality bound the summary; the
-% summary bounds the planner's topic choice; the planner bounds question diversity; the
-% retrieval index bounds grounding; and the judge and Answer Generator bound the
-% credibility of every reported result. Two of the defects found during this project
-% --- a truncated summary and a capped content window --- were failures of exactly this
-% interdependence: a bug several stages upstream degraded question diversity many
-% stages downstream, with no local symptom at the point of failure. \\
-% \hline
-% \end{tabular}
-% \end{table}
+{\footnotesize\singlespacing
+\begin{longtable}{|c|p{3.4cm}|p{8.4cm}|}
+\caption{Complex Engineering Problem attributes addressed by LectureAssist.}
+\label{tab:cep}\\
+\hline
+\textbf{Attr.} & \textbf{Description} & \textbf{How the project addresses it} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Attr.} & \textbf{Description} & \textbf{How the project addresses it} \\
+\hline
+\endhead
+\hline
+\endfoot
+\hline
+\endlastfoot
 
-% Table~\ref{tab:cep} shows that the project engages all seven CEP attributes, with P2
-% (conflicting requirements) and P3 (depth of analysis) being the most heavily
-% exercised.
+P1 & Depth of knowledge required (K3--K8) &
+The system spans computer vision and image preprocessing for scene-adaptive OCR
+(K3--K4), automatic speech recognition, transformer language models, embeddings and
+vector retrieval (K4--K5), multi-agent software architecture and API/system design
+(K5--K6), statistical evaluation design, LLM-as-judge, $F_1$ agreement between the
+internal validator and an independent judge, calibration against a known-answer set
+(K5, K8), and the research literature on question generation, chain-of-thought and
+program-of-thought prompting, and agentic architectures (K8). \\
+\hline
+P2 & Range of conflicting requirements &
+Several requirements pull directly against each other. \emph{Question quality vs.\
+cost}: the agentic loop produces better-grounded, less repetitive and more
+answer-correct questions but consumes roughly an order of magnitude more LLM calls
+than a single-shot request. \emph{Model size vs.\ VRAM}: a larger generator would
+produce better questions, but the generator, judge, Whisper, OCR and embedding models
+must all coexist on one $16$\, GB T4. \emph{Yield vs.\ scientific honesty}: allowing
+the $4$B generator to escalate to the $12$B model on malformed output would have
+raised yield, but would have falsified the claim that the questions were written by
+the $4$B, so escalation was disabled at a known cost in yield. \emph{Accept rate
+vs.\ diversity}: a pipeline can maximise its accept rate by repeatedly producing one
+good question, which forced the adoption of a duplicate-penalised effective
+acceptance metric (Eq.~\ref{eq:effaccept}) in place of raw acceptance. \\
+\hline
+P3 & Depth of analysis required &
+There is no unique correct design, and no off-the-shelf metric for ``is this a good
+generated question''. Selecting a solution required analysing four generation
+strategies (agentic, plain, CoT, PoT) against each other under a metric suite that
+had itself to be designed, and it required identifying and eliminating confounds,
+unequal content coverage between pipelines, a truncated summary that made whole
+sections of the chapter unreachable by the planner, and silent model escalation,
+any one of which would have invalidated the comparison. The central analytical
+finding is that the four judged quality dimensions \emph{saturate} and therefore
+discriminate nothing, so that the entire result rests on corpus-level automated
+measures that a conventional quality-only evaluation would never have computed. That
+conclusion is invisible without the analysis and inverts the naive reading of the
+data. \\
+\hline
+P4 & Familiarity of issues &
+The project integrates infrequently encountered components: EasyOCR with
+scene-dependent preprocessing, Faster-Whisper, Gemma~3 served through Ollama,
+Sentence-BERT embeddings, a FAISS index, an LLM-as-judge evaluation harness, SymPy
+for machine-verified answer keys, and a Flask/ngrok deployment onto ephemeral
+free-tier GPU infrastructure. \\
+\hline
+P5 & Extent of applicable codes &
+No standard or code of practice exists for automatic educational question generation
+or for the evaluation of LLM-generated assessment items. The evaluation protocol,
+what to measure, how to verify an answer, how to calibrate the judge, had to be
+designed from the research literature rather than taken from a standard. Where
+published protocols did exist they had to be reconstructed from the papers
+themselves: EQGBench has no public code release, and ReQUESTA publishes no judge
+prompt at all because its rubric was applied by human raters. \\
+\hline
+P6 & Extent of stakeholder involvement &
+Stakeholders include students (the primary users), instructors (whose lectures are
+the input and whose assessments the tool must not undermine), institutions (which
+hold copyright in lecture material and are accountable for academic integrity), and
+the open-model community whose licences govern the deployed models. Their
+requirements conflict: a student wants unlimited questions immediately, while an
+instructor requires that the tool not present unverified answers as authoritative,
+and an institution requires that copyrighted lecture material not be transmitted to a
+third-party processor. \\
+\hline
+P7 & Interdependence &
+The subsystems are tightly coupled: OCR and ASR quality bound the summary; the
+summary bounds the planner's topic choice; the planner bounds question diversity; the
+retrieval index bounds grounding; and the judge and Answer Generator bound the
+credibility of every reported result. Two of the defects found during this project, a truncated summary and a capped content window, were failures of exactly this
+interdependence: a bug several stages upstream degraded question diversity many
+stages downstream, with no local symptom at the point of failure. The pipeline
+labelling error disclosed in Section~\ref{sec:res-native} is a third instance, in
+which a fault in the recording of provenance propagated into the interpretation of
+every downstream measurement. \\
+\hline
+\end{longtable}
+}
 
-% \section{Complex Engineering Activities (CEA)}
-% \label{sec:cea}
+Table~\ref{tab:cep} shows that the project engages all seven CEP attributes, with P2
+(conflicting requirements) and P3 (depth of analysis) being the most heavily
+exercised. It is worth noting that P2 and P3 are linked in this project rather than
+independent: almost every conflicting requirement listed under P2 was resolved by
+\emph{measuring} the trade-off rather than by asserting a preference, and the
+instruments built to perform those measurements are what generated the depth of
+analysis recorded under P3.
 
-% \begin{table}[H]
-% \centering
-% \caption{Complex Engineering Activity attributes addressed by LectureAssist.}
-% \label{tab:cea}
-% \footnotesize
-% \begin{tabular}{|c|p{3.4cm}|p{8.4cm}|}
-% \hline
-% \textbf{Attr.} & \textbf{Description} & \textbf{How the project addresses it} \\
-% \hline
-% A1 & Range of resources &
-% The project draws on human resources (a three-member team with a supervisor), modern
-% computational tools (a GPU runtime, six distinct deep-learning models, a vector
-% database, a symbolic algebra system), open-licensed source material, and cloud
-% compute --- managed under a hard constraint of zero paid API spend. \\
-% \hline
-% A2 & Level of interactions &
-% The work required interaction between the extraction, retrieval, generation,
-% evaluation and interface subsystems, each with its own failure modes, as well as
-% between team members, the project supervisor (whose requirements shaped the
-% evaluation design --- notably the demands for CoT and PoT baselines and for treating
-% question generation and answer generation as separate cross-checked agents), and the
-% end users whose trust in the output determines whether the system is safe to use. \\
-% \hline
-% A3 & Innovation &
-% The project introduces three novel elements: scene-adaptive OCR that classifies each
-% frame before choosing its preprocessing, so that a lecture's \emph{board} --- not
-% merely its audio --- becomes usable content; a validator agent that selects
-% \emph{how} to remediate a rejected question (regenerate, fetch more context, or
-% replan the topic) rather than merely rejecting it; and an evaluation protocol that
-% separates question quality from answer correctness by having a distinct Answer
-% Generator agent re-solve every question blind, with the solver itself calibrated on a
-% machine-verified answer key. \\
-% \hline
-% A4 & Consequences to society and the environment &
-% The system widens access to effective retrieval practice for students who cannot pay
-% for cloud AI services, supporting UN SDG~4 (Quality Education) and SDG~10 (Reduced
-% Inequalities). Running small models locally is substantially less energy-intensive
-% per request than hyperscale cloud inference, and no model was trained. The principal
-% risk --- a fluent question with a wrong marked answer --- is analysed and bounded
-% rather than dismissed, and the report states explicitly that generated questions are
-% suitable for practice and not for graded assessment without human review. \\
-% \hline
-% A5 & Familiarity &
-% The project requires familiarity with computer vision, speech recognition, large
-% language models and prompting strategies, retrieval-augmented generation, agentic
-% architectures, experimental design and statistical evaluation, web API development,
-% and deployment onto constrained, ephemeral GPU infrastructure. \\
-% \hline
-% \end{tabular}
-% \end{table}
+\section{Complex Engineering Activities (CEA)}
+\label{sec:cea}
 
-% Table~\ref{tab:cea} demonstrates that the project satisfies all five Complex
-% Engineering Activity attributes.
+{\footnotesize\singlespacing
+\begin{longtable}{|c|p{3.4cm}|p{8.4cm}|}
+\caption{Complex Engineering Activity attributes addressed by LectureAssist.}
+\label{tab:cea}\\
+\hline
+\textbf{Attr.} & \textbf{Description} & \textbf{How the project addresses it} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Attr.} & \textbf{Description} & \textbf{How the project addresses it} \\
+\hline
+\endhead
+\hline
+\endfoot
+\hline
+\endlastfoot
+
+A1 & Range of resources &
+The project draws on human resources (a three-member team with a supervisor), modern
+computational tools (a GPU runtime, six distinct deep-learning models, a vector
+index, a symbolic algebra system), open-licensed source material, and cloud compute, managed under a hard constraint of zero paid API spend on the generation path,
+as documented in the budget of Section~\ref{sec:plan-budget}. \\
+\hline
+A2 & Level of interactions &
+The work required interaction between the extraction, retrieval, generation,
+evaluation and interface subsystems, each with its own failure modes, as well as
+between team members under the responsibility allocation of
+Table~\ref{tab:raci}, the project supervisor (whose requirements shaped the
+evaluation design, notably the demands for CoT and PoT baselines and for treating
+question generation and answer generation as separate cross-checked agents), and the
+end users whose trust in the output determines whether the system is safe to use. \\
+\hline
+A3 & Innovation &
+The project introduces three novel elements: scene-adaptive OCR that classifies each
+frame before choosing its preprocessing, so that a lecture's \emph{board}: not
+merely its audio, becomes usable content; a validator agent that selects
+\emph{how} to remediate a rejected question (regenerate, fetch more context, or
+replan the topic) rather than merely rejecting it; and an evaluation protocol that
+separates question quality from answer correctness by having a distinct Answer
+Generator agent re-solve every question blind, with the solver itself calibrated on a
+machine-verified answer key. \\
+\hline
+A4 & Consequences to society and the environment &
+The system widens access to effective retrieval practice for students who cannot pay
+for cloud AI services, supporting UN SDG~4 (Quality Education) and SDG~10 (Reduced
+Inequalities). Running small models locally is substantially less energy-intensive
+per request than hyperscale cloud inference, and no model was trained. The principal
+risk, a fluent question with a wrong marked answer, is analysed and bounded
+rather than dismissed, and the report states explicitly that generated questions are
+suitable for practice and not for graded assessment without human review.
+Chapter~\ref{ch:impacts} develops these consequences in full. \\
+\hline
+A5 & Familiarity &
+The project requires familiarity with computer vision, speech recognition, large
+language models and prompting strategies, retrieval-augmented generation, agentic
+architectures, experimental design and statistical evaluation, web API development,
+and deployment onto constrained, ephemeral GPU infrastructure. \\
+\hline
+\end{longtable}
+}
+
+Table~\ref{tab:cea} demonstrates that the project satisfies all five Complex
+Engineering Activity attributes.
+
+\section{Mapping to Knowledge Profiles}
+\label{sec:cep-knowledge}
+
+Table~\ref{tab:knowledge} records which Washington Accord knowledge profiles the work
+draws on and where in this report the evidence for each can be found, so that the
+mapping can be checked against the substance of the project rather than accepted on
+assertion.
+
+{\footnotesize\singlespacing
+\begin{longtable}{|c|p{5.0cm}|p{6.4cm}|}
+\caption{Knowledge profile coverage and where each is evidenced in this report.}
+\label{tab:knowledge}\\
+\hline
+\textbf{Profile} & \textbf{Description} & \textbf{Evidence in this report} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Profile} & \textbf{Description} & \textbf{Evidence in this report} \\
+\hline
+\endhead
+\hline
+\endfoot
+\hline
+\endlastfoot
+
+K3 & Engineering fundamentals &
+Image preprocessing, contrast-limited adaptive histogram equalisation,
+thresholding, polarity inversion, selected per frame class
+(Section~\ref{sec:meth-ocr}) \\
+\hline
+K4 & Engineering specialist knowledge &
+Transformer language models, speech recognition, sentence embeddings and
+approximate nearest-neighbour search (Chapter~\ref{ch:background}) \\
+\hline
+K5 & Engineering design &
+The five-agent Plan--Retrieve--Generate--Validate--Refine architecture and its
+alternatives (Section~\ref{sec:meth-agentic}, Figure~\ref{fig:agentic-loop}) \\
+\hline
+K6 & Engineering practice &
+Component selection against stated alternatives and rationale
+(Table~\ref{tab:tools}); deployment on constrained infrastructure \\
+\hline
+K7 & Comprehension of the role of engineering in society &
+Access, safety, privacy and environmental analysis (Chapter~\ref{ch:impacts}) \\
+\hline
+K8 & Research literature &
+Two published protocols reconstructed from their source papers and applied with
+declared deviations (Section~\ref{sec:res-protocol}) \\
+\hline
+\end{longtable}
+}

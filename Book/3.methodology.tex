@@ -581,11 +581,63 @@ Chapter~\ref{ch:impacts}.}
 \label{fig:ui-quiz}
 \end{figure}
 
-The counters in Figure~\ref{fig:ui-workspace} distinguish questions that passed
-validation from those kept as overrides. This distinction is shown rather than hidden
-for the reason given in Section~\ref{sec:meth-agentic}: a pipeline that silently
-recorded an exhausted retry budget as a clean pass would report an acceptance rate
-that was a fiction, and the interface is built to make that impossible.
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{ui-upload-live.png}
+\caption{Processing in progress. The agent activity feed streams each orchestrator
+decision as it is taken rather than reporting them only once the run has finished:
+the capture shows six decisions logged at $37\%$ completion, with the DocParser
+having extracted $5{,}593$ characters from $18$ blocks in $0.3$ seconds and the
+Summarizer already started. The stage pills above it track which of OCR, Whisper,
+Summary and RAG is currently active.}
+\label{fig:ui-live}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{ui-agentlog.png}
+\caption{The agent log for a completed document run, with per-agent timing. The
+trail records not only which agent acted but how long each took and which steps the
+orchestrator chose to run concurrently: DocParser completed in $0.3$s, the
+Summarizer in $211.5$s, and RAGBuilder and HintsDetector were dispatched in parallel,
+finishing in $0.6$s and $50.2$s respectively. The pipeline is therefore auditable
+after the fact, which is what makes the timing claims in this chapter checkable
+rather than asserted.}
+\label{fig:ui-agentlog}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{ui-quiz-run.png}
+\caption{A full twenty-question generation. The counters read
+\emph{questions $20/20$, validated $14$, override $6$, retries $29$, agents $4$},
+and the status line states plainly that $14$ passed and $6$ were kept as overrides.
+Twenty accepted questions therefore cost twenty-nine retries, which is the compute
+multiplication discussed in Section~\ref{sec:impacts-economic} made visible.}
+\label{fig:ui-quizrun}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{ui-graded.png}
+\caption{The graded review, with the source panel open. Each item shows the marked
+answer against the student's, the explanation drawn from the retrieved material, and
+the lecture timestamp the question was grounded in; selecting that timestamp opens
+the source at that moment. Items answered incorrectly are separated from those
+answered correctly, so the review surface is also the input to the per-topic
+weakness profile of Section~\ref{sec:meth-grading}.}
+\label{fig:ui-graded}
+\end{figure}
+
+The counters in Figures~\ref{fig:ui-workspace} and~\ref{fig:ui-quizrun} distinguish
+questions that passed validation from those kept as overrides, and
+Figure~\ref{fig:ui-quizrun} is the more informative of the two because it is a run
+in which overrides actually occurred: six of its twenty items exhausted the retry
+budget. This distinction is shown rather than hidden for the reason given in
+Section~\ref{sec:meth-agentic}: a pipeline that silently recorded an exhausted retry
+budget as a clean pass would report an acceptance rate that was a fiction, and the
+interface is built to make that impossible. The same figure is also the honest
+counterweight to the loop's benefits, since it shows what the loop costs.
 
 \subsection{Multi-tier grading and adaptation}
 \label{sec:meth-grading}

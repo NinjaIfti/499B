@@ -19,6 +19,45 @@
 
 \usepackage[noend,ruled,noline,linesnumbered,algochapter]{algorithm2e}
 
+% --- TikZ, for the agentic-loop and pipeline diagrams (Chapters 3 and 4) ------
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc, fit,
+                backgrounds, decorations.pathreplacing}
+\usepackage{xcolor}
+
+% LectureAssist palette -- kept identical to the project poster so that the
+% report and the poster read as one visual system.
+\definecolor{LAindigo}{HTML}{6366F1}
+\definecolor{LAviolet}{HTML}{A78BFA}
+\definecolor{LAcyan}{HTML}{38BDF8}
+\definecolor{LAgreen}{HTML}{34D399}
+\definecolor{LAamber}{HTML}{FBBF24}
+\definecolor{LAred}{HTML}{F87171}
+\definecolor{LAink}{HTML}{2B2C45}
+\definecolor{LAmist}{HTML}{EEF0FD}
+\definecolor{LAslate}{HTML}{64748B}
+
+\tikzset{
+  labox/.style={rectangle, rounded corners=3pt, draw=LAindigo, line width=0.9pt,
+    fill=white, text=LAink, align=center, inner sep=4pt, minimum height=9mm,
+    font=\small\bfseries},
+  laproc/.style={labox, draw=LAviolet, fill=LAviolet!8},
+  lallm/.style={labox, draw=LAamber, fill=LAamber!15},
+  laout/.style={labox, draw=LAgreen, fill=LAgreen!12},
+  laval/.style={labox, draw=LAred, fill=LAred!8},
+  latool/.style={labox, draw=LAcyan, fill=LAcyan!10, dashed},
+  laarr/.style={-{Stealth[length=2.4mm,width=1.8mm]}, line width=0.9pt,
+    draw=LAindigo},
+  laarrg/.style={-{Stealth[length=2.4mm,width=1.8mm]}, line width=0.9pt,
+    draw=LAgreen},
+  laloop/.style={-{Stealth[length=2.4mm,width=1.8mm]}, line width=0.9pt,
+    draw=LAred},
+  laarrc/.style={-{Stealth[length=2.4mm,width=1.8mm]}, line width=0.8pt,
+    draw=LAcyan, dashed},
+  lalbl/.style={font=\scriptsize\itshape, text=LAink, fill=white, inner sep=1.5pt},
+}
+
+
 \usepackage[linktoc=page]{hyperref}
 \usepackage[margin=3cm]{geometry}
 \usepackage{setspace} 

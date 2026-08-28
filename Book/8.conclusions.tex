@@ -1,131 +1,201 @@
-% \chapter{Conclusion}
-% \label{ch:conclusion}
+\chapter{Conclusion}
+\label{ch:conclusion}
 
-% This chapter summarises what was built and what was learned, states the limitations
-% of the work honestly, and sets out the improvements that follow most directly from
-% them.
+This chapter summarises what was built and what was learned, states the limitations
+of the work plainly, and sets out the improvements that follow most directly from
+them.
 
-% \section{Summary}
-% \label{sec:concl-summary}
+\section{Summary}
+\label{sec:concl-summary}
 
-% LectureAssist is an end-to-end, fully local agentic system that turns a raw lecture
-% video or academic document into validated, difficulty-controlled study and assessment
-% material. It fuses two extraction channels --- scene-adaptive OCR that classifies each
-% frame before preprocessing it, so that slides, blackboards, whiteboards and on-screen
-% text are each handled correctly, and Faster-Whisper speech transcription --- into a
-% single timestamped lecture timeline. That timeline is summarised, chunked, embedded
-% and indexed, and then consumed by a multi-agent pipeline that plans questions across
-% topics, retrieves its own evidence when it judges its context insufficient, generates
-% one question at a time, validates each against difficulty, grounding and instruction
-% compliance, and, on failure, chooses \emph{how} to remediate before retrying. Around
-% this sit a retrieval-grounded chat interface, a multi-tier grader that falls back from
-% exact matching through fuzzy similarity to LLM rubric evaluation, and an adaptive
-% engine that steers subsequent quizzes toward the topics a student is weakest on.
-% Everything runs on open-weight Gemma~3 models served locally through Ollama on a
-% single free-tier GPU, with no paid API anywhere in the system.
+LectureAssist is an end-to-end, fully local agentic system that turns a raw
+lecture video or academic document into validated, difficulty-controlled study
+and assessment material. It fuses two extraction channels, scene-adaptive
+optical character recognition that classifies each frame before preprocessing
+it, so that slides, blackboards, whiteboards and on-screen text are each
+handled correctly, and Faster-Whisper speech
+transcription~\cite{radford2023whisper}, into a single timestamped lecture
+timeline. That timeline is summarised, chunked, embedded with
+Sentence-BERT~\cite{reimers2019sbert} and indexed in
+FAISS~\cite{johnson2019faiss}, and is then consumed by a multi-agent pipeline
+that plans questions across topics, retrieves its own evidence when it judges
+its context insufficient, generates one question at a time, validates each
+against difficulty, grounding and instruction compliance, and, on failure,
+chooses \emph{how} to remediate before retrying. Around this sit a
+retrieval-grounded chat interface, a multi-tier grader that falls back from
+exact matching through fuzzy similarity to rubric evaluation by a larger
+model, and an adaptive engine that steers subsequent quizzes toward the topics
+a student is weakest on. Everything runs on open-weight Gemma~3
+models~\cite{gemma3_2025} served locally through Ollama~\cite{ollama} on a
+single free-tier GPU, with no paid API anywhere in the system.
 
-% The project's second contribution is an evaluation that takes seriously a question the
-% field usually does not ask: not \emph{does the generator write good questions}, but
-% \emph{does it mark the right answer}. Question generation and answer generation are
-% treated as two distinct agents, and their answers are cross-checked by having a
-% larger model re-solve every question without seeing the marked option. Measured this
-% way against a plain single-shot baseline on a college calculus chapter, the agentic
-% pipeline wins on judged quality at every difficulty and wins decisively on answer
-% correctness where it matters most --- $99\%$ versus $81\%$ judge-verified on hard
-% questions --- at roughly seven times the wall-clock cost.
+The project has a second contribution that is methodological rather than
+architectural. It takes seriously a question the field usually does not ask: not
+\emph{does the generator write good questions}, but \emph{does it mark the right
+answer}. Question generation and answer generation are treated as two distinct
+agents, and their outputs are cross-checked by having a larger model re-solve every
+generated question without ever seeing the marked option. This is deliberately
+harder to pass than a fluency-based evaluation, and it is the only part of the
+evaluation that can detect the failure mode identified in
+Chapter~\ref{ch:intro}: a question that reads perfectly and is wrong.
 
-% The most instructive result, however, is a negative one. Judge scores turned out to be
-% compressed near the ceiling and to discriminate poorly between pipelines, while the
-% duplicate rate discriminated sharply; and at hard difficulty the agentic pipeline
-% collapses onto a narrow slice of the chapter and repeats itself so badly that a
-% repetition-aware metric ranks the plain baseline \emph{above} it. A quality-only
-% evaluation --- the kind most commonly reported --- would have shown the agentic
-% pipeline winning cleanly across the board and would have concealed this entirely.
+\section{Findings}
+\label{sec:concl-findings}
 
-% \section{Limitations}
-% \label{sec:concl-limits}
+Three findings come out of the evaluation in Chapter~\ref{ch:results}, and they are
+of quite different kinds.
 
-% \paragraph{The judge and the Answer Generator are LLMs, not humans.} All quality
-% scores are produced by \texttt{gemma3:12b} rather than by human raters. LLM judges are
-% known to reward fluency and verbosity, and the judge here shares a model family with
-% the generator, so it plausibly shares its blind spots. Absolute scores should be read
-% as a relative signal between pipelines, not as an objective measure of question
-% quality.
+\paragraph{The agentic pipeline beats single-shot prompting on every metric that
+discriminates.} Measured against a plain single-pass baseline on a college calculus
+chapter at $n{=}200$ questions per pipeline, the agentic loop produces fewer
+near-duplicate questions ($0.280$ against $0.385$), is better grounded in the source
+text ($0.624$ against $0.557$), achieves a higher effective acceptance rate ($0.720$
+against $0.612$), and agrees more often with an independent solver ($0.970$ against
+$0.940$). The result holds at all three target difficulties without a single
+reversal, and the margin widens as difficulty rises, on hard questions the agentic
+pipeline roughly halves the duplicate rate. Four independent measures, three
+difficulty strata, one direction: that consistency is what makes the finding
+credible.
 
-% \paragraph{The Answer Generator is weak, which bounds every answer-correctness
-% number.} On the known-answer calibration set the solver scores only $55\%$, and the
-% generator model $70\%$. Generator--solver agreement of $88$--$97\%$ therefore cannot be
-% interpreted as that fraction of questions being verifiably correct; two models from
-% the same family agree partly because they behave alike. This is why the calibration is
-% reported --- but it means the answer-correctness results establish a ranking between
-% pipelines, not a trustworthy absolute correctness rate. A stronger or
-% non-Gemma solver would tighten this considerably.
+\paragraph{The most instructive finding is that the obvious metrics do not work.}
+All four judged quality dimensions saturate. Every value falls between $4.36$ and
+$5.00$ on a five-point scale and correctness reaches the ceiling exactly, so the
+apparent agentic wins on those rows, $4.93$ against $4.86$, $5.00$ against $4.98$, carry almost no information. A metric that cannot go up cannot discriminate.
+This is not a peculiarity of our judge; the same collapse of judged quality scales
+is reported across the educational question-generation literature reviewed in
+Chapter~\ref{ch:background}, for every strong model tested. The practical
+consequence is significant and generalises
+beyond this project: \textbf{an evaluation of automatic question generation that
+reports only judged quality scores will conclude that every reasonable system is
+excellent and that none is distinguishable from any other.} The signal in this study
+lives entirely in the automated corpus-level measures, duplication, grounding,
+effective acceptance and independent answer match, and a study that had not
+computed them would have found nothing at all.
 
-% \paragraph{The CoT and PoT comparison is not yet complete.} The four-pipeline run is
-% implemented and the prompts are fixed, but the completed measurements reported in
-% Chapter~\ref{ch:results} cover the agentic versus plain non-agentic comparison; the
-% CoT and PoT rows are shown as pending rather than filled with estimates.
+\paragraph{Winning as a whole is not the same as knowing why.} The measurement
+establishes that the five-agent pipeline outperforms one LLM call. It does not
+establish which of the five agents is responsible, and the pipeline costs roughly an
+order of magnitude more compute than the call it beats. The mechanism proposed in
+Section~\ref{sec:res-discuss}: that validation and reasoned retry suppress
+duplication and pull generation back toward the source, is consistent with every
+number in the study and is not established by any of them. It is labelled a
+hypothesis throughout this report for that reason, and the leave-one-out and merging
+families of Section~\ref{sec:res-ablation} exist specifically to test it.
 
-% \paragraph{Single domain, single document.} All results come from one chapter of one
-% subject (limits, from OpenStax \emph{Calculus, Volume~1}). Mathematics is unusually
-% favourable to program-of-thought prompting and unusually hostile to OCR, and nothing
-% here establishes that the findings transfer to a humanities lecture or to a
-% lab-based science course.
+\section{Limitations}
+\label{sec:concl-limits}
 
-% \paragraph{The extraction layer bounds everything above it.} OCR on handwritten
-% board work is imperfect, transcription degrades with accent and background noise, and
-% mathematics rendered as an image in a PDF is not extracted at all. Every defect in
-% extraction propagates silently upward: a missing board block looks exactly like a
-% board that was never written on, and the question generator has no way to know that
-% material is absent.
+\paragraph{The pipeline labelling rests on generation records, not on the
+artifacts.} As disclosed in Section~\ref{sec:res-native}, the two arms were
+interchanged at generation time and the correction was applied afterwards. The
+script that assigned the original labels is no longer in the repository, so the
+assignment cannot be re-derived from the stored corpus, whose JSON keys still carry
+the uncorrected labels. Every headline result in this report depends on that
+correction being right. This is the single most consequential limitation of the work
+and it is placed first for that reason; the remedy is a confirming re-run, and it is
+the first item in Section~\ref{sec:concl-future}.
 
-% \paragraph{The agentic pipeline's diversity failure at hard difficulty is unresolved.}
-% It is measured, diagnosed --- the planner and retriever converge on the narrow region
-% of the chapter that supports difficult questions, and each retry draws from that same
-% region again --- and reported, but not yet fixed.
+\paragraph{The judge and the Answer Generator are language models, not humans.} All
+quality scores come from \texttt{gemma3:12b} rather than from human raters. LLM
+judges are known to reward fluency and verbosity~\cite{zheng2023judging}, and this
+judge shares a model family with the generator it grades, so it plausibly shares its
+blind spots. Absolute scores should be read as a relative signal between pipelines,
+never as an objective measure of pedagogical quality.
 
-% \paragraph{Deployment is not production-grade.} The system runs on a free Colab
-% runtime behind an ngrok tunnel, with a single-user interface, no authentication, and
-% session state on Google Drive. This is adequate to demonstrate and evaluate the
-% system; it is not a deployable service.
+\paragraph{Generator--solver agreement is not the same as correctness.} The
+independent-match rate measures how often two models agree, and two models drawn from
+the same family agree partly because they fail in the same way. If generator and
+solver share a misconception they agree and are both wrong, and the metric records a
+success. The calibration set exists precisely to bound this, both models solve
+items whose answers are known independently, with the computational items machine-
+computed using SymPy~\cite{sympy} rather than typed by hand, but until that
+calibration is reported the answer-correctness figures establish a \emph{ranking}
+between pipelines rather than a trustworthy absolute correctness rate.
 
-% \section{Future Improvement}
-% \label{sec:concl-future}
+\paragraph{The result is a comparison of two pipelines, not an attribution.} The
+evaluation establishes that the full agentic loop outperforms a single-shot
+baseline. It does not identify which of the five agents produces that advantage,
+because a configuration that wins as a whole cannot be decomposed by observing
+it. The ablation and merging designs of Section~\ref{sec:res-ablation} are
+specified precisely to close that gap, and until they are carried out the
+attribution of the advantage to any particular agent stays an inference drawn
+from the mechanism rather than a measured result.
 
-% \paragraph{Fix the diversity collapse first.} It is the clearest defect the evaluation
-% exposed and the one that currently negates the agentic pipeline's advantage on hard
-% questions. Two mechanisms follow directly from the diagnosis: maintain a coverage map
-% of which regions of the document have already been used and penalise the planner for
-% returning to them, and make the generator aware of the questions already produced in
-% the current run so that a retry is required to be \emph{different}, not merely
-% \emph{valid}. A duplicate check could also be moved inside the validation loop, so
-% that a repetitive question is rejected at generation time rather than discovered at
-% evaluation time.
+\paragraph{Single domain, single document.} All results come from one chapter of one
+subject: limits, from OpenStax \emph{Calculus, Volume~1}~\cite{openstax_calculus}.
+Mathematics is unusually favourable to program-of-thought
+prompting~\cite{chen2023pot} and unusually hostile to OCR, and nothing here
+establishes that these findings transfer to a humanities lecture, a lab-based
+science course, or material whose structure is narrative rather than definitional.
 
-% \paragraph{Strengthen answer verification.} The weakest link in the evaluation is the
-% solver. Verifying computational answers symbolically with SymPy --- as is already done
-% when constructing the calibration set --- would replace an LLM's opinion with a
-% machine-checked fact for exactly the question type where the generator is most likely
-% to be wrong. Using a solver from a different model family, or an ensemble, would
-% break the shared-blind-spot problem that currently inflates the agreement rate.
+\paragraph{The extraction layer bounds everything above it.} OCR on handwritten
+board work is imperfect, transcription degrades with accent and background noise, and
+mathematics rendered as an image inside a PDF is not extracted at all. Every defect
+in extraction propagates silently upward, and silence is the problem: a missing board
+block is indistinguishable from a board that was never written on, so the question
+generator cannot know that material is absent and cannot flag it.
 
-% \paragraph{Human evaluation.} A modest human study --- a few instructors rating a
-% sample of generated questions, and independently answering them --- would anchor the
-% LLM judge to a ground truth and quantify how far its scores can be trusted. This is
-% the single highest-value addition to the evaluation.
+\paragraph{Deployment is not production-grade.} The system runs on a free Colab
+runtime behind an ngrok tunnel, with a single-user interface, no authentication, and
+session state on Google Drive. This is adequate to demonstrate and evaluate the
+system; it is not a deployable service, and the security posture in particular,
+an unauthenticated public tunnel to a machine holding uploaded course material,
+would need to be addressed before any real use.
 
-% \paragraph{Broaden the domain.} Repeating the comparison on a non-mathematical subject
-% would test whether the agentic advantage in answer correctness is general or is an
-% artifact of a domain in which answers are computed and therefore easy to get wrong.
+\section{Future Improvement}
+\label{sec:concl-future}
 
-% \paragraph{Complete and extend the pipeline comparison.} Finishing the CoT and PoT
-% runs will answer whether a better prompt can recover most of the agentic pipeline's
-% benefit at a fraction of its cost --- a question with direct practical consequences,
-% given the seven-fold cost difference. A hybrid worth testing is a CoT or PoT generator
-% placed \emph{inside} the agentic validate-and-retry loop, combining derived answers
-% with external validation.
+\paragraph{Confirm the arm labelling before anything else.} A single re-run of the
+two pipelines with the labelling recorded end to end, in the artifact itself rather
+than in a separate script, would settle the question on which every result in this
+report depends. It is cheap relative to everything else proposed here and it should
+be done first. The lesson generalises: provenance should be written into the
+artifact at generation time, not reconstructed afterwards.
 
-% \paragraph{Productionisation.} Multi-user support with authentication, a persistent
-% server rather than an ephemeral notebook runtime, and quantised models for lower-VRAM
-% consumer GPUs would move the system from a demonstrated prototype toward something a
-% class of students could actually use.
+\paragraph{Run the ablations, and read them against cost.} The leave-one-out and
+merging families are designed, specified and in two cases already implemented. They
+are what turns ``the pipeline wins'' into ``this agent is why, and it costs this
+much''. The $-$\, validator and $-$\, refiner pair is the sharpest of them, because it
+separates \emph{detecting} a bad question from \emph{acting} on that detection,
+and if detection alone captures most of the benefit, the refiner call can be removed
+outright for a substantial saving.
+
+\paragraph{Evaluate under a published benchmark.} Every result in this report
+comes from metrics defined by this project. That is enough to rank two pipelines
+against each other, but it cannot say how the system compares with work published
+elsewhere, because nobody else reports these numbers. Scoring the existing corpus
+under one of the standard educational question-generation protocols surveyed in
+Chapter~\ref{ch:background} would place this system beside published figures on a
+published instrument, which no amount of project-native metrics can substitute
+for. Two such harnesses were written during this project and are available to be
+run against the existing corpus.
+
+\paragraph{Strengthen answer verification.} The weakest link in the evaluation is the
+solver. Verifying computational answers symbolically with SymPy, as is already
+done when constructing the calibration set, would replace a model opinion with a
+machine-checked fact for exactly the question type where a generator is most likely
+to be wrong. Using a solver from a different model family, or an ensemble, would
+break the shared-blind-spot problem that currently inflates the agreement rate.
+
+\paragraph{Human evaluation.} A modest human study: a few instructors rating a
+sample of generated questions and independently answering them, would anchor the
+LLM judge to a ground truth and quantify how far its scores can be trusted. Given
+that the judged dimensions saturate, the most valuable design would not ask
+instructors to score quality on a scale at all, but to make forced-choice
+comparisons between paired questions from the two pipelines, which does not suffer
+from ceiling effects.
+
+\paragraph{Broaden the domain.} Repeating the comparison on a non-mathematical
+subject would test whether the agentic advantage is general or is an artifact of a
+domain in which answers are computed and therefore easy to get wrong. A humanities
+lecture, where grounding is harder to measure and correctness is less binary, is the
+sharpest available test.
+
+\paragraph{Close the loop on diversity.} Duplicate rate is the metric on which the
+agentic pipeline earns its advantage, and it is still far from zero: better than
+one question in four is a near-duplicate of another. Two mechanisms follow directly
+from the diagnosis, maintaining a coverage map of which regions of the document
+have already been used and penalising the planner for returning to them, and moving
+the duplicate check inside the validation loop so that a repetitive question is
+rejected at generation time rather than discovered at evaluation time. The second is
+a small change with a measurable payoff and is the natural next engineering step.

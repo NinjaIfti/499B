@@ -1,4 +1,4 @@
-This is LuaHBTeX, Version 1.24.0 (MiKTeX 25.12) (format=lualatex 2026.6.22)  17 AUG 2026 12:51
+This is LuaHBTeX, Version 1.24.0 (MiKTeX 25.12) (format=lualatex 2026.6.19)  28 AUG 2026 20:43
  restricted system commands enabled.
 **poster.tex
 (./poster.tex
@@ -8,11 +8,11 @@ Lua module: luaotfload 2024-12-03 v3.29 Lua based OpenType font support
 Lua module: lualibs 2023-07-13 v2.76 ConTeXt Lua standard libraries.
 Lua module: lualibs-extended 2023-07-13 v2.76 ConTeXt Lua libraries -- extended 
 collection.
-luaotfload | conf : Root cache directory is "C:/Users/pc/AppData/Local/MiKTeX/lu
-atex-cache/generic/names".
+luaotfload | conf : Root cache directory is "C:/Users/I-Bros/AppData/Local/MiKTe
+X/luatex-cache/generic/names".
 luaotfload | init : Loading fontloader "fontloader-2023-12-28.lua" from kpse-res
-olved path "C:/Program Files/MiKTeX/tex/luatex/luaotfload/fontloader-2023-12-28.
-lua".
+olved path "C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/luatex/luaotfload/
+fontloader-2023-12-28.lua".
 Lua-only attribute luaotfload@noligature = 1
 luaotfload | init : Context OpenType loader version 3.134
 Inserting `luaotfload.node_processor' in `pre_linebreak_filter'.
@@ -20,8 +20,8 @@ Inserting `luaotfload.node_processor' in `hpack_filter'.
 Inserting `luaotfload.glyph_stream' in `glyph_stream_provider'.
 Inserting `luaotfload.define_font' in `define_font'.
 Lua-only attribute luaotfload_color_attribute = 2
-luaotfload | conf : Root cache directory is "C:/Users/pc/AppData/Local/MiKTeX/lu
-atex-cache/generic/names".
+luaotfload | conf : Root cache directory is "C:/Users/I-Bros/AppData/Local/MiKTe
+X/luatex-cache/generic/names".
 Inserting `luaotfload.harf.strip_prefix' in `find_opentype_file'.
 Inserting `luaotfload.harf.strip_prefix' in `find_truetype_file'.
 Removing  `luaotfload.glyph_stream' from `glyph_stream_provider'.
@@ -39,11 +39,13 @@ Inserting `luaotfload.aux.fixup_fontdata' in `luaotfload.patch_font_unsafe'.
 Inserting `luaotfload.aux.set_capheight' in `luaotfload.patch_font'.
 Inserting `luaotfload.aux.set_xheight' in `luaotfload.patch_font'.
 Inserting `luaotfload.rewrite_fontname' in `luaotfload.patch_font'.
-Inserting `tracingstacklevels' in `input_level_string'. ("C:/Program Files/MiKT
-eX/tex/latex/beamer/beamer.cls"
+Inserting `tracingstacklevels' in `input_level_string'. (C:/Users/I-Bros/AppDat
+a/Local/Programs/MiKTeX/tex/latex/beamer/beamer.cls
 Document Class: beamer 2026/01/22 v3.77 A class for typesetting presentations
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbasemodes.sty"
-("C:/Program Files/MiKTeX/tex/latex/etoolbox/etoolbox.sty"
+
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbasemodes
+.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/etoolbox/etoolbox.sty
 Package: etoolbox 2025/10/02 v2.5m e-TeX tools for LaTeX (JAW)
 \etb@tempcnta=\count273
 )
@@ -51,7 +53,8 @@ Package: etoolbox 2025/10/02 v2.5m e-TeX tools for LaTeX (JAW)
 \beamer@tempcount=\count274
 \c@beamerpauses=\count275
 
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbasedecode.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbasedecod
+e.sty
 \beamer@slideinframe=\count276
 \beamer@minimum=\count277
 \beamer@decode@box=\box54
@@ -59,7 +62,7 @@ Package: etoolbox 2025/10/02 v2.5m e-TeX tools for LaTeX (JAW)
 \beamer@commentbox=\box55
 \beamer@modecount=\count278
 )
-("C:/Program Files/MiKTeX/tex/generic/iftex/iftex.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/iftex/iftex.sty
 Package: iftex 2024/12/12 v1.0g TeX engine tests
 )
 \headdp=\dimen147
@@ -106,18 +109,19 @@ Package: iftex 2024/12/12 v1.0g TeX engine tests
 \beamer@toclastsection=\count297
 \beamer@tocsectionnumber=\count298
 
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbaseoptions.sty"
-("C:/Program Files/MiKTeX/tex/latex/graphics/keyval.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbaseoptio
+ns.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/graphics/keyval.sty
 Package: keyval 2022/05/29 v1.15 key=value parser (DPC)
 \KV@toks@=\toks17
 ))
 \beamer@paperwidth=\skip50
 \beamer@paperheight=\skip51
 
-("C:/Program Files/MiKTeX/tex/latex/geometry/geometry.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/geometry/geometry.sty
 Package: geometry 2026/03/07 v6.0 Page Geometry
 
-("C:/Program Files/MiKTeX/tex/generic/iftex/ifvtex.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/iftex/ifvtex.sty
 Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
 )
 \Gm@cnth=\count299
@@ -133,31 +137,41 @@ Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
 \Gm@layoutvoffset=\dimen170
 \Gm@dimlist=\toks18
 
-("C:/Program Files/MiKTeX/tex/latex/geometry/geometry.cfg"))
-("C:/Program Files/MiKTeX/tex/latex/pgf/math/pgfmath.sty"
-("C:/Program Files/MiKTeX/tex/latex/pgf/utilities/pgfrcs.sty"
-("C:/Program Files/MiKTeX/tex/generic/pgf/utilities/pgfutil-common.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/geometry/geometry.cfg))
+ (C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/pgf/math/pgfmath.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/pgf/utilities/pgfrcs.s
+ty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/utilities/pgfuti
+l-common.tex
 \pgfutil@everybye=\toks19
 \pgfutil@tempdima=\dimen171
 \pgfutil@tempdimb=\dimen172
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/utilities/pgfutil-latex.def"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/utilities/pgfuti
+l-latex.def
 \pgfutil@abb=\box62
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/utilities/pgfrcs.code.tex"
-("C:/Program Files/MiKTeX/tex/generic/pgf/pgf.revision.tex")
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/utilities/pgfrcs
+.code.tex
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/pgf.revision.tex
+)
 Package: pgfrcs 2025-08-29 v3.1.11a (3.1.11a)
 ))
-("C:/Program Files/MiKTeX/tex/latex/pgf/utilities/pgfkeys.sty"
-("C:/Program Files/MiKTeX/tex/generic/pgf/utilities/pgfkeys.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/pgf/utilities/pgfkeys.
+sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/utilities/pgfkey
+s.code.tex
 \pgfkeys@pathtoks=\toks20
 \pgfkeys@temptoks=\toks21
 
-("C:/Program Files/MiKTeX/tex/generic/pgf/utilities/pgfkeyslibraryfiltered.code
-.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/utilities/pgfkey
+slibraryfiltered.code.tex
 \pgfkeys@tmptoks=\toks22
-))) ("C:/Program Files/MiKTeX/tex/generic/pgf/math/pgfmath.code.tex"
-("C:/Program Files/MiKTeX/tex/generic/pgf/math/pgfmathutil.code.tex"
+)))
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/math/pgfmath.cod
+e.tex
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/math/pgfmathutil
+.code.tex
 \pgf@x=\dimen173
 \pgf@xa=\dimen174
 \pgf@xb=\dimen175
@@ -171,7 +185,8 @@ Package: pgfrcs 2025-08-29 v3.1.11a (3.1.11a)
 \c@pgf@countc=\count304
 \c@pgf@countd=\count305
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/math/pgfmathparser.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/math/pgfmathpars
+er.code.tex
 \pgfmath@dimen=\dimen181
 \pgfmath@count=\count306
 \pgfmath@box=\box63
@@ -179,49 +194,62 @@ Package: pgfrcs 2025-08-29 v3.1.11a (3.1.11a)
 \pgfmath@stack@operand=\toks24
 \pgfmath@stack@operation=\toks25
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/math/pgfmathfunctions.code.tex")
-("C:/Program Files/MiKTeX/tex/generic/pgf/math/pgfmathfunctions.basic.code.tex"
-)
-("C:/Program Files/MiKTeX/tex/generic/pgf/math/pgfmathfunctions.trigonometric.c
-ode.tex")
-("C:/Program Files/MiKTeX/tex/generic/pgf/math/pgfmathfunctions.random.code.tex
-")
-("C:/Program Files/MiKTeX/tex/generic/pgf/math/pgfmathfunctions.comparison.code
-.tex")
-("C:/Program Files/MiKTeX/tex/generic/pgf/math/pgfmathfunctions.base.code.tex") ("C:/Program Files/MiKTeX/tex/generic/pgf/math/pgfmathfunctions.round.code.tex") ("C:/Program Files/MiKTeX/tex/generic/pgf/math/pgfmathfunctions.misc.code.tex")
-("C:/Program Files/MiKTeX/tex/generic/pgf/math/pgfmathfunctions.integerarithmet
-ics.code.tex")
-("C:/Program Files/MiKTeX/tex/generic/pgf/math/pgfmathcalc.code.tex")
-("C:/Program Files/MiKTeX/tex/generic/pgf/math/pgfmathfloat.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/math/pgfmathfunc
+tions.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/math/pgfmathfunc
+tions.basic.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/math/pgfmathfunc
+tions.trigonometric.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/math/pgfmathfunc
+tions.random.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/math/pgfmathfunc
+tions.comparison.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/math/pgfmathfunc
+tions.base.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/math/pgfmathfunc
+tions.round.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/math/pgfmathfunc
+tions.misc.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/math/pgfmathfunc
+tions.integerarithmetics.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/math/pgfmathcalc
+.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/math/pgfmathfloa
+t.code.tex
 \c@pgfmathroundto@lastzeros=\count307
 )))
-("C:/Program Files/MiKTeX/tex/latex/base/size11.clo"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/base/size11.clo
 File: size11.clo 2025/01/22 v1.4n Standard LaTeX file (size option)
-luaotfload | db : Font names database loaded from C:/Users/pc/AppData/Local/MiKT
-eX/luatex-cache/generic/names/luaotfload-names.luc.gz)
-("C:/Program Files/MiKTeX/tex/latex/pgf/basiclayer/pgfcore.sty"
-("C:/Program Files/MiKTeX/tex/latex/graphics/graphicx.sty"
+luaotfload | db : Font names database loaded from C:/Users/I-Bros/AppData/Local/
+MiKTeX/luatex-cache/generic/names/luaotfload-names.luc.gz)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/pgf/basiclayer/pgfcore
+.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/graphics/graphicx.sty
 Package: graphicx 2024/12/31 v1.2e Enhanced LaTeX Graphics (DPC,SPQR)
 
-("C:/Program Files/MiKTeX/tex/latex/graphics/graphics.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/graphics/graphics.sty
 Package: graphics 2024/08/06 v1.4g Standard LaTeX Graphics (DPC,SPQR)
 
-("C:/Program Files/MiKTeX/tex/latex/graphics/trig.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/graphics/trig.sty
 Package: trig 2023/12/02 v1.11 sin cos tan (DPC)
 )
-("C:/Program Files/MiKTeX/tex/latex/graphics-cfg/graphics.cfg"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/graphics-cfg/graphics.
+cfg
 File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
 )
 Package graphics Info: Driver file: luatex.def on input line 106.
 
-("C:/Program Files/MiKTeX/tex/latex/graphics-def/luatex.def"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/graphics-def/luatex.de
+f
 File: luatex.def 2025/09/29 v1.2f Graphics/color driver for luatex
 ))
 \Gin@req@height=\dimen182
 \Gin@req@width=\dimen183
 )
-("C:/Program Files/MiKTeX/tex/latex/pgf/systemlayer/pgfsys.sty"
-("C:/Program Files/MiKTeX/tex/generic/pgf/systemlayer/pgfsys.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/pgf/systemlayer/pgfsys
+.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/systemlayer/pgfs
+ys.code.tex
 Package: pgfsys 2025-08-29 v3.1.11a (3.1.11a)
 \pgf@x=\dimen184
 \pgf@y=\dimen185
@@ -244,33 +272,40 @@ Package: pgfsys 2025-08-29 v3.1.11a (3.1.11a)
 \t@pgf@tokc=\toks28
 \pgf@sys@id@count=\count312
 
-("C:/Program Files/MiKTeX/tex/generic/pgf/systemlayer/pgf.cfg"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/systemlayer/pgf.
+cfg
 File: pgf.cfg 2025-08-29 v3.1.11a (3.1.11a)
 )
 Driver file for pgf: pgfsys-luatex.def
 
-("C:/Program Files/MiKTeX/tex/generic/pgf/systemlayer/pgfsys-luatex.def"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/systemlayer/pgfs
+ys-luatex.def
 File: pgfsys-luatex.def 2025-08-29 v3.1.11a (3.1.11a)
 
-("C:/Program Files/MiKTeX/tex/generic/pgf/systemlayer/pgfsys-common-pdf.def"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/systemlayer/pgfs
+ys-common-pdf.def
 File: pgfsys-common-pdf.def 2025-08-29 v3.1.11a (3.1.11a)
-))) ("C:/Program Files/MiKTeX/tex/generic/pgf/systemlayer/pgfsyssoftpath.code.t
-ex"
+)))
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/systemlayer/pgfs
+yssoftpath.code.tex
 File: pgfsyssoftpath.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgfsyssoftpath@smallbuffer@items=\count313
 \pgfsyssoftpath@bigbuffer@items=\count314
-) ("C:/Program Files/MiKTeX/tex/generic/pgf/systemlayer/pgfsysprotocol.code.tex
-"
+)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/systemlayer/pgfs
+ysprotocol.code.tex
 File: pgfsysprotocol.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-)) ("C:/Program Files/MiKTeX/tex/latex/xcolor/xcolor.sty"
+))
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty
 Package: xcolor 2024/09/29 v3.02 LaTeX color extensions (UK)
 
-("C:/Program Files/MiKTeX/tex/latex/graphics-cfg/color.cfg"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/graphics-cfg/color.cfg
 File: color.cfg 2016/01/02 v1.6 sample color configuration
 )
 Package xcolor Info: Driver file: luatex.def on input line 274.
 
-("C:/Program Files/MiKTeX/tex/latex/graphics/mathcolor.ltx")
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/graphics/mathcolor.ltx
+)
 Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1349.
 Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1353.
 Package xcolor Info: Model `RGB' extended on input line 1365.
@@ -281,11 +316,14 @@ Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1370.
 Package xcolor Info: Model `Gray' substituted by `gray' on input line 1371.
 Package xcolor Info: Model `wave' substituted by `hsb' on input line 1372.
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/basiclayer/pgfcore.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/basiclayer/pgfco
+re.code.tex
 Package: pgfcore 2025-08-29 v3.1.11a (3.1.11a)
 
-("C:/Program Files/MiKTeX/tex/generic/pgf/math/pgfint.code.tex")
-("C:/Program Files/MiKTeX/tex/generic/pgf/basiclayer/pgfcorepoints.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/math/pgfint.code
+.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/basiclayer/pgfco
+repoints.code.tex
 File: pgfcorepoints.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgf@picminx=\dimen194
 \pgf@picmaxx=\dimen195
@@ -302,102 +340,122 @@ File: pgfcorepoints.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgf@zx=\dimen262
 \pgf@zy=\dimen263
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/basiclayer/pgfcorepathconstruct.code.
-tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/basiclayer/pgfco
+repathconstruct.code.tex
 File: pgfcorepathconstruct.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgf@path@lastx=\dimen264
 \pgf@path@lasty=\dimen265
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/basiclayer/pgfcorepathusage.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/basiclayer/pgfco
+repathusage.code.tex
 File: pgfcorepathusage.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgf@shorten@end@additional=\dimen266
 \pgf@shorten@start@additional=\dimen267
-) ("C:/Program Files/MiKTeX/tex/generic/pgf/basiclayer/pgfcorescopes.code.tex"
+)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/basiclayer/pgfco
+rescopes.code.tex
 File: pgfcorescopes.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgfpic=\box64
 \pgf@hbox=\box65
 \pgf@layerbox@main=\box66
 \pgf@picture@serial@count=\count315
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/basiclayer/pgfcoregraphicstate.code.t
-ex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/basiclayer/pgfco
+regraphicstate.code.tex
 File: pgfcoregraphicstate.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgflinewidth=\dimen268
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/basiclayer/pgfcoretransformations.cod
-e.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/basiclayer/pgfco
+retransformations.code.tex
 File: pgfcoretransformations.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgf@pt@x=\dimen269
 \pgf@pt@y=\dimen270
 \pgf@pt@temp=\dimen271
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/basiclayer/pgfcorequick.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/basiclayer/pgfco
+requick.code.tex
 File: pgfcorequick.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/basiclayer/pgfcoreobjects.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/basiclayer/pgfco
+reobjects.code.tex
 File: pgfcoreobjects.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/basiclayer/pgfcorepathprocessing.code
-.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/basiclayer/pgfco
+repathprocessing.code.tex
 File: pgfcorepathprocessing.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/basiclayer/pgfcorearrows.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/basiclayer/pgfco
+rearrows.code.tex
 File: pgfcorearrows.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgfarrowsep=\dimen272
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/basiclayer/pgfcoreshade.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/basiclayer/pgfco
+reshade.code.tex
 File: pgfcoreshade.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgf@max=\dimen273
 \pgf@sys@shading@range@num=\count316
 \pgf@shadingcount=\count317
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/basiclayer/pgfcoreimage.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/basiclayer/pgfco
+reimage.code.tex
 File: pgfcoreimage.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/basiclayer/pgfcoreexternal.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/basiclayer/pgfco
+reexternal.code.tex
 File: pgfcoreexternal.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgfexternal@startupbox=\box67
-) ("C:/Program Files/MiKTeX/tex/generic/pgf/basiclayer/pgfcorelayers.code.tex"
+)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/basiclayer/pgfco
+relayers.code.tex
 File: pgfcorelayers.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/basiclayer/pgfcoretransparency.code.t
-ex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/basiclayer/pgfco
+retransparency.code.tex
 File: pgfcoretransparency.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/basiclayer/pgfcorepatterns.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/basiclayer/pgfco
+repatterns.code.tex
 File: pgfcorepatterns.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-) ("C:/Program Files/MiKTeX/tex/generic/pgf/basiclayer/pgfcorerdf.code.tex"
+)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/basiclayer/pgfco
+rerdf.code.tex
 File: pgfcorerdf.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 )))
-("C:/Program Files/MiKTeX/tex/latex/pgf/utilities/xxcolor.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/pgf/utilities/xxcolor.
+sty
 Package: xxcolor 2003/10/24 ver 0.1
 \XC@nummixins=\count318
 \XC@countmixins=\count319
 )
-("C:/Program Files/MiKTeX/tex/latex/base/atbegshi-ltx.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/base/atbegshi-ltx.sty
 Package: atbegshi-ltx 2021/01/10 v1.0c Emulation of the original atbegshi
 package with kernel methods
-)
-("C:/Program Files/MiKTeX/tex/latex/hyperref/hyperref.sty"
+) (C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/hyperref/hyperref.st
+y
 Package: hyperref 2025-07-12 v7.01o Hypertext links for LaTeX
 
-("C:/Program Files/MiKTeX/tex/latex/kvsetkeys/kvsetkeys.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/kvsetkeys/kvsetkeys.st
+y
 Package: kvsetkeys 2022-10-05 v1.19 Key value parser (HO)
 )
-("C:/Program Files/MiKTeX/tex/generic/kvdefinekeys/kvdefinekeys.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/kvdefinekeys/kvdefin
+ekeys.sty
 Package: kvdefinekeys 2019-12-19 v1.6 Define keys (HO)
 )
-("C:/Program Files/MiKTeX/tex/generic/pdfescape/pdfescape.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pdfescape/pdfescape.
+sty
 Package: pdfescape 2019/12/09 v1.15 Implements pdfTeX's escape features (HO)
 
-("C:/Program Files/MiKTeX/tex/generic/ltxcmds/ltxcmds.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/ltxcmds/ltxcmds.sty
 Package: ltxcmds 2023-12-04 v1.26 LaTeX kernel commands for general use (HO)
 )
-("C:/Program Files/MiKTeX/tex/generic/pdftexcmds/pdftexcmds.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pdftexcmds/pdftexcmd
+s.sty
 Package: pdftexcmds 2020-06-27 v0.33 Utility functions of pdfTeX for LuaTeX (HO
 )
 
-("C:/Program Files/MiKTeX/tex/generic/infwarerr/infwarerr.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/infwarerr/infwarerr.
+sty
 Package: infwarerr 2019/12/03 v1.5 Providing info/warning/error messages (HO)
 )
 Package pdftexcmds Info: \pdf@primitive is available.
@@ -405,24 +463,27 @@ Package pdftexcmds Info: \pdf@ifprimitive is available.
 Package pdftexcmds Info: \pdfdraftmode found.
 \pdftexcmds@toks=\toks29
 ))
-("C:/Program Files/MiKTeX/tex/latex/hycolor/hycolor.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/hycolor/hycolor.sty
 Package: hycolor 2020-01-27 v1.10 Color options for hyperref/bookmark (HO)
 )
-("C:/Program Files/MiKTeX/tex/latex/hyperref/nameref.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/hyperref/nameref.sty
 Package: nameref 2025-06-21 v2.57 Cross-referencing by name of section
 
-("C:/Program Files/MiKTeX/tex/latex/refcount/refcount.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/refcount/refcount.sty
 Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
 )
-("C:/Program Files/MiKTeX/tex/generic/gettitlestring/gettitlestring.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/gettitlestring/getti
+tlestring.sty
 Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 
-("C:/Program Files/MiKTeX/tex/latex/kvoptions/kvoptions.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/kvoptions/kvoptions.st
+y
 Package: kvoptions 2022-06-15 v3.15 Key value format for package options (HO)
 ))
 \c@section@level=\count320
 )
-("C:/Program Files/MiKTeX/tex/generic/stringenc/stringenc.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/stringenc/stringenc.
+sty
 Package: stringenc 2019/11/29 v1.12 Convert strings between diff. encodings (HO
 )
 )
@@ -430,15 +491,14 @@ Package: stringenc 2019/11/29 v1.12 Convert strings between diff. encodings (HO
 \Hy@linkcounter=\count321
 \Hy@pagecounter=\count322
 
-("C:/Program Files/MiKTeX/tex/latex/hyperref/pd1enc.def"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/hyperref/pd1enc.def
 File: pd1enc.def 2025-07-12 v7.01o Hyperref: PDFDocEncoding definition (HO)
 )
-("C:/Program Files/MiKTeX/tex/generic/intcalc/intcalc.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/intcalc/intcalc.sty
 Package: intcalc 2019/12/15 v1.3 Expandable calculations with integers (HO)
 )
 \Hy@SavedSpaceFactor=\count323
-
-("C:/Program Files/MiKTeX/tex/latex/hyperref/puenc.def"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/hyperref/puenc.def
 File: puenc.def 2025-07-12 v7.01o Hyperref: PDF Unicode definition (HO)
 )
 Package hyperref Info: Option `final' set `true' on input line 4066.
@@ -454,17 +514,18 @@ Package hyperref Info: Implicit mode OFF; no redefinition of LaTeX internals.
 Package hyperref Info: Bookmarks ON on input line 4462.
 \c@Hy@tempcnt=\count324
 
-("C:/Program Files/MiKTeX/tex/latex/url/url.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/url/url.sty
 \Urlmuskip=\muskip17
 Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
 )
 LaTeX Info: Redefining \url on input line 4801.
 \XeTeXLinkMargin=\dimen275
 
-("C:/Program Files/MiKTeX/tex/generic/bitset/bitset.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/bitset/bitset.sty
 Package: bitset 2019/12/09 v1.3 Handle bit-vector datatype (HO)
 
-("C:/Program Files/MiKTeX/tex/generic/bigintcalc/bigintcalc.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/bigintcalc/bigintcal
+c.sty
 Package: bigintcalc 2019/12/15 v1.5 Expandable calculations on big integers (HO
 )
 ))
@@ -485,27 +546,32 @@ Package hyperref Message: Stopped early.
 
 )
 Package hyperref Info: Driver (autodetected): hluatex.
- ("C:/Program Files/MiKTeX/tex/latex/hyperref/hluatex.def"
+ (C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/hyperref/hluatex.def
 File: hluatex.def 2025-07-12 v7.01o Hyperref driver for luaTeX
 \Fld@listcount=\count327
 \c@bookmark@seq@number=\count328
 
-("C:/Program Files/MiKTeX/tex/latex/rerunfilecheck/rerunfilecheck.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/rerunfilecheck/rerunfi
+lecheck.sty
 Package: rerunfilecheck 2025-06-21 v1.11 Rerun checks for auxiliary files (HO)
 
-("C:/Program Files/MiKTeX/tex/generic/uniquecounter/uniquecounter.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/uniquecounter/unique
+counter.sty
 Package: uniquecounter 2019/12/15 v1.4 Provide unlimited unique counter (HO)
 )
 Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 84.
 ))
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbaserequires.sty"
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbasecompatibility.sty")
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbasefont.sty"
-("C:/Program Files/MiKTeX/tex/latex/amsfonts/amssymb.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbaserequi
+res.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbasecompa
+tibility.sty)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbasefont.
+sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/amsfonts/amssymb.sty
 Package: amssymb 2013/01/14 v3.01 AMS font symbols
 
-("C:/Program Files/MiKTeX/tex/latex/amsfonts/amsfonts.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/amsfonts/amsfonts.sty
 Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
 \@emptytoks=\toks30
 \symAMSa=\mathgroup4
@@ -514,39 +580,51 @@ LaTeX Font Info:    Redeclaring math symbol \hbar on input line 98.
 LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
 (Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
 ))
-("C:/Program Files/MiKTeX/tex/latex/sansmathaccent/sansmathaccent.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/sansmathaccent/sansmat
+haccent.sty
 Package: sansmathaccent 2020/01/31
 
-("C:/Program Files/MiKTeX/tex/latex/koma-script/scrlfile.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/koma-script/scrlfile.s
+ty
 Package: scrlfile 2026/02/02 v3.49.2 KOMA-Script package (file load hooks)
 
-("C:/Program Files/MiKTeX/tex/latex/koma-script/scrlfile-hook.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/koma-script/scrlfile-h
+ook.sty
 Package: scrlfile-hook 2026/02/02 v3.49.2 KOMA-Script package (using LaTeX hook
 s)
 
-("C:/Program Files/MiKTeX/tex/latex/koma-script/scrlogo.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/koma-script/scrlogo.st
+y
 Package: scrlogo 2026/02/02 v3.49.2 KOMA-Script package (logo)
 )))))
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbasetranslator.sty"
-("C:/Program Files/MiKTeX/tex/latex/translator/translator.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbasetrans
+lator.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/translator/translator.
+sty
 Package: translator 2021-05-31 v1.12d Easy translation of strings in LaTeX
 ))
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbasemisc.sty")
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbasetwoscreens.sty")
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbaseoverlay.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbasemisc.
+sty)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbasetwosc
+reens.sty)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbaseoverl
+ay.sty
 \beamer@argscount=\count329
 \beamer@lastskipcover=\skip52
 \beamer@trivlistdepth=\count330
 )
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbasetitle.sty")
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbasesection.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbasetitle
+.sty)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbasesecti
+on.sty
 \c@lecture=\count331
 \c@part=\count332
 \c@section=\count333
 \c@subsection=\count334
 \c@subsubsection=\count335
 )
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbaseframe.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbaseframe
+.sty
 \beamer@framebox=\box68
 \beamer@frametitlebox=\box69
 \beamer@zoombox=\box70
@@ -562,30 +640,39 @@ Package: translator 2021-05-31 v1.12d Easy translation of strings in LaTeX
 \framewidth=\dimen279
 \c@framenumber=\count339
 )
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbaseverbatim.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbaseverba
+tim.sty
 \beamer@verbatimfileout=\write4
 )
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbaseframesize.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbaseframe
+size.sty
 \beamer@splitbox=\box71
 \beamer@autobreakcount=\count340
 \beamer@autobreaklastheight=\dimen280
 \beamer@frametitletoks=\toks32
 \beamer@framesubtitletoks=\toks33
 )
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbaseframecomponents.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbaseframe
+components.sty
 \beamer@colheight=\skip57
 \beamer@footins=\box72
 )
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbasecolor.sty")
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbasenotes.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbasecolor
+.sty)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbasenotes
+.sty
 \beamer@frameboxcopy=\box73
 )
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbasetoc.sty")
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbasetemplates.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbasetoc.s
+ty)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbasetempl
+ates.sty
 \beamer@sbttoks=\toks34
 
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbaseauxtemplates.sty"
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbaseboxes.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbaseauxte
+mplates.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbaseboxes
+.sty
 \bmb@box=\box74
 \bmb@colorbox=\box75
 \bmb@boxwidth=\dimen281
@@ -598,8 +685,9 @@ Package: translator 2021-05-31 v1.12d Easy translation of strings in LaTeX
 )
 \beamer@blockheadheight=\dimen288
 ))
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbaselocalstructure.sty"
-("C:/Program Files/MiKTeX/tex/latex/tools/enumerate.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbaselocal
+structure.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/tools/enumerate.sty
 Package: enumerate 2023/07/04 v3.00 enumerate extensions (DPC)
 \@enLab=\toks35
 )
@@ -609,29 +697,32 @@ Package: enumerate 2023/07/04 v3.00 enumerate extensions (DPC)
 \abovecaptionskip=\skip59
 \belowcaptionskip=\skip60
 )
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbasenavigation.sty"
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbasenavigationsymbols.tex")
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbasenavig
+ation.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbasenavig
+ationsymbols.tex)
 \beamer@section@min@dim=\dimen289
 )
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbasetheorems.sty"
-("C:/Program Files/MiKTeX/tex/latex/amsmath/amsmath.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbasetheor
+ems.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/amsmath/amsmath.sty
 Package: amsmath 2025/07/09 v2.17z AMS math features
 \@mathmargin=\skip61
 
 For additional information on amsmath, use the `?' option.
-("C:/Program Files/MiKTeX/tex/latex/amsmath/amstext.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/amsmath/amstext.sty
 Package: amstext 2024/11/17 v2.01 AMS text
 
-("C:/Program Files/MiKTeX/tex/latex/amsmath/amsgen.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/amsmath/amsgen.sty
 File: amsgen.sty 1999/11/30 v2.0 generic functions
 \@emptytoks=\toks36
 \ex@=\dimen290
 ))
-("C:/Program Files/MiKTeX/tex/latex/amsmath/amsbsy.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/amsmath/amsbsy.sty
 Package: amsbsy 1999/11/29 v1.2d Bold Symbols
 \pmbraise@=\dimen291
 )
-("C:/Program Files/MiKTeX/tex/latex/amsmath/amsopn.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/amsmath/amsopn.sty
 Package: amsopn 2022/04/08 v2.04 operator names
 )
 \inf@bad=\count343
@@ -682,7 +773,7 @@ LaTeX Info: Redefining \Relbar on input line 970.
 LaTeX Info: Redefining \[ on input line 2950.
 LaTeX Info: Redefining \] on input line 2951.
 )
-("C:/Program Files/MiKTeX/tex/latex/amscls/amsthm.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/amscls/amsthm.sty
 Package: amsthm 2020/05/29 v2.20.6
 \thm@style=\toks41
 \thm@bodyfont=\toks42
@@ -696,36 +787,45 @@ Package: amsthm 2020/05/29 v2.20.6
 )
 \c@theorem=\count355
 )
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerbasethemes.sty"))
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerthemedefault.sty"
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerfontthemedefault.sty")
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamercolorthemedefault.sty")
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerinnerthemedefault.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerbasetheme
+s.sty))
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerthemedefa
+ult.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerfonttheme
+default.sty)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamercolorthem
+edefault.sty)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerinnerthem
+edefault.sty
 \beamer@dima=\dimen299
 \beamer@dimb=\dimen300
 )
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerouterthemedefault.sty")))
-("C:/Program Files/MiKTeX/tex/latex/base/fontenc.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerouterthem
+edefault.sty)))
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/base/fontenc.sty
 Package: fontenc 2025/07/18 v2.1d Standard LaTeX package
 LaTeX Font Info:    Trying to load font information for T1+lmss on input line 1
 16.
 
-("C:/Program Files/MiKTeX/tex/latex/lm/t1lmss.fd"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/lm/t1lmss.fd
 File: t1lmss.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 ))
-("C:/Program Files/MiKTeX/tex/lualatex/luainputenc/luainputenc.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/lualatex/luainputenc/luainpu
+tenc.sty
 Package: luainputenc 2010/11/19 v0.973 inputenc package for LuaTeX
 
-("C:/Program Files/MiKTeX/tex/generic/iftex/ifluatex.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/iftex/ifluatex.sty
 Package: ifluatex 2019/10/25 v1.5 ifluatex legacy package. Use iftex instead.
 )
-("C:/Program Files/MiKTeX/tex/generic/iftex/ifxetex.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/iftex/ifxetex.sty
 Package: ifxetex 2019/10/25 v0.7 ifxetex legacy package. Use iftex instead.
 )
-("C:/Program Files/MiKTeX/tex/luatex/luatexbase/luatexbase.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/luatex/luatexbase/luatexbase
+.sty
 Package: luatexbase 2015/10/04 v1.3 luatexbase interface to LuaTeX 
 
-("C:/Program Files/MiKTeX/tex/luatex/ctablestack/ctablestack.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/luatex/ctablestack/ctablesta
+ck.sty
 Package: ctablestack 2015/10/01 v1.0 Catcode table stable support
 \@catcodetablestackcnt=\count356
 )
@@ -736,32 +836,32 @@ Lua module: luainputenc 2010/05/10 v0.97 Lua simple inputenc package.
 \inpenc@prehook=\toks47
 \inpenc@posthook=\toks48
 
-("C:/Program Files/MiKTeX/tex/lualatex/luainputenc/lutf8.def"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/lualatex/luainputenc/lutf8.d
+ef
 File: lutf8.def 2010/05/10 v0.97 UTF-8 support for luainputenc
 Now handling font encoding OML ...
 ... no UTF-8 mapping file for font encoding OML
 Now handling font encoding OMS ...
 ... processing UTF-8 mapping file for font encodingOMS
-
-("C:/Program Files/MiKTeX/tex/latex/base/omsenc.dfu"
+ (C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/base/omsenc.dfu
 File: omsenc.dfu 2022/06/07 v1.3c UTF-8 support
 )
 Now handling font encoding OT1 ...
 ... processing UTF-8 mapping file for font encodingOT1
 
-("C:/Program Files/MiKTeX/tex/latex/base/ot1enc.dfu"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/base/ot1enc.dfu
 File: ot1enc.dfu 2022/06/07 v1.3c UTF-8 support
 )
 Now handling font encoding T1 ...
 ... processing UTF-8 mapping file for font encodingT1
 
-("C:/Program Files/MiKTeX/tex/latex/base/t1enc.dfu"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/base/t1enc.dfu
 File: t1enc.dfu 2022/06/07 v1.3c UTF-8 support
 )
 Now handling font encoding TS1 ...
 ... processing UTF-8 mapping file for font encodingTS1
 
-("C:/Program Files/MiKTeX/tex/latex/base/ts1enc.dfu"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/base/ts1enc.dfu
 File: ts1enc.dfu 2022/06/07 v1.3c UTF-8 support
 )
 Now handling font encoding TU ...
@@ -775,7 +875,7 @@ Now handling font encoding PD1 ...
 Now handling font encoding PU ...
 ... no UTF-8 mapping file for font encoding PU
 ))
-("C:/Program Files/MiKTeX/tex/latex/lm/lmodern.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/lm/lmodern.sty
 Package: lmodern 2015/05/01 v1.6.1 Latin Modern Fonts
 LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
 (Font)                  OT1/cmr/m/n --> OT1/lmr/m/n on input line 22.
@@ -810,33 +910,34 @@ LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
 (Font)                  OT1/cmtt/m/n --> OT1/lmtt/m/n on input line 38.
 )
-("C:/Program Files/MiKTeX/tex/latex/beamerposter/beamerposter.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamerposter/beamerpos
+ter.sty
 Package: beamerposter 2018/04/23 v.1.13 latex-beamer poster extension
 
-("C:/Program Files/MiKTeX/tex/latex/xkeyval/xkeyval.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/xkeyval/xkeyval.sty
 Package: xkeyval 2022/06/16 v2.9 package option processing (HA)
 
-("C:/Program Files/MiKTeX/tex/generic/xkeyval/xkeyval.tex"
-("C:/Program Files/MiKTeX/tex/generic/xkeyval/xkvutils.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/xkeyval/xkeyval.tex
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/xkeyval/xkvutils.tex
 \XKV@toks=\toks49
 \XKV@tempa@toks=\toks50
 )
 \XKV@depth=\count357
 File: xkeyval.tex 2014/12/03 v2.7a key=value parser (HA)
 ))
-(C:/Users/pc/AppData/Roaming/MiKTeX/tex/latex/type1cm/type1cm.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/type1cm/type1cm.sty
 Package: type1cm 2002/09/05 v0.04 BlueSky/Y&Y Type1 CM font definitions (DPC, p
 atched RF)
 )
-(C:/Users/pc/AppData/Roaming/MiKTeX/tex/latex/fp/fp.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/fp/fp.sty
 Package: fp 1995/04/02
 
 `Fixed Point Package', Version 0.8, April 2, 1995 (C) Michael Mehlich
-(C:/Users/pc/AppData/Roaming/MiKTeX/tex/latex/fp/defpattern.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/fp/defpattern.sty
 Package: defpattern 1994/10/12
 \actioncount=\count358
 )
-(C:/Users/pc/AppData/Roaming/MiKTeX/tex/latex/fp/fp-basic.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/fp/fp-basic.sty
 Package: fp-basic 1996/05/13
 \FP@xs=\count359
 \FP@xia=\count360
@@ -848,32 +949,32 @@ Package: fp-basic 1996/05/13
 \FP@regs=\count366
 \FP@times=\count367
 )
-(C:/Users/pc/AppData/Roaming/MiKTeX/tex/latex/fp/fp-addons.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/fp/fp-addons.sty
 Package: fp-addons 1995/03/15
 )
-(C:/Users/pc/AppData/Roaming/MiKTeX/tex/latex/fp/fp-snap.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/fp/fp-snap.sty
 Package: fp-snap 1995/04/05
 )
-(C:/Users/pc/AppData/Roaming/MiKTeX/tex/latex/fp/fp-exp.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/fp/fp-exp.sty
 Package: fp-exp 1995/04/03
 )
-(C:/Users/pc/AppData/Roaming/MiKTeX/tex/latex/fp/fp-trigo.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/fp/fp-trigo.sty
 Package: fp-trigo 1995/04/14
 )
-(C:/Users/pc/AppData/Roaming/MiKTeX/tex/latex/fp/fp-pas.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/fp/fp-pas.sty
 Package: fp-pas 1994/08/29
 )
-(C:/Users/pc/AppData/Roaming/MiKTeX/tex/latex/fp/fp-random.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/fp/fp-random.sty
 Package: fp-random 1995/02/23
 \FPseed=\count368
 )
-(C:/Users/pc/AppData/Roaming/MiKTeX/tex/latex/fp/fp-eqn.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/fp/fp-eqn.sty
 Package: fp-eqn 1995/04/03
 )
-(C:/Users/pc/AppData/Roaming/MiKTeX/tex/latex/fp/fp-upn.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/fp/fp-upn.sty
 Package: fp-upn 1996/10/21
 )
-(C:/Users/pc/AppData/Roaming/MiKTeX/tex/latex/fp/fp-eval.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/fp/fp-eval.sty
 Package: fp-eval 1995/04/03
 ))
 Package beamerposter Info: checking size input, please wait. on input line 129.
@@ -893,14 +994,15 @@ Package beamerposter Info: the input landscape\ 1\ was correct, we proceed. on
 input line 130.
 Package beamerposter Info: finished orientation check. on input line 130.
 Package beamerposter Info: myfontscale=1.1 on input line 130.
- ( FP-UPN
-( FP-MUL ) ( FP-ROUND ) )
+
+( FP-UPN ( FP-MUL ) ( FP-ROUND ) )
 Package beamerposter Info: paperwidth=3383.0325pt, paperheight=2392.87694pt on 
 input line 173.
 Package beamerposter Info: textwidth=3354.57974pt, textheight=2364.42418pt on i
 nput line 174.
 Package beamerposter Info: fontscale=1.0, myfontscale=1.10 on input line 175.
- ( FP-UPN ( FP-MUL ) ( FP-ROUND ) ) ( FP-UPN ( FP-MUL
+ ( FP-UPN ( FP-MUL ) ( FP-ROUND ) ) ( FP-UPN
+( FP-MUL ) ( FP-ROUND ) ) ( FP-UPN ( FP-MUL ) ( FP-ROUND ) ) ( FP-UPN ( FP-MUL
 ) ( FP-ROUND ) ) ( FP-UPN ( FP-MUL ) ( FP-ROUND ) ) ( FP-UPN ( FP-MUL )
 ( FP-ROUND ) ) ( FP-UPN ( FP-MUL ) ( FP-ROUND ) ) ( FP-UPN ( FP-MUL )
 ( FP-ROUND ) ) ( FP-UPN ( FP-MUL ) ( FP-ROUND ) ) ( FP-UPN ( FP-MUL )
@@ -915,9 +1017,8 @@ Package beamerposter Info: fontscale=1.0, myfontscale=1.10 on input line 175.
 ( FP-ROUND ) ) ( FP-UPN ( FP-MUL ) ( FP-ROUND ) ) ( FP-UPN ( FP-MUL )
 ( FP-ROUND ) ) ( FP-UPN ( FP-MUL ) ( FP-ROUND ) ) ( FP-UPN ( FP-MUL )
 ( FP-ROUND ) ) ( FP-UPN ( FP-MUL ) ( FP-ROUND ) ) ( FP-UPN ( FP-MUL )
-( FP-ROUND ) ) ( FP-UPN ( FP-MUL ) ( FP-ROUND ) ) ( FP-UPN ( FP-MUL )
 ( FP-ROUND ) )) (./beamerthemegemini.sty
-("C:/Program Files/MiKTeX/tex/latex/base/exscale.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/base/exscale.sty
 Package: exscale 2025/06/05 v2.1i Standard LaTeX package exscale
 LaTeX Font Info:    Redeclaring symbol font `largesymbols' on input line 57.
 LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `normal'
@@ -926,7 +1027,7 @@ LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `bold'
 (Font)                  OMX/lmex/m/n --> OMX/cmex/m/n on input line 57.
 \big@size=\dimen301
 )
-("C:/Program Files/MiKTeX/tex/latex/ragged2e/ragged2e.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/ragged2e/ragged2e.sty
 Package: ragged2e 2023/06/22 v3.6 ragged2e Package
 \CenteringLeftskip=\skip67
 \RaggedLeftLeftskip=\skip68
@@ -943,17 +1044,20 @@ Package: ragged2e 2023/06/22 v3.6 ragged2e Package
 \RaggedRightParindent=\skip79
 \JustifyingParindent=\skip80
 )
-("C:/Program Files/MiKTeX/tex/latex/changepage/changepage.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/changepage/changepage.
+sty
 Package: changepage 2009/10/20 v1.0c check page and change page layout
 \c@cp@cntr=\count369
 \cp@tempcnt=\count370
 )
-("C:/Program Files/MiKTeX/tex/latex/fontspec/fontspec.sty"
-("C:/Program Files/MiKTeX/tex/latex/l3packages/xparse/xparse.sty"
-("C:/Program Files/MiKTeX/tex/latex/l3kernel/expl3.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/fontspec/fontspec.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/l3packages/xparse/xpar
+se.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/l3kernel/expl3.sty
 Package: expl3 2025-12-24 L3 programming layer (loader) 
 
-("C:/Program Files/MiKTeX/tex/latex/l3backend/l3backend-luatex.def"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/l3backend/l3backend-lu
+atex.def
 File: l3backend-luatex.def 2025-10-09 L3 backend support: PDF output (LuaTeX)
 \l__color_backend_stack_int=\count371
 Inserting `l3color' in `luaotfload.parse_color'.))
@@ -961,7 +1065,8 @@ Package: xparse 2025-10-09 L3 Experimental document command parser
 )
 Package: fontspec 2025/09/29 v2.9g Font selection for XeLaTeX and LuaLaTeX
 Lua module: fontspec 2025/09/29 v2.9g Font selection for XeLaTeX and LuaLaTeX
-("C:/Program Files/MiKTeX/tex/latex/fontspec/fontspec-luatex.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/fontspec/fontspec-luat
+ex.sty
 Package: fontspec-luatex 2025/09/29 v2.9g Font selection for XeLaTeX and LuaLaT
 eX
 \l__fontspec_script_int=\count372
@@ -979,11 +1084,11 @@ eX
 \l__fontspec_tmpb_dim=\dimen303
 \l__fontspec_tmpc_dim=\dimen304
 
-("C:/Program Files/MiKTeX/tex/latex/base/fontenc.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/base/fontenc.sty
 Package: fontenc 2025/07/18 v2.1d Standard LaTeX package
 )
-("C:/Program Files/MiKTeX/tex/latex/fontspec/fontspec.cfg")))
-("C:/Program Files/MiKTeX/tex/latex/tools/calc.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/fontspec/fontspec.cfg))
+) (C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/tools/calc.sty
 Package: calc 2025/03/01 v4.3b Infix arithmetic (KKT,FJ)
 \calc@Acount=\count383
 \calc@Bcount=\count384
@@ -996,8 +1101,8 @@ LaTeX Info: Redefining \addtolength on input line 87.
 \calc@Ccount=\count385
 \calc@Cskip=\skip83
 )
-luaotfload | cache : Lookup cache loaded from C:/Users/pc/AppData/Local/MiKTeX/l
-uatex-cache/generic/names/luaotfload-lookup-cache.luc.
+luaotfload | cache : Lookup cache loaded from C:/Users/I-Bros/AppData/Local/MiKT
+eX/luatex-cache/generic/names/luaotfload-lookup-cache.luc.
 
 Package fontspec Info: 
 (fontspec)             Font family 'Raleway(0)' created for font 'Raleway'
@@ -1053,8 +1158,8 @@ g;"
 ig;"
 
 
-("C:/Program Files/MiKTeX/tex/latex/beamer/beamerfontthemeprofessionalfonts.sty
-")
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/beamer/beamerfonttheme
+professionalfonts.sty)
 
 Package fontspec Info: 
 (fontspec)             Font family 'Lato(1)' created for font 'Lato' with
@@ -1082,7 +1187,7 @@ t;+tlig;"
 \logorightwidth=\skip85
 \maxlogowidth=\skip86
 ) (./beamercolorthemegemini.sty)
-("C:/Program Files/MiKTeX/tex/latex/booktabs/booktabs.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/booktabs/booktabs.sty
 Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
 \heavyrulewidth=\dimen307
 \lightrulewidth=\dimen308
@@ -1102,37 +1207,46 @@ Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
 \@lastruleclass=\count389
 \@thisrulewidth=\dimen319
 )
-("C:/Program Files/MiKTeX/tex/latex/pgf/frontendlayer/tikz.sty"
-("C:/Program Files/MiKTeX/tex/latex/pgf/basiclayer/pgf.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/pgf/frontendlayer/tikz
+.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/pgf/basiclayer/pgf.sty
 Package: pgf 2025-08-29 v3.1.11a (3.1.11a)
 
-("C:/Program Files/MiKTeX/tex/generic/pgf/modules/pgfmoduleshapes.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/modules/pgfmodul
+eshapes.code.tex
 File: pgfmoduleshapes.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgfnodeparttextbox=\box78
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/modules/pgfmoduleplot.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/modules/pgfmodul
+eplot.code.tex
 File: pgfmoduleplot.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 )
-("C:/Program Files/MiKTeX/tex/latex/pgf/compatibility/pgfcomp-version-0-65.sty"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/pgf/compatibility/pgfc
+omp-version-0-65.sty
 Package: pgfcomp-version-0-65 2025-08-29 v3.1.11a (3.1.11a)
 \pgf@nodesepstart=\dimen320
 \pgf@nodesepend=\dimen321
-) ("C:/Program Files/MiKTeX/tex/latex/pgf/compatibility/pgfcomp-version-1-18.st
-y"
+)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/pgf/compatibility/pgfc
+omp-version-1-18.sty
 Package: pgfcomp-version-1-18 2025-08-29 v3.1.11a (3.1.11a)
-)) ("C:/Program Files/MiKTeX/tex/latex/pgf/utilities/pgffor.sty"
-("C:/Program Files/MiKTeX/tex/generic/pgf/utilities/pgffor.code.tex"
+))
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/pgf/utilities/pgffor.s
+ty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/utilities/pgffor
+.code.tex
 Package: pgffor 2025-08-29 v3.1.11a (3.1.11a)
 \pgffor@iter=\dimen322
 \pgffor@skip=\dimen323
 \pgffor@stack=\toks51
 \pgffor@toks=\toks52
 ))
-("C:/Program Files/MiKTeX/tex/generic/pgf/frontendlayer/tikz/tikz.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/frontendlayer/ti
+kz/tikz.code.tex
 Package: tikz 2025-08-29 v3.1.11a (3.1.11a)
 
-("C:/Program Files/MiKTeX/tex/generic/pgf/libraries/pgflibraryplothandlers.code
-.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/libraries/pgflib
+raryplothandlers.code.tex
 File: pgflibraryplothandlers.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgf@plot@mark@count=\count390
 \pgfplotmarksize=\dimen324
@@ -1154,7 +1268,8 @@ File: pgflibraryplothandlers.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \tikznumberofcurrentchild=\count393
 \tikz@fig@count=\count394
 
-("C:/Program Files/MiKTeX/tex/generic/pgf/modules/pgfmodulematrix.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/modules/pgfmodul
+ematrix.code.tex
 File: pgfmodulematrix.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgfmatrixcurrentrow=\count395
 \pgfmatrixcurrentcolumn=\count396
@@ -1162,16 +1277,19 @@ File: pgfmodulematrix.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 )
 \tikz@expandcount=\count398
 
-("C:/Program Files/MiKTeX/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibr
-arytopaths.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/frontendlayer/ti
+kz/libraries/tikzlibrarytopaths.code.tex
 File: tikzlibrarytopaths.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 )))
-("C:/Program Files/MiKTeX/tex/latex/pgfplots/pgfplots.sty"
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/pgfplots.revision.tex")
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/pgfplots/pgfplots.sty
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/pgfplots.re
+vision.tex)
 Package: pgfplots 2021/05/15 v1.18.1 Data Visualization (1.18.1)
 
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/pgfplots.code.tex"
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/pgfplotscore.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/pgfplots.co
+de.tex
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/pgfplotscor
+e.code.tex
 Package pgfplots info on input line 124: Initializing with LUA version Lua 5.3
 \pgfplots@luabackend@table=\catcodetable16
 \t@pgfplots@toka=\toks53
@@ -1181,69 +1299,88 @@ Package pgfplots info on input line 124: Initializing with LUA version Lua 5.3
 \c@pgfplots@coordindex=\count399
 \c@pgfplots@scanlineindex=\count400
 
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/sys/pgfplotssysgeneric.code.tex"
-)) ("C:/Program Files/MiKTeX/tex/generic/pgfplots/libs/pgfplotslibrary.code.tex
-")
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/oldpgfcompatib/pgfplotsoldpgfsup
-p_loader.code.tex"
-("C:/Program Files/MiKTeX/tex/generic/pgf/libraries/pgflibraryfpu.code.tex")
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/sys/pgfplot
+ssysgeneric.code.tex))
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/libs/pgfplo
+tslibrary.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/oldpgfcompa
+tib/pgfplotsoldpgfsupp_loader.code.tex
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/libraries/pgflib
+raryfpu.code.tex)
 Package pgfplots: loading complementary utilities for your pgf version...
 \t@pgf@toka=\toks56
 \t@pgf@tokb=\toks57
 \t@pgf@tokc=\toks58
 
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/oldpgfcompatib/pgfplotsoldpgfsup
-p_pgfutil-common-lists.tex")
-("C:/Program Files/MiKTeX/tex/generic/pgf/libraries/luamath/pgflibraryluamath.c
-ode.tex")
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/oldpgfcompa
+tib/pgfplotsoldpgfsupp_pgfutil-common-lists.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/libraries/luamat
+h/pgflibraryluamath.code.tex)
 Package pgfplots info on input line 290: luamath library shipped with pgf 3.1.1
 1a is up-to-date
 )
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/util/pgfplotsutil.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/util/pgfplo
+tsutil.code.tex
 Package pgfplots info on input line 82: Found new luatex: initializing lua comm
 ands instead of write18 (shell-escape)
 
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/liststructure/pgfplotsliststruct
-ure.code.tex")
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/liststructure/pgfplotsliststruct
-ureext.code.tex")
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/liststructure/pgfplotsarray.code
-.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/liststructu
+re/pgfplotsliststructure.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/liststructu
+re/pgfplotsliststructureext.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/liststructu
+re/pgfplotsarray.code.tex
 \c@pgfplotsarray@tmp=\count401
 )
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/liststructure/pgfplotsmatrix.cod
-e.tex")
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/numtable/pgfplotstableshared.cod
-e.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/liststructu
+re/pgfplotsmatrix.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/numtable/pg
+fplotstableshared.code.tex
 \c@pgfplotstable@counta=\count402
 \t@pgfplotstable@a=\toks59
 )
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/liststructure/pgfplotsdeque.code
-.tex")
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/util/pgfplotsbinary.code.tex"
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/util/pgfplotsbinary.data.code.te
-x"))
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/util/pgfplotsutil.verb.code.tex"
-)
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/libs/pgflibrarypgfplots.surfshad
-ing.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/liststructu
+re/pgfplotsdeque.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/util/pgfplo
+tsbinary.code.tex
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/util/pgfplo
+tsbinary.data.code.tex))
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/util/pgfplo
+tsutil.verb.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/libs/pgflib
+rarypgfplots.surfshading.code.tex
 \c@pgfplotslibrarysurf@no=\count403
 
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/sys/pgflibrarypgfplots.surfshadi
-ng.pgfsys-luatex.def")))
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/util/pgfplotscolormap.code.tex"
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/util/pgfplotscolor.code.tex"))
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/pgfplotsstackedplots.code.tex")
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/pgfplotsplothandlers.code.tex"
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/pgfplotsmeshplothandler.code.tex
-" ("C:/Program Files/MiKTeX/tex/generic/pgfplots/pgfplotsmeshplotimage.code.tex
-"))) ("C:/Program Files/MiKTeX/tex/generic/pgfplots/pgfplots.scaling.code.tex") ("C:/Program Files/MiKTeX/tex/generic/pgfplots/pgfplotscoordprocessing.code.tex") ("C:/Program Files/MiKTeX/tex/generic/pgfplots/pgfplots.errorbars.code.tex") ("C:/Program Files/MiKTeX/tex/generic/pgfplots/pgfplots.markers.code.tex")
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/pgfplotsticks.code.tex")
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/pgfplots.paths.code.tex")
-("C:/Program Files/MiKTeX/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibr
-arydecorations.code.tex"
-("C:/Program Files/MiKTeX/tex/generic/pgf/modules/pgfmoduledecorations.code.tex
-"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/sys/pgflibr
+arypgfplots.surfshading.pgfsys-luatex.def)))
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/util/pgfplo
+tscolormap.code.tex
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/util/pgfplo
+tscolor.code.tex))
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/pgfplotssta
+ckedplots.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/pgfplotsplo
+thandlers.code.tex
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/pgfplotsmes
+hplothandler.code.tex
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/pgfplotsmes
+hplotimage.code.tex)))
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/pgfplots.sc
+aling.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/pgfplotscoo
+rdprocessing.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/pgfplots.er
+rorbars.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/pgfplots.ma
+rkers.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/pgfplotstic
+ks.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/pgfplots.pa
+ths.code.tex)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/frontendlayer/ti
+kz/libraries/tikzlibrarydecorations.code.tex
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/modules/pgfmodul
+edecorations.code.tex
 \pgfdecoratedcompleteddistance=\dimen334
 \pgfdecoratedremainingdistance=\dimen335
 \pgfdecoratedinputsegmentcompleteddistance=\dimen336
@@ -1255,16 +1392,16 @@ arydecorations.code.tex"
 )
 \tikz@lib@dec@box=\box83
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibr
-arydecorations.pathmorphing.code.tex"
-("C:/Program Files/MiKTeX/tex/generic/pgf/libraries/decorations/pgflibrarydecor
-ations.pathmorphing.code.tex"))
-("C:/Program Files/MiKTeX/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibr
-arydecorations.pathreplacing.code.tex"
-("C:/Program Files/MiKTeX/tex/generic/pgf/libraries/decorations/pgflibrarydecor
-ations.pathreplacing.code.tex"))
-("C:/Program Files/MiKTeX/tex/generic/pgfplots/libs/tikzlibrarypgfplots.contour
-lua.code.tex")
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/frontendlayer/ti
+kz/libraries/tikzlibrarydecorations.pathmorphing.code.tex
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/libraries/decora
+tions/pgflibrarydecorations.pathmorphing.code.tex))
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/frontendlayer/ti
+kz/libraries/tikzlibrarydecorations.pathreplacing.code.tex
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/libraries/decora
+tions/pgflibrarydecorations.pathreplacing.code.tex))
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgfplots/libs/tikzli
+brarypgfplots.contourlua.code.tex)
 \pgfplots@numplots=\count405
 \pgfplots@xmin@reg=\dimen341
 \pgfplots@xmax@reg=\dimen342
@@ -1273,217 +1410,87 @@ lua.code.tex")
 \pgfplots@zmin@reg=\dimen345
 \pgfplots@zmax@reg=\dimen346
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibr
-aryplotmarks.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/frontendlayer/ti
+kz/libraries/tikzlibraryplotmarks.code.tex
 File: tikzlibraryplotmarks.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 
-("C:/Program Files/MiKTeX/tex/generic/pgf/libraries/pgflibraryplotmarks.code.te
-x"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/libraries/pgflib
+raryplotmarks.code.tex
 File: pgflibraryplotmarks.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-))) (C:/Users/pc/AppData/Roaming/MiKTeX/tex/latex/anyfontsize/anyfontsize.sty
+)))
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/anyfontsize/anyfontsiz
+e.sty
 Package: anyfontsize 2007/11/22 anyfontsize.sty by pts
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/libraries/pgflibraryarrows.meta.code.
-tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/libraries/pgflib
+raryarrows.meta.code.tex
 File: pgflibraryarrows.meta.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgfarrowinset=\dimen347
 \pgfarrowlength=\dimen348
 \pgfarrowwidth=\dimen349
 \pgfarrowlinewidth=\dimen350
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibr
-arypositioning.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/frontendlayer/ti
+kz/libraries/tikzlibrarypositioning.code.tex
 File: tikzlibrarypositioning.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibr
-aryshapes.geometric.code.tex"
-File: tikzlibraryshapes.geometric.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-
-("C:/Program Files/MiKTeX/tex/generic/pgf/libraries/shapes/pgflibraryshapes.geo
-metric.code.tex"
-File: pgflibraryshapes.geometric.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-))
-("C:/Program Files/MiKTeX/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibr
-arycalc.code.tex"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/generic/pgf/frontendlayer/ti
+kz/libraries/tikzlibrarycalc.code.tex
 File: tikzlibrarycalc.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 )
-("C:/Program Files/MiKTeX/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibr
-aryfit.code.tex"
-File: tikzlibraryfit.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-)
-("C:/Program Files/MiKTeX/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibr
-arybackgrounds.code.tex"
-File: tikzlibrarybackgrounds.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@layerbox@background=\box84
-\pgf@layerboxsaved@background=\box85
-)
 \sepwidth=\skip87
-\colwidth=\skip88
+\colA=\skip88
+\colB=\skip89
+\colC=\skip90
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\<let>-command' on input line 104.
+(hyperref)                \hskip 27.37pt
+(hyperref)                replaced by space on input line 129.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\@halignto' on input line 104.
+(hyperref)                \hskip 27.37pt
+(hyperref)                replaced by space on input line 129.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\hbox' on input line 104.
+(hyperref)                \hskip 27.37pt
+(hyperref)                replaced by space on input line 129.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\<let>-command' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\@acol' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\<def>-command' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\@preamble' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\<let>-command' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\@classz' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\@acol' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\<def>-command' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\@preamble' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\@acol' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\<def>-command' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\@preamble' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\<let>-command' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\@classiv' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\<def>-command' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\@preamble' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\<let>-command' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\\' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\@tabularcr' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\mathsurround' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\z@' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\@ifnextchar' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `alignment tab' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `alignment tab' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\\' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `alignment tab' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `alignment tab' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\\' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\crcr' on input line 104.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 104.
+(hyperref)                \hskip 27.37pt
+(hyperref)                replaced by space on input line 129.
 
 <uni.png, id=10, 963.6pt x 1157.32375pt>
 File: uni.png Graphic file (type png)
 <use uni.png>
-Package luatex.def Info: uni.png  used on input line 108.
-(luatex.def)             Requested size: 201.36214pt x 241.84842pt.
+Package luatex.def Info: uni.png  used on input line 133.
+(luatex.def)             Requested size: 165.82419pt x 199.16928pt.
 (./poster.aux)
 \openout1 = poster.aux
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
-LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 110.
-LaTeX Font Info:    ... okay on input line 110.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 135.
+LaTeX Font Info:    ... okay on input line 135.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 135.
+LaTeX Font Info:    ... okay on input line 135.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 135.
+LaTeX Font Info:    ... okay on input line 135.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 135.
+LaTeX Font Info:    ... okay on input line 135.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 135.
+LaTeX Font Info:    ... okay on input line 135.
+LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 135.
+LaTeX Font Info:    ... okay on input line 135.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 135.
+LaTeX Font Info:    ... okay on input line 135.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 135.
+LaTeX Font Info:    ... okay on input line 135.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 135.
+LaTeX Font Info:    ... okay on input line 135.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 135.
+LaTeX Font Info:    ... okay on input line 135.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: luatex
@@ -1519,11 +1526,13 @@ LaTeX Font Info:    ... okay on input line 110.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-("C:/Program Files/MiKTeX/tex/context/base/mkii/supp-pdf.mkii"
+
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/context/base/mkii/supp-pdf.m
+kii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count406
 \scratchdimen=\dimen351
-\scratchbox=\box86
+\scratchbox=\box84
 \nofMPsegments=\count407
 \nofMParguments=\count408
 \everyMPshowfont=\toks60
@@ -1532,42 +1541,45 @@ LaTeX Font Info:    ... okay on input line 110.
 \MPnumerator=\count410
 \makeMPintoPDFobject=\count411
 \everyMPtoPDFconversion=\toks61
-) ("C:/Program Files/MiKTeX/tex/latex/epstopdf-pkg/epstopdf-base.sty"
+)
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/epstopdf-pkg/epstopdf-
+base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 85.
 
-("C:/Program Files/MiKTeX/tex/latex/00miktex/epstopdf-sys.cfg"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/00miktex/epstopdf-sys.
+cfg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
-Package hyperref Info: Link coloring OFF on input line 110.
+Package hyperref Info: Link coloring OFF on input line 135.
  (./poster.out) (./poster.out)
 \@outlinefile=\write5
 
 \openout5 = poster.out
 
-("C:/Program Files/MiKTeX/tex/latex/translator/translator-basic-dictionary-Engl
-ish.dict"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/translator/translator-
+basic-dictionary-English.dict
 Dictionary: translator-basic-dictionary, Language: English 
 )
-("C:/Program Files/MiKTeX/tex/latex/translator/translator-bibliography-dictiona
-ry-English.dict"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/translator/translator-
+bibliography-dictionary-English.dict
 Dictionary: translator-bibliography-dictionary, Language: English 
 )
-("C:/Program Files/MiKTeX/tex/latex/translator/translator-environment-dictionar
-y-English.dict"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/translator/translator-
+environment-dictionary-English.dict
 Dictionary: translator-environment-dictionary, Language: English 
 )
-("C:/Program Files/MiKTeX/tex/latex/translator/translator-months-dictionary-Eng
-lish.dict"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/translator/translator-
+months-dictionary-English.dict
 Dictionary: translator-months-dictionary, Language: English 
 )
-("C:/Program Files/MiKTeX/tex/latex/translator/translator-numbers-dictionary-En
-glish.dict"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/translator/translator-
+numbers-dictionary-English.dict
 Dictionary: translator-numbers-dictionary, Language: English 
 )
-("C:/Program Files/MiKTeX/tex/latex/translator/translator-theorem-dictionary-En
-glish.dict"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/translator/translator-
+theorem-dictionary-English.dict
 Dictionary: translator-theorem-dictionary, Language: English 
 )
 Package pgfplots notification 'compat/show suggested version=true': you might b
@@ -1576,58 +1588,92 @@ enefit from \pgfplotsset{compat=1.18} (current compat level: 1.14).
 (./poster.nav)
 File: uni.png Graphic file (type png)
 <use uni.png>
-Package luatex.def Info: uni.png  used on input line 110.
-(luatex.def)             Requested size: 201.36214pt x 241.84842pt.
-LaTeX Font Info:    Calculating math sizes for size <13.2> on input line 110.
+Package luatex.def Info: uni.png  used on input line 135.
+(luatex.def)             Requested size: 165.82419pt x 199.16928pt.
+LaTeX Font Info:    Calculating math sizes for size <13.2> on input line 135.
 LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 1
-10.
- ("C:/Program Files/MiKTeX/tex/latex/lm/ot1lmr.fd"
+35.
+
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/lm/ot1lmr.fd
 File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OML+lmm on input line 1
-10.
+35.
 
-("C:/Program Files/MiKTeX/tex/latex/lm/omllmm.fd"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/lm/omllmm.fd
 File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 
-110.
+135.
 
-("C:/Program Files/MiKTeX/tex/latex/lm/omslmsy.fd"
+(C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/tex/latex/lm/omslmsy.fd
 File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `cmex7' loaded for size
-(Font)              <6.59999> on input line 110.
-LaTeX Font Info:    Calculating math sizes for size <39.41> on input line 110.
+(Font)              <6.59999> on input line 135.
 File: uni.png Graphic file (type png)
 <use uni.png>
-Package luatex.def Info: uni.png  used on input line 391.
-(luatex.def)             Requested size: 201.36214pt x 241.84842pt.
+Package luatex.def Info: uni.png  used on input line 374.
+(luatex.def)             Requested size: 165.82419pt x 199.16928pt.
+<ui-upload-live.png, id=13, 1863.96375pt x 850.17625pt>
+File: ui-upload-live.png Graphic file (type png)
+<use ui-upload-live.png>
+Package luatex.def Info: ui-upload-live.png  used on input line 374.
+(luatex.def)             Requested size: 887.54144pt x 404.81087pt.
+<ui-agentlog.png, id=14, 1884.03876pt x 858.20625pt>
+File: ui-agentlog.png Graphic file (type png)
+<use ui-agentlog.png>
+Package luatex.def Info: ui-agentlog.png  used on input line 374.
+(luatex.def)             Requested size: 887.54144pt x 404.28676pt.
+<ui-quiz-run.png, id=15, 1903.11pt x 830.10126pt>
+File: ui-quiz-run.png Graphic file (type png)
+<use ui-quiz-run.png>
+Package luatex.def Info: ui-quiz-run.png  used on input line 374.
+(luatex.def)             Requested size: 887.54144pt x 387.13307pt.
+<ui-graded.png, id=16, 1924.18875pt x 784.9325pt>
+File: ui-graded.png Graphic file (type png)
+<use ui-graded.png>
+Package luatex.def Info: ui-graded.png  used on input line 374.
+(luatex.def)             Requested size: 887.54144pt x 362.05545pt.
 
 warning  (file Book/lectureassist-architecture-illustrated.pdf) (pdf inclusion):
  PDF inclusion: found PDF version '1.7', but at most version '1.5' allowed
-<Book/lectureassist-architecture-illustrated.pdf, id=13, 865.31276pt x 426.6338
+<Book/lectureassist-architecture-illustrated.pdf, id=17, 865.31276pt x 426.6338
 8pt>
 File: Book/lectureassist-architecture-illustrated.pdf Graphic file (type pdf)
 <use Book/lectureassist-architecture-illustrated.pdf>
 Package luatex.def Info: Book/lectureassist-architecture-illustrated.pdf  used 
-on input line 391.
-(luatex.def)             Requested size: 1014.92007pt x 500.42905pt.
-LaTeX Font Info:    Calculating math sizes for size <27.37> on input line 391.
-LaTeX Font Info:    Calculating math sizes for size <22.81> on input line 391.
-Package pgfplots info on input line 391: Using 'lua backend=false' for axis: x 
+on input line 374.
+(luatex.def)             Requested size: 1282.73682pt x 632.48238pt.
+<figs/agentic-loop.pdf, id=18, 654.26935pt x 495.91673pt>
+File: figs/agentic-loop.pdf Graphic file (type pdf)
+<use figs/agentic-loop.pdf>
+Package luatex.def Info: figs/agentic-loop.pdf  used on input line 374.
+(luatex.def)             Requested size: 1282.73682pt x 972.30042pt.
+LaTeX Font Info:    Calculating math sizes for size <27.37> on input line 374.
+LaTeX Font Info:    Calculating math sizes for size <24> on input line 374.
+Package pgfplots info on input line 374: Using 'lua backend=false' for axis: x 
+coord trafo unsupported.
+Package pgfplots info on input line 374: Using 'lua backend=false' for axis: x 
 coord trafo unsupported.
 
-Overfull \vbox (120.76569pt too high) detected at line 391
+Overfull \hbox (55.39479pt too wide) in paragraph at lines 374--374
+ [] 
+ []
+
+
+Overfull \vbox (352.85384pt too high) detected at line 374
  []
 
 File: uni.png Graphic file (type png)
 <use uni.png>
-Package luatex.def Info: uni.png  used on input line 391.
-(luatex.def)             Requested size: 201.36214pt x 241.84842pt.
-[1{C:/Users/pc/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}
+Package luatex.def Info: uni.png  used on input line 374.
+(luatex.def)             Requested size: 165.82419pt x 199.16928pt.
+[1{C:/Users/I-Bros/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}
 
-<./uni.png><./Book/lectureassist-architecture-illustrated.pdf>]
+<./uni.png><./ui-upload-live.png><./ui-agentlog.png><./ui-quiz-run.png><./ui-gra
+ded.png><./Book/lectureassist-architecture-illustrated.pdf><./figs/agentic-loop.
+pdf>]
 \tf@nav=\write6
 
 \openout6 = poster.nav
@@ -1637,7 +1683,8 @@ Package luatex.def Info: uni.png  used on input line 391.
 \tf@snm=\write8
 
 \openout8 = poster.snm
- (./poster.aux)
+
+(./poster.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
@@ -1647,32 +1694,35 @@ Package rerunfilecheck Info: File `poster.out' has not changed.
 )
 
 Here is how much of LuaTeX's memory you used:
- 41711 strings out of 476081
- 476941,1648299 words of node,token memory allocated
- 104880 words of node memory still in use:
-   845 hlist, 58 vlist, 103 rule, 530 disc, 98 local_par, 132 math, 3039 glue, 1
-229 kern, 268 penalty, 6303 glyph, 2834 attribute, 82 glue_spec, 2834 attribute_
-list, 4 write, 841 pdf_literal, 444 pdf_colorstack, 2 pdf_setmatrix, 2 pdf_save,
- 2 pdf_restore nodes
-   avail lists: 1:1,2:424,3:3360,4:1455,5:3717,6:297,7:28534,8:7,9:3129,10:20,11
-:1590
- 62865 multiletter control sequences out of 65536+600000
- 133 fonts using 20558567 bytes
- 128i,23n,116p,726b,3080s stack positions out of 10000i,1000n,20000p,200000b,200000s
-{C:/Program Files/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}{C:/Program Files/MiKT
-eX/fonts/enc/dvips/lm/lm-rm.enc}{C:/Program Files/MiKTeX/fonts/enc/dvips/lm/lm-m
-athsy.enc}<C:/Program Files/MiKTeX/fonts/truetype/typoland/lato/Lato-LightItalic
-.ttf><C:/Program Files/MiKTeX/fonts/truetype/typoland/lato/Lato-Regular.ttf><C:/
-Program Files/MiKTeX/fonts/truetype/typoland/lato/Lato-Light.ttf><c:/program fil
-es/miktex/fonts/opentype/public/lm/lmmono12-regular.otf><C:/Users/pc/AppData/Roa
-ming/MiKTeX/fonts/opentype/impallari/raleway/raleway-regular.otf><C:/Users/pc/Ap
-pData/Roaming/MiKTeX/fonts/opentype/impallari/raleway/raleway-bold.otf><C:/Progr
-am Files/MiKTeX/fonts/type1/public/lm/lmmi12.pfb><C:/Program Files/MiKTeX/fonts/
-type1/public/lm/lmr17.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmsy10.
-pfb>
-Output written on poster.pdf (1 page, 572694 bytes).
+ 41008 strings out of 476081
+ 305234,1648299 words of node,token memory allocated
+ 71164 words of node memory still in use:
+   816 hlist, 45 vlist, 78 rule, 247 disc, 73 local_par, 101 math, 2416 glue, 62
+5 kern, 229 penalty, 3220 glyph, 2714 attribute, 84 glue_spec, 2714 attribute_li
+st, 4 write, 918 pdf_literal, 354 pdf_colorstack, 7 pdf_setmatrix, 7 pdf_save, 7
+ pdf_restore nodes
+   avail lists: 2:366,3:3519,4:1185,5:1905,6:222,7:17323,8:11,9:2928,10:21,11:74
+1
+ 62179 multiletter control sequences out of 65536+600000
+ 114 fonts using 19360863 bytes
+ 128i,23n,116p,726b,3079s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<c:/users/i-bros/appdata/local/programs/miktex/fonts/opentype/public/lm/lmmono12
+-regular.otf>{C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/l
+m-rm.enc}{C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ma
+thit.enc}{C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ma
+thsy.enc}<C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/fonts/truetype/typoland/
+lato/lato-lightitalic.ttf><C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/fonts/t
+ruetype/typoland/lato/lato-regular.ttf><C:/Users/I-Bros/AppData/Local/Programs/M
+iKTeX/fonts/truetype/typoland/lato/lato-light.ttf><C:/Users/I-Bros/AppData/Local
+/Programs/MiKTeX/fonts/opentype/impallari/raleway/raleway-regular.otf><C:/Users/
+I-Bros/AppData/Local/Programs/MiKTeX/fonts/opentype/impallari/raleway/raleway-bo
+ld.otf><C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi
+12.pfb><C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr1
+7.pfb><C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy1
+0.pfb>
+Output written on poster.pdf (1 page, 1271411 bytes).
 
-PDF statistics: 119 PDF objects out of 1000 (max. 8388607)
+PDF statistics: 159 PDF objects out of 1000 (max. 8388607)
  3 named destinations out of 1000 (max. 1048576)
  16 words of extra memory for PDF output out of 10000 (max. 100000000)
 
