@@ -85,10 +85,11 @@ generation~\cite{lewis2020rag,gao2023ragsurvey}: the model is never asked to
 recall the lecture from its weights, only to work from passages retrieved out of
 the lecture itself.
 
-The fused timeline is chunked, embedded with the Sentence-BERT model
-\texttt{all-MiniLM-L6-v2}~\cite{reimers2019sbert,wang2020minilm}, $L_2$-normalised, and indexed in
-FAISS~\cite{johnson2019faiss} with an inner-product index, so that inner product
-equals cosine similarity (Eq.~\ref{eq:cosine}):
+The fused timeline is chunked and embedded with the Sentence-BERT
+model~\cite{reimers2019sbert} \texttt{all-\allowbreak MiniLM-\allowbreak
+L6-\allowbreak v2}~\cite{wang2020minilm}. The vectors are $L_2$-normalised and
+indexed in FAISS~\cite{johnson2019faiss} with an inner-product index, so that
+inner product equals cosine similarity (Eq.~\ref{eq:cosine}):
 \begin{equation}
 \label{eq:cosine}
 \mathrm{sim}(q, c) \;=\;
@@ -430,61 +431,45 @@ Generator, so all four pipelines feed into an identical scoring path and are
 directly comparable. The two prompts are reproduced verbatim below, since the
 prompt \emph{is} the method.
 
-\subsubsection*{Chain-of-thought generation prompt}
-{\footnotesize
-\begin{verbatim}
-Generate [N] high-quality MCQ from this
-lecture content.
+Placeholders in square brackets are substituted at call time: \texttt{[N]} is the
+requested question count, \texttt{[DIFF]} the target difficulty band (that line is
+omitted entirely when no band is requested), and \texttt{[CONTENT]} and
+\texttt{[SUMMARY]} the retrieved lecture text and its summary, truncated to $8000$
+and $1500$ characters respectively. Line breaks are those of the prompt as sent;
+where a line is too long for the page it wraps with a $\hookrightarrow$ marker.
+
+\begin{lstlisting}[style=prompt,caption={Chain-of-thought generation prompt, as
+sent to the generator. The reasoning field is recorded for inspection and is
+ignored by the judge and the Answer Generator.},label={lst:cot}]
+Generate [N] high-quality MCQ from this lecture content.
 Difficulty focus: [DIFF]
-Use CHAIN-OF-THOUGHT: for EACH question,
-think step by step to work out the correct
-answer BEFORE choosing it, and record that
-step-by-step reasoning. The option you mark
-correct MUST be exactly the answer your
-reasoning reaches, and each distractor must
-be wrong for a stateable reason.
-STRICT JSON: {"questions":[{"question",
-  "options":{"A","B","C","D"},
-  "reasoning","correct_answer",
-  "explanation","topic","difficulty",
-  "bloom_level","source_timestamp",
-  "source_type"}]}
-'reasoning' = your step-by-step
-derivation of the correct option.
+Use CHAIN-OF-THOUGHT: for EACH question, think step by step to work out the correct answer BEFORE choosing it, and record that step-by-step reasoning. The option you mark correct MUST be exactly the answer your reasoning reaches, and each distractor must be wrong for a stateable reason.
+STRICT JSON: {"questions":[{"question","options":{"A","B","C","D"},"reasoning","correct_answer","explanation","topic","difficulty","bloom_level","source_timestamp","source_type"}]}
+'reasoning' = your step-by-step derivation of the correct option.
 
-CONTENT: [up to 8000 chars]
-SUMMARY: [up to 1500 chars]
-\end{verbatim}
-}
+CONTENT:
+[CONTENT]
 
-\subsubsection*{Program-of-thought generation prompt}
-{\footnotesize
-\begin{verbatim}
-Generate [N] high-quality MCQ from this
-lecture content.
+SUMMARY:
+[SUMMARY]
+\end{lstlisting}
+
+\begin{lstlisting}[style=prompt,caption={Program-of-thought generation prompt.
+Identical to Prompt~\ref{lst:cot} except for the reasoning instruction and the
+name of the recorded field, so the two differ only in how the answer is required
+to be derived.},label={lst:pot}]
+Generate [N] high-quality MCQ from this lecture content.
 Difficulty focus: [DIFF]
-Use PROGRAM-OF-THOUGHT: for EACH question,
-derive the answer through an explicit
-ordered sequence of computation/derivation
-steps (like a short program: define,
-substitute, simplify, evaluate), record
-those steps, and only then mark the option
-that EQUALS the final computed result. The
-marked correct option MUST equal the
-endpoint of your computation.
-STRICT JSON: {"questions":[{"question",
-  "options":{"A","B","C","D"},
-  "computation","correct_answer",
-  "explanation","topic","difficulty",
-  "bloom_level","source_timestamp",
-  "source_type"}]}
-'computation' = your ordered derivation
-steps ending at the correct value.
+Use PROGRAM-OF-THOUGHT: for EACH question, derive the answer through an explicit ordered sequence of computation/derivation steps (like a short program: define, substitute, simplify, evaluate), record those steps, and only then mark the option that EQUALS the final computed result. The marked correct option MUST equal the endpoint of your computation.
+STRICT JSON: {"questions":[{"question","options":{"A","B","C","D"},"computation","correct_answer","explanation","topic","difficulty","bloom_level","source_timestamp","source_type"}]}
+'computation' = your ordered derivation steps ending at the correct value.
 
-CONTENT: [up to 8000 chars]
-SUMMARY: [up to 1500 chars]
-\end{verbatim}
-}
+CONTENT:
+[CONTENT]
+
+SUMMARY:
+[SUMMARY]
+\end{lstlisting}
 
 % \subsection{Controlling for confounds}
 % \label{sec:meth-controls}

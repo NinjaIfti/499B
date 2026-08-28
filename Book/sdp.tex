@@ -25,6 +25,41 @@
                 backgrounds, decorations.pathreplacing}
 \usepackage{xcolor}
 
+% ── Prompt listings ───────────────────────────────────────────────────────
+% The CoT and PoT prompts are reproduced verbatim in Chapter 3, and the prompt
+% IS the method there, so they are set as framed, captioned, cross-referenceable
+% listings rather than as loose verbatim blocks. breaklines lets a long prompt
+% line wrap on its own instead of being hand-wrapped to fit the column, which
+% would misrepresent the prompt's real line structure.
+\usepackage{listings}
+\definecolor{promptbg}{HTML}{F7F8FA}
+\definecolor{promptrule}{HTML}{C3C8D2}
+\definecolor{promptkey}{HTML}{0B4F6C}
+\lstdefinestyle{prompt}{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{promptbg},
+  frame=single,
+  rulecolor=\color{promptrule},
+  framesep=6pt,
+  xleftmargin=10pt,
+  xrightmargin=10pt,
+  % Hyphen counts as a word character, otherwise listings tokenises
+  % CHAIN-OF-THOUGHT into CHAIN / OF / THOUGHT and the emph never matches.
+  alsoletter={-},
+  breaklines=true,
+  breakatwhitespace=false,
+  breakindent=14pt,
+  postbreak=\mbox{\textcolor{promptrule}{$\hookrightarrow$}\space},
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  captionpos=b,
+  abovecaptionskip=6pt,
+  emph={CHAIN-OF-THOUGHT,PROGRAM-OF-THOUGHT,STRICT,MUST,EACH,EQUALS,BEFORE},
+  emphstyle=\bfseries\color{promptkey},
+}
+\renewcommand{\lstlistingname}{Prompt}
+
 % LectureAssist palette -- kept identical to the project poster so that the
 % report and the poster read as one visual system.
 \definecolor{LAindigo}{HTML}{6366F1}

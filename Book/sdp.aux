@@ -101,7 +101,8 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.1.2}Scene-adaptive extraction}{20}{subsection.3.1.2}\protected@file@percent }
 \newlabel{sec:meth-ocr}{{3.1.2}{20}{Scene-adaptive extraction}{subsection.3.1.2}{}}
 \citation{lewis2020rag,gao2023ragsurvey}
-\citation{reimers2019sbert,wang2020minilm}
+\citation{reimers2019sbert}
+\citation{wang2020minilm}
 \citation{johnson2019faiss}
 \citation{flask}
 \citation{ngrok}
@@ -133,23 +134,27 @@
 \@writefile{toc}{\contentsline {paragraph}{The artifact trail.}{26}{section*.17}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.3.4}The four generation pipelines}{26}{subsection.3.3.4}\protected@file@percent }
 \newlabel{sec:meth-pipelines}{{3.3.4}{26}{The four generation pipelines}{subsection.3.3.4}{}}
+\newlabel{lst:cot}{{3.1}{27}{Chain-of-thought generation prompt, as sent to the generator. The reasoning field is recorded for inspection and is ignored by the judge and the Answer Generator}{lstlisting.3.1}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {3.1}Chain-of-thought generation prompt, as sent to the generator. The reasoning field is recorded for inspection and is ignored by the judge and the Answer Generator.}{27}{lstlisting.3.1}\protected@file@percent }
+\newlabel{lst:pot}{{3.2}{27}{Program-of-thought generation prompt. Identical to Prompt~\ref {lst:cot} except for the reasoning instruction and the name of the recorded field, so the two differ only in how the answer is required to be derived}{lstlisting.3.2}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {3.2}Program-of-thought generation prompt. Identical to Prompt~\ref {lst:cot} except for the reasoning instruction and the name of the recorded field, so the two differ only in how the answer is required to be derived.}{27}{lstlisting.3.2}\protected@file@percent }
 \citation{sympy}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.3.5}Answer correctness: two agents that must agree}{28}{subsection.3.3.5}\protected@file@percent }
 \newlabel{sec:meth-answer}{{3.3.5}{28}{Answer correctness: two agents that must agree}{subsection.3.3.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.6}System snapshot}{28}{subsection.3.3.6}\protected@file@percent }
-\newlabel{sec:meth-snapshot}{{3.3.6}{28}{System snapshot}{subsection.3.3.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.6}System snapshot}{29}{subsection.3.3.6}\protected@file@percent }
+\newlabel{sec:meth-snapshot}{{3.3.6}{29}{System snapshot}{subsection.3.3.6}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {3.3}{\ignorespaces The Quiz Engine and its live Agent Workspace. The four stage indicators across the top track the pipeline in real time as it runs. Beneath them, the counters report questions completed, questions validated and agents active, and each generated question appears as its own row recording the topic, the target difficulty, the verdict, the attempt on which it was accepted and the time taken. The row shown here was accepted on the first attempt in $8.7$ seconds. The raw event log at the bottom names the agent responsible for every step, so a run can be audited after the fact rather than inferred from its output.}}{29}{figure.3.3}\protected@file@percent }
 \newlabel{fig:ui-workspace}{{3.3}{29}{The Quiz Engine and its live Agent Workspace. The four stage indicators across the top track the pipeline in real time as it runs. Beneath them, the counters report questions completed, questions validated and agents active, and each generated question appears as its own row recording the topic, the target difficulty, the verdict, the attempt on which it was accepted and the time taken. The row shown here was accepted on the first attempt in $8.7$ seconds. The raw event log at the bottom names the agent responsible for every step, so a run can be audited after the fact rather than inferred from its output}{figure.3.3}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3.4}{\ignorespaces The quiz-taking view. Each item carries its target difficulty, its Bloom level and the topic it was planned against, together with the source timestamp of the lecture material it was grounded in. That timestamp is what allows a student who doubts an answer to return to the exact moment in the lecture the question came from, which is the practical safeguard against the failure mode discussed in Chapter~\ref {ch:impacts}.}}{29}{figure.3.4}\protected@file@percent }
-\newlabel{fig:ui-quiz}{{3.4}{29}{The quiz-taking view. Each item carries its target difficulty, its Bloom level and the topic it was planned against, together with the source timestamp of the lecture material it was grounded in. That timestamp is what allows a student who doubts an answer to return to the exact moment in the lecture the question came from, which is the practical safeguard against the failure mode discussed in Chapter~\ref {ch:impacts}}{figure.3.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3.4}{\ignorespaces The quiz-taking view. Each item carries its target difficulty, its Bloom level and the topic it was planned against, together with the source timestamp of the lecture material it was grounded in. That timestamp is what allows a student who doubts an answer to return to the exact moment in the lecture the question came from, which is the practical safeguard against the failure mode discussed in Chapter~\ref {ch:impacts}.}}{30}{figure.3.4}\protected@file@percent }
+\newlabel{fig:ui-quiz}{{3.4}{30}{The quiz-taking view. Each item carries its target difficulty, its Bloom level and the topic it was planned against, together with the source timestamp of the lecture material it was grounded in. That timestamp is what allows a student who doubts an answer to return to the exact moment in the lecture the question came from, which is the practical safeguard against the failure mode discussed in Chapter~\ref {ch:impacts}}{figure.3.4}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {3.5}{\ignorespaces Processing in progress. The agent activity feed streams each orchestrator decision as it is taken rather than reporting them only once the run has finished: the capture shows six decisions logged at $37\%$ completion, with the DocParser having extracted $5{,}593$ characters from $18$ blocks in $0.3$ seconds and the Summarizer already started. The stage pills above it track which of OCR, Whisper, Summary and RAG is currently active.}}{30}{figure.3.5}\protected@file@percent }
 \newlabel{fig:ui-live}{{3.5}{30}{Processing in progress. The agent activity feed streams each orchestrator decision as it is taken rather than reporting them only once the run has finished: the capture shows six decisions logged at $37\%$ completion, with the DocParser having extracted $5{,}593$ characters from $18$ blocks in $0.3$ seconds and the Summarizer already started. The stage pills above it track which of OCR, Whisper, Summary and RAG is currently active}{figure.3.5}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3.6}{\ignorespaces The agent log for a completed document run, with per-agent timing. The trail records not only which agent acted but how long each took and which steps the orchestrator chose to run concurrently: DocParser completed in $0.3$s, the Summarizer in $211.5$s, and RAGBuilder and HintsDetector were dispatched in parallel, finishing in $0.6$s and $50.2$s respectively. The pipeline is therefore auditable after the fact, which is what makes the timing claims in this chapter checkable rather than asserted.}}{30}{figure.3.6}\protected@file@percent }
-\newlabel{fig:ui-agentlog}{{3.6}{30}{The agent log for a completed document run, with per-agent timing. The trail records not only which agent acted but how long each took and which steps the orchestrator chose to run concurrently: DocParser completed in $0.3$s, the Summarizer in $211.5$s, and RAGBuilder and HintsDetector were dispatched in parallel, finishing in $0.6$s and $50.2$s respectively. The pipeline is therefore auditable after the fact, which is what makes the timing claims in this chapter checkable rather than asserted}{figure.3.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3.6}{\ignorespaces The agent log for a completed document run, with per-agent timing. The trail records not only which agent acted but how long each took and which steps the orchestrator chose to run concurrently: DocParser completed in $0.3$s, the Summarizer in $211.5$s, and RAGBuilder and HintsDetector were dispatched in parallel, finishing in $0.6$s and $50.2$s respectively. The pipeline is therefore auditable after the fact, which is what makes the timing claims in this chapter checkable rather than asserted.}}{31}{figure.3.6}\protected@file@percent }
+\newlabel{fig:ui-agentlog}{{3.6}{31}{The agent log for a completed document run, with per-agent timing. The trail records not only which agent acted but how long each took and which steps the orchestrator chose to run concurrently: DocParser completed in $0.3$s, the Summarizer in $211.5$s, and RAGBuilder and HintsDetector were dispatched in parallel, finishing in $0.6$s and $50.2$s respectively. The pipeline is therefore auditable after the fact, which is what makes the timing claims in this chapter checkable rather than asserted}{figure.3.6}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {3.7}{\ignorespaces A full twenty-question generation. The counters read \emph  {questions $20/20$, validated $14$, override $6$, retries $29$, agents $4$}, and the status line states plainly that $14$ passed and $6$ were kept as overrides. Twenty accepted questions therefore cost twenty-nine retries, which is the compute multiplication discussed in Section~\ref {sec:impacts-economic} made visible.}}{31}{figure.3.7}\protected@file@percent }
 \newlabel{fig:ui-quizrun}{{3.7}{31}{A full twenty-question generation. The counters read \emph {questions $20/20$, validated $14$, override $6$, retries $29$, agents $4$}, and the status line states plainly that $14$ passed and $6$ were kept as overrides. Twenty accepted questions therefore cost twenty-nine retries, which is the compute multiplication discussed in Section~\ref {sec:impacts-economic} made visible}{figure.3.7}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3.8}{\ignorespaces The graded review, with the source panel open. Each item shows the marked answer against the student's, the explanation drawn from the retrieved material, and the lecture timestamp the question was grounded in; selecting that timestamp opens the source at that moment. Items answered incorrectly are separated from those answered correctly, so the review surface is also the input to the per-topic weakness profile of Section~\ref {sec:meth-grading}.}}{31}{figure.3.8}\protected@file@percent }
-\newlabel{fig:ui-graded}{{3.8}{31}{The graded review, with the source panel open. Each item shows the marked answer against the student's, the explanation drawn from the retrieved material, and the lecture timestamp the question was grounded in; selecting that timestamp opens the source at that moment. Items answered incorrectly are separated from those answered correctly, so the review surface is also the input to the per-topic weakness profile of Section~\ref {sec:meth-grading}}{figure.3.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3.8}{\ignorespaces The graded review, with the source panel open. Each item shows the marked answer against the student's, the explanation drawn from the retrieved material, and the lecture timestamp the question was grounded in; selecting that timestamp opens the source at that moment. Items answered incorrectly are separated from those answered correctly, so the review surface is also the input to the per-topic weakness profile of Section~\ref {sec:meth-grading}.}}{32}{figure.3.8}\protected@file@percent }
+\newlabel{fig:ui-graded}{{3.8}{32}{The graded review, with the source panel open. Each item shows the marked answer against the student's, the explanation drawn from the retrieved material, and the lecture timestamp the question was grounded in; selecting that timestamp opens the source at that moment. Items answered incorrectly are separated from those answered correctly, so the review surface is also the input to the per-topic weakness profile of Section~\ref {sec:meth-grading}}{figure.3.8}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.3.7}Multi-tier grading and adaptation}{32}{subsection.3.3.7}\protected@file@percent }
 \newlabel{sec:meth-grading}{{3.3.7}{32}{Multi-tier grading and adaptation}{subsection.3.3.7}{}}
 \@writefile{toc}{\contentsline {chapter}{\numberline {4}Investigation/Experiment, Result, Analysis and Discussion}{33}{chapter.4}\protected@file@percent }
@@ -163,8 +168,8 @@
 \newlabel{sec:res-configs}{{4.1.1}{34}{Configurations under test}{subsection.4.1.1}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {4.1}{\ignorespaces The eleven configurations defined for this study and the question each one is designed to answer.}}{34}{table.4.1}\protected@file@percent }
 \newlabel{tab:configs}{{4.1}{34}{The eleven configurations defined for this study and the question each one is designed to answer}{table.4.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{Source data.}{35}{section*.20}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Question count.}{35}{section*.21}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Source data.}{35}{section*.18}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Question count.}{35}{section*.19}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {4.2}Evaluation Protocols}{35}{section.4.2}\protected@file@percent }
 \newlabel{sec:res-protocol}{{4.2}{35}{Evaluation Protocols}{section.4.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.2.1}Native metrics, and why a cost column is mandatory}{35}{subsection.4.2.1}\protected@file@percent }
@@ -177,8 +182,8 @@
 \newlabel{sec:res-merge}{{4.3.2}{36}{Agent merging}{subsection.4.3.2}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {4.1}{\ignorespaces The three configurations compared by the merging experiment. All three receive identical grounded content and retrieval index and share the pinned \texttt  {gemma3:4b} generator, the retrieval tool and the Controller; only the boxed agent merges differ. Call counts are structural, counted from the implementation, not measured runtimes.}}{37}{figure.4.1}\protected@file@percent }
 \newlabel{fig:merge}{{4.1}{37}{The three configurations compared by the merging experiment. All three receive identical grounded content and retrieval index and share the pinned \texttt {gemma3:4b} generator, the retrieval tool and the Controller; only the boxed agent merges differ. Call counts are structural, counted from the implementation, not measured runtimes}{figure.4.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{\texttt  {merge\_vr}, Validator $+$ Refiner.}{37}{section*.22}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{\texttt  {merge\_pg}, Planner $+$ Generator.}{37}{section*.23}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\texttt  {merge\_vr}, Validator $+$ Refiner.}{37}{section*.20}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\texttt  {merge\_pg}, Planner $+$ Generator.}{37}{section*.21}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.3.3}What these ablations cannot show}{38}{subsection.4.3.3}\protected@file@percent }
 \newlabel{sec:res-ablation-limits}{{4.3.3}{38}{What these ablations cannot show}{subsection.4.3.3}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {4.4}Results and Discussion}{38}{section.4.4}\protected@file@percent }
@@ -190,9 +195,9 @@
 \@writefile{lot}{\contentsline {table}{\numberline {4.3}{\ignorespaces Native metrics broken down by target difficulty, $n$ per cell as shown. Higher is better except duplicate rate.}}{38}{table.4.3}\protected@file@percent }
 \newlabel{tab:native-difficulty}{{4.3}{38}{Native metrics broken down by target difficulty, $n$ per cell as shown. Higher is better except duplicate rate}{table.4.3}{}}
 \newlabel{eq:effaccept}{{4.1}{39}{Native metrics, agentic versus non-agentic}{equation.4.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{A declared correction to the pipeline labelling.}{39}{section*.24}\protected@file@percent }
-\newlabel{sec:res-discuss}{{4.4.1}{39}{Reading these results honestly}{section*.25}{}}
-\@writefile{toc}{\contentsline {paragraph}{Reading these results honestly.}{39}{section*.25}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{A declared correction to the pipeline labelling.}{39}{section*.22}\protected@file@percent }
+\newlabel{sec:res-discuss}{{4.4.1}{39}{Reading these results honestly}{section*.23}{}}
+\@writefile{toc}{\contentsline {paragraph}{Reading these results honestly.}{39}{section*.23}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {4.5}System Interpretation}{40}{section.4.5}\protected@file@percent }
 \newlabel{sec:res-interpretation}{{4.5}{40}{System Interpretation}{section.4.5}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.5.1}Where in the pipeline the advantage can live}{40}{subsection.4.5.1}\protected@file@percent }
@@ -201,10 +206,10 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.5.4}What the system does not establish}{42}{subsection.4.5.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {4.6}Summary}{42}{section.4.6}\protected@file@percent }
 \newlabel{sec:res-summary}{{4.6}{42}{Summary}{section.4.6}{}}
-\@writefile{toc}{\contentsline {paragraph}{What was established.}{42}{section*.26}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{What the instruments revealed about themselves.}{43}{section*.27}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{What remains open.}{43}{section*.28}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Two caveats carried forward.}{43}{section*.29}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{What was established.}{42}{section*.24}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{What the instruments revealed about themselves.}{43}{section*.25}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{What remains open.}{43}{section*.26}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Two caveats carried forward.}{43}{section*.27}\protected@file@percent }
 \@writefile{toc}{\contentsline {chapter}{\numberline {5}Impacts and Design Constraints of the Project}{44}{chapter.5}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
@@ -212,35 +217,35 @@
 \newlabel{ch:impacts}{{5}{44}{Impacts and Design Constraints of the Project}{chapter.5}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {5.1}Economic Impact}{44}{section.5.1}\protected@file@percent }
 \newlabel{sec:impacts-economic}{{5.1}{44}{Economic Impact}{section.5.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{The constraint that drove the architecture.}{44}{section*.30}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Where the cost actually goes.}{44}{section*.31}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The constraint that drove the architecture.}{44}{section*.28}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Where the cost actually goes.}{44}{section*.29}\protected@file@percent }
 \citation{roediger2006testenhanced,karpicke2011retrieval}
 \citation{dunlosky2013improving}
-\@writefile{toc}{\contentsline {paragraph}{The compute cost of the agentic loop.}{45}{section*.32}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Institutional adoption.}{45}{section*.33}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The compute cost of the agentic loop.}{45}{section*.30}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Institutional adoption.}{45}{section*.31}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {5.2}Impact on Societal, Health, Safety, Legal and Cultural Issues}{45}{section.5.2}\protected@file@percent }
 \newlabel{sec:impacts-society}{{5.2}{45}{Impact on Societal, Health, Safety, Legal and Cultural Issues}{section.5.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{Educational and societal impact.}{45}{section*.34}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Safety: the risk of confidently teaching the wrong thing.}{46}{section*.35}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Legal and privacy considerations.}{46}{section*.36}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Cultural and linguistic considerations.}{47}{section*.37}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Educational and societal impact.}{45}{section*.32}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Safety: the risk of confidently teaching the wrong thing.}{46}{section*.33}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Legal and privacy considerations.}{46}{section*.34}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Cultural and linguistic considerations.}{47}{section*.35}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {5.3}Ethical Considerations}{47}{section.5.3}\protected@file@percent }
 \newlabel{sec:impacts-ethics}{{5.3}{47}{Ethical Considerations}{section.5.3}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.3.1}Research Ethics}{47}{subsection.5.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{No fabricated results.}{47}{section*.38}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{No misrepresentation of the system's capability.}{47}{section*.39}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{No fabricated results.}{47}{section*.36}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{No misrepresentation of the system's capability.}{47}{section*.37}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.3.2}Ethics of Deployment}{48}{subsection.5.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Academic integrity.}{48}{section*.40}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{The obligation created by confident error.}{48}{section*.41}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Data, consent and ownership.}{48}{section*.42}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Bias, coverage and who the system serves.}{48}{section*.43}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Boundaries of responsible use.}{49}{section*.44}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Academic integrity.}{48}{section*.38}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The obligation created by confident error.}{48}{section*.39}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Data, consent and ownership.}{48}{section*.40}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Bias, coverage and who the system serves.}{48}{section*.41}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Boundaries of responsible use.}{49}{section*.42}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {5.4}Impact on Environment and Sustainability}{49}{section.5.4}\protected@file@percent }
 \newlabel{sec:impacts-env}{{5.4}{49}{Impact on Environment and Sustainability}{section.5.4}{}}
-\@writefile{toc}{\contentsline {paragraph}{Small models, local inference.}{49}{section*.45}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Caching and resumability as energy savings.}{49}{section*.46}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{The honest counterweight: the agentic loop is not free.}{49}{section*.47}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Sustainability of access.}{50}{section*.48}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Small models, local inference.}{49}{section*.43}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Caching and resumability as energy savings.}{49}{section*.44}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The honest counterweight: the agentic loop is not free.}{49}{section*.45}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Sustainability of access.}{50}{section*.46}\protected@file@percent }
 \@writefile{toc}{\contentsline {chapter}{\numberline {6}Project Planning and Budget}{51}{chapter.6}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
@@ -248,14 +253,14 @@
 \newlabel{ch:planning}{{6}{51}{Project Planning and Budget}{chapter.6}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {6.1}Development Methodology}{51}{section.6.1}\protected@file@percent }
 \newlabel{sec:plan-method}{{6.1}{51}{Development Methodology}{section.6.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{Stages could be developed and debugged independently.}{51}{section*.49}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Expensive work became resumable.}{51}{section*.50}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Stages could be developed and debugged independently.}{51}{section*.47}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Expensive work became resumable.}{51}{section*.48}\protected@file@percent }
 \gdef \LT@i {\LT@entry 
     {1}{26.26648pt}\LT@entry 
     {1}{150.26378pt}\LT@entry 
     {1}{167.3356pt}\LT@entry 
     {1}{37.70189pt}}
-\@writefile{toc}{\contentsline {paragraph}{Measurement was decoupled from generation.}{52}{section*.51}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Measurement was decoupled from generation.}{52}{section*.49}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {6.2}Work Breakdown Structure}{52}{section.6.2}\protected@file@percent }
 \newlabel{sec:plan-wbs}{{6.2}{52}{Work Breakdown Structure}{section.6.2}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {6.1}{Work breakdown structure. Each work package produces a deliverable that a later package consumes.}}{52}{table.6.1}\protected@file@percent }
@@ -264,15 +269,15 @@
 \newlabel{sec:plan-gantt}{{6.3}{53}{Project Schedule}{section.6.3}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {6.1}{\ignorespaces Project schedule across thirty weeks, showing twenty work packages grouped into five phases, the CSE~499A/499B term boundary at week 15, and six milestones. Overlapping bars reflect the artifact-driven methodology of Section~\ref {sec:plan-method}: a downstream stage begins as soon as the upstream stage emits a usable artifact, not when it is finished.}}{53}{figure.6.1}\protected@file@percent }
 \newlabel{fig:gantt}{{6.1}{53}{Project schedule across thirty weeks, showing twenty work packages grouped into five phases, the CSE~499A/499B term boundary at week 15, and six milestones. Overlapping bars reflect the artifact-driven methodology of Section~\ref {sec:plan-method}: a downstream stage begins as soon as the upstream stage emits a usable artifact, not when it is finished}{figure.6.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{Extraction and retrieval overlap.}{53}{section*.52}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{The interface was built early and in parallel.}{53}{section*.53}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Extraction and retrieval overlap.}{53}{section*.50}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The interface was built early and in parallel.}{53}{section*.51}\protected@file@percent }
 \gdef \LT@ii {\LT@entry 
     {1}{163.6447pt}\LT@entry 
     {1}{45.47806pt}\LT@entry 
     {1}{44.02037pt}\LT@entry 
     {1}{45.03568pt}\LT@entry 
     {1}{59.82321pt}}
-\@writefile{toc}{\contentsline {paragraph}{Evaluation was given eight weeks, and needed them.}{54}{section*.54}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Evaluation was given eight weeks, and needed them.}{54}{section*.52}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {6.2}{\ignorespaces Project milestones and their acceptance criteria.}}{54}{table.6.2}\protected@file@percent }
 \newlabel{tab:milestones}{{6.2}{54}{Project milestones and their acceptance criteria}{table.6.2}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {6.4}Team Roles and Responsibilities}{54}{section.6.4}\protected@file@percent }
@@ -293,10 +298,10 @@
 \newlabel{sec:plan-budget}{{6.6}{55}{Budget}{section.6.6}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {6.2}{\ignorespaces Project budget. Every component on the generation path is free: the compute is a free-tier NVIDIA T4, the models are open weights served locally, and the extraction, retrieval and serving stack is open source. The single non-zero technical line is the independent judge required by the EQGBench protocol, which is an evaluation cost rather than a system cost.}}{56}{figure.6.2}\protected@file@percent }
 \newlabel{fig:budget}{{6.2}{56}{Project budget. Every component on the generation path is free: the compute is a free-tier NVIDIA T4, the models are open weights served locally, and the extraction, retrieval and serving stack is open source. The single non-zero technical line is the independent judge required by the EQGBench protocol, which is an evaluation cost rather than a system cost}{figure.6.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{The system itself costs nothing to run.}{56}{section*.55}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{The one paid line is a measurement cost, not a product cost.}{56}{section*.56}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{The dominant real cost is human time, which does not appear in the table.}{57}{section*.57}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Cost avoided.}{57}{section*.58}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The system itself costs nothing to run.}{56}{section*.53}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The one paid line is a measurement cost, not a product cost.}{56}{section*.54}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The dominant real cost is human time, which does not appear in the table.}{57}{section*.55}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Cost avoided.}{57}{section*.56}\protected@file@percent }
 \gdef \LT@iv {\LT@entry 
     {1}{35.37473pt}\LT@entry 
     {1}{108.73918pt}\LT@entry 
@@ -340,32 +345,32 @@
 \newlabel{sec:concl-summary}{{8.1}{63}{Summary}{section.8.1}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {8.2}Findings}{64}{section.8.2}\protected@file@percent }
 \newlabel{sec:concl-findings}{{8.2}{64}{Findings}{section.8.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{The agentic pipeline beats single-shot prompting on every metric that discriminates.}{64}{section*.59}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{The most instructive finding is that the obvious metrics do not work.}{64}{section*.60}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Winning as a whole is not the same as knowing why.}{64}{section*.61}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The agentic pipeline beats single-shot prompting on every metric that discriminates.}{64}{section*.57}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The most instructive finding is that the obvious metrics do not work.}{64}{section*.58}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Winning as a whole is not the same as knowing why.}{64}{section*.59}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {8.3}Limitations}{64}{section.8.3}\protected@file@percent }
 \newlabel{sec:concl-limits}{{8.3}{64}{Limitations}{section.8.3}{}}
-\@writefile{toc}{\contentsline {paragraph}{The pipeline labelling rests on generation records, not on the artifacts.}{64}{section*.62}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The pipeline labelling rests on generation records, not on the artifacts.}{64}{section*.60}\protected@file@percent }
 \citation{zheng2023judging}
 \citation{sympy}
 \citation{openstax_calculus}
 \citation{chen2023pot}
-\@writefile{toc}{\contentsline {paragraph}{The judge and the Answer Generator are language models, not humans.}{65}{section*.63}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Generator--solver agreement is not the same as correctness.}{65}{section*.64}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{The result is a comparison of two pipelines, not an attribution.}{65}{section*.65}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Single domain, single document.}{65}{section*.66}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{The extraction layer bounds everything above it.}{65}{section*.67}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Deployment is not production-grade.}{66}{section*.68}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The judge and the Answer Generator are language models, not humans.}{65}{section*.61}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Generator--solver agreement is not the same as correctness.}{65}{section*.62}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The result is a comparison of two pipelines, not an attribution.}{65}{section*.63}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Single domain, single document.}{65}{section*.64}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The extraction layer bounds everything above it.}{65}{section*.65}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Deployment is not production-grade.}{66}{section*.66}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {8.4}Future Improvement}{66}{section.8.4}\protected@file@percent }
 \newlabel{sec:concl-future}{{8.4}{66}{Future Improvement}{section.8.4}{}}
-\@writefile{toc}{\contentsline {paragraph}{Confirm the arm labelling before anything else.}{66}{section*.69}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Run the ablations, and read them against cost.}{66}{section*.70}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Evaluate under a published benchmark.}{66}{section*.71}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Strengthen answer verification.}{66}{section*.72}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Human evaluation.}{67}{section*.73}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Broaden the domain.}{67}{section*.74}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Close the loop on diversity.}{67}{section*.75}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{References}{67}{section*.75}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Confirm the arm labelling before anything else.}{66}{section*.67}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Run the ablations, and read them against cost.}{66}{section*.68}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Evaluate under a published benchmark.}{66}{section*.69}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Strengthen answer verification.}{66}{section*.70}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Human evaluation.}{67}{section*.71}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Broaden the domain.}{67}{section*.72}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Close the loop on diversity.}{67}{section*.73}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{References}{67}{section*.73}\protected@file@percent }
 \bibstyle{IEEEtran}
 \bibdata{references}
 \bibcite{bloom1956taxonomy}{{1}{}{{}}{{}}}

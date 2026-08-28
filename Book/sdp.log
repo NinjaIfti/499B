@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.6.18)  28 AUG 2026 20:45
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.6.18)  28 AUG 2026 21:08
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -674,6 +674,39 @@ edecorations.code.tex
 )
 (C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries/decora
 tions\pgflibrarydecorations.pathreplacing.code.tex))
+(C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.sty
+\lst@mode=\count332
+\lst@gtempboxa=\box85
+\lst@token=\toks39
+\lst@length=\count333
+\lst@currlwidth=\dimen288
+\lst@column=\count334
+\lst@pos=\count335
+\lst@lostspace=\dimen289
+\lst@width=\dimen290
+\lst@newlines=\count336
+\lst@lineno=\count337
+\lst@maxwidth=\dimen291
+
+(C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstpatch.sty
+File: lstpatch.sty 2025/11/14 1.11b (Carsten Heinz)
+) (C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstmisc.sty
+File: lstmisc.sty 2025/11/14 1.11b (Carsten Heinz)
+\c@lstnumber=\count338
+\lst@skipnumbers=\count339
+\lst@framebox=\box86
+) (C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/latex/listings\listings.cf
+g
+File: listings.cfg 2025/11/14 1.11b listings configuration
+))
+Package: listings 2025/11/14 1.11b (Carsten Heinz)
+
+==> First Aid for listings.sty no longer applied!
+    Expected:
+        2024/09/23 1.10c (Carsten Heinz)
+    but found:
+        2025/11/14 1.11b (Carsten Heinz)
+    so I'm assuming it got fixed.
 (C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hyperref.sty
 Package: hyperref 2025-07-12 v7.01o Hypertext links for LaTeX
 
@@ -706,20 +739,20 @@ Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 y
 Package: kvoptions 2022-06-15 v3.15 Key value format for package options (HO)
 ))
-\c@section@level=\count332
+\c@section@level=\count340
 )
 (C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/latex/etoolbox\etoolbox.sty
 Package: etoolbox 2025/10/02 v2.5m e-TeX tools for LaTeX (JAW)
-\etb@tempcnta=\count333
+\etb@tempcnta=\count341
 )
 (C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/generic/stringenc\stringenc.
 sty
 Package: stringenc 2019/11/29 v1.12 Convert strings between diff. encodings (HO
 )
 )
-\@linkdim=\dimen288
-\Hy@linkcounter=\count334
-\Hy@pagecounter=\count335
+\@linkdim=\dimen292
+\Hy@linkcounter=\count342
+\Hy@pagecounter=\count343
 
 (C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\pd1enc.def
 File: pd1enc.def 2025-07-12 v7.01o Hyperref: PDFDocEncoding definition (HO)
@@ -729,7 +762,7 @@ Now handling font encoding PD1 ...
 (C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/generic/intcalc\intcalc.sty
 Package: intcalc 2019/12/15 v1.3 Expandable calculations with integers (HO)
 )
-\Hy@SavedSpaceFactor=\count336
+\Hy@SavedSpaceFactor=\count344
 (C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\puenc.def
 File: puenc.def 2025-07-12 v7.01o Hyperref: PDF Unicode definition (HO)
 Now handling font encoding PU ...
@@ -742,9 +775,9 @@ Package hyperref Info: Plain pages OFF on input line 4210.
 Package hyperref Info: Backreferencing OFF on input line 4215.
 Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
 Package hyperref Info: Bookmarks ON on input line 4462.
-\c@Hy@tempcnt=\count337
+\c@Hy@tempcnt=\count345
 LaTeX Info: Redefining \url on input line 4801.
-\XeTeXLinkMargin=\dimen289
+\XeTeXLinkMargin=\dimen293
 
 (C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/generic/bitset\bitset.sty
 Package: bitset 2019/12/09 v1.3 Handle bit-vector datatype (HO)
@@ -754,9 +787,9 @@ c.sty
 Package: bigintcalc 2019/12/15 v1.5 Expandable calculations on big integers (HO
 )
 ))
-\Fld@menulength=\count338
-\Field@Width=\dimen290
-\Fld@charsize=\dimen291
+\Fld@menulength=\count346
+\Field@Width=\dimen294
+\Fld@charsize=\dimen295
 Package hyperref Info: Hyper figures OFF on input line 6078.
 Package hyperref Info: Link nesting OFF on input line 6083.
 Package hyperref Info: Hyper index ON on input line 6086.
@@ -764,16 +797,16 @@ Package hyperref Info: backreferencing OFF on input line 6093.
 Package hyperref Info: Link coloring OFF on input line 6098.
 Package hyperref Info: Link coloring with OCG OFF on input line 6103.
 Package hyperref Info: PDF/A mode OFF on input line 6108.
-\Hy@abspage=\count339
-\c@Item=\count340
-\c@Hfootnote=\count341
+\Hy@abspage=\count347
+\c@Item=\count348
+\c@Hfootnote=\count349
 )
 Package hyperref Info: Driver (autodetected): hpdftex.
 
 (C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hpdftex.def
 File: hpdftex.def 2025-07-12 v7.01o Hyperref driver for pdfTeX
-\Fld@listcount=\count342
-\c@bookmark@seq@number=\count343
+\Fld@listcount=\count350
+\c@bookmark@seq@number=\count351
 
 (C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/latex/rerunfilecheck\rerunfi
 lecheck.sty
@@ -794,18 +827,18 @@ Package: geometry 2026/03/07 v6.0 Page Geometry
 (C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/generic/iftex\ifvtex.sty
 Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
 )
-\Gm@cnth=\count344
-\Gm@cntv=\count345
-\c@Gm@tempcnt=\count346
-\Gm@bindingoffset=\dimen292
-\Gm@wd@mp=\dimen293
-\Gm@odd@mp=\dimen294
-\Gm@even@mp=\dimen295
-\Gm@layoutwidth=\dimen296
-\Gm@layoutheight=\dimen297
-\Gm@layouthoffset=\dimen298
-\Gm@layoutvoffset=\dimen299
-\Gm@dimlist=\toks39
+\Gm@cnth=\count352
+\Gm@cntv=\count353
+\c@Gm@tempcnt=\count354
+\Gm@bindingoffset=\dimen296
+\Gm@wd@mp=\dimen297
+\Gm@odd@mp=\dimen298
+\Gm@even@mp=\dimen299
+\Gm@layoutwidth=\dimen300
+\Gm@layoutheight=\dimen301
+\Gm@layouthoffset=\dimen302
+\Gm@layoutvoffset=\dimen303
+\Gm@dimlist=\toks40
 
 (C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.cfg)
 )
@@ -829,7 +862,7 @@ Package: fancyhdr 2025/02/07 v5.2 Extensive control of page headers and footers
 \f@nch@widthL=\skip92
 \f@nch@widthC=\skip93
 \f@nch@widthR=\skip94
-\@temptokenb=\toks40
+\@temptokenb=\toks41
 )
 \@indexfile=\write4
 \openout4 = `sdp.idx'.
@@ -840,43 +873,43 @@ Writing index file sdp.idx
 (C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pd
 ftex.def
 File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count347
+\l__color_backend_stack_int=\count355
 ) (sdp.aux)
 \openout1 = `sdp.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 83.
-LaTeX Font Info:    ... okay on input line 83.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 83.
-LaTeX Font Info:    ... okay on input line 83.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 83.
-LaTeX Font Info:    ... okay on input line 83.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 83.
-LaTeX Font Info:    ... okay on input line 83.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 83.
-LaTeX Font Info:    ... okay on input line 83.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 83.
-LaTeX Font Info:    ... okay on input line 83.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 83.
-LaTeX Font Info:    ... okay on input line 83.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 83.
-LaTeX Font Info:    ... okay on input line 83.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 83.
-LaTeX Font Info:    ... okay on input line 83.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 118.
+LaTeX Font Info:    ... okay on input line 118.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 118.
+LaTeX Font Info:    ... okay on input line 118.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 118.
+LaTeX Font Info:    ... okay on input line 118.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 118.
+LaTeX Font Info:    ... okay on input line 118.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 118.
+LaTeX Font Info:    ... okay on input line 118.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 118.
+LaTeX Font Info:    ... okay on input line 118.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 118.
+LaTeX Font Info:    ... okay on input line 118.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 118.
+LaTeX Font Info:    ... okay on input line 118.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 118.
+LaTeX Font Info:    ... okay on input line 118.
 
 (C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.m
 kii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count348
-\scratchdimen=\dimen300
-\scratchbox=\box85
-\nofMPsegments=\count349
-\nofMParguments=\count350
-\everyMPshowfont=\toks41
-\MPscratchCnt=\count351
-\MPscratchDim=\dimen301
-\MPnumerator=\count352
-\makeMPintoPDFobject=\count353
-\everyMPtoPDFconversion=\toks42
+\scratchcounter=\count356
+\scratchdimen=\dimen304
+\scratchbox=\box87
+\nofMPsegments=\count357
+\nofMParguments=\count358
+\everyMPshowfont=\toks42
+\MPscratchCnt=\count359
+\MPscratchDim=\dimen305
+\MPnumerator=\count360
+\makeMPintoPDFobject=\count361
+\everyMPtoPDFconversion=\toks43
 )
 (C:\Users\I-Bros\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-
 base.sty
@@ -888,7 +921,8 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 cfg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
-Package hyperref Info: Link coloring OFF on input line 83.
+\c@lstlisting=\count362
+Package hyperref Info: Link coloring OFF on input line 118.
  (sdp.out) (sdp.out)
 \@outlinefile=\write5
 \openout5 = `sdp.out'.
@@ -1000,7 +1034,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.i}) has
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.119 \clearpage
+l.154 \clearpage
                  [1
 
 ] (0.4.abstract.tex
@@ -1265,123 +1299,117 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [20 <./lectureassist-architecture-illustrated.pdf>]
-Overfull \hbox (46.48723pt too wide) in paragraph at lines 88--92
-[]\OT1/cmr/m/n/10.95 The fused time-line is chun-ked, em-bed-ded with the Sente
-nce-BERT model \OT1/cmtt/m/n/10.95 all-MiniLM-L6-v2 \OT1/cmr/m/n/10.95 [[],
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 132--132
+Underfull \hbox (badness 10000) in paragraph at lines 133--133
 []\OT1/cmr/m/n/9 Generation, sum-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 133--133
+Underfull \hbox (badness 10000) in paragraph at lines 134--134
 []\OT1/cmr/m/n/9 GPT-4, Claude,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 142--142
+Underfull \hbox (badness 10000) in paragraph at lines 143--143
 []\OT1/cmr/m/n/9 Faster-Whisper
  []
 
 
-Underfull \hbox (badness 3460) in paragraph at lines 144--146
+Underfull \hbox (badness 3460) in paragraph at lines 145--147
 []\OT1/cmr/m/n/9 Same ac-cu-racy as ref-er-ence
  []
 
 
-Underfull \hbox (badness 1210) in paragraph at lines 144--146
+Underfull \hbox (badness 1210) in paragraph at lines 145--147
 \OT1/cmr/m/n/9 mem-ory; runs of-fline. The
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 148--148
+Underfull \hbox (badness 10000) in paragraph at lines 149--149
 []\OT1/cmr/m/n/9 Tesseract, Pad-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 148--148
+Underfull \hbox (badness 10000) in paragraph at lines 149--149
 \OT1/cmr/m/n/9 dleOCR, Google
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 152--152
+Underfull \hbox (badness 10000) in paragraph at lines 153--153
 []\OT1/cmr/m/n/9 Sentence-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 152--152
+Underfull \hbox (badness 10000) in paragraph at lines 153--153
 \OT1/cmr/m/n/9 Transformers
  []
 
 
-Overfull \hbox (1.6218pt too wide) in paragraph at lines 152--152
+Overfull \hbox (1.6218pt too wide) in paragraph at lines 153--153
 \OT1/cmtt/m/n/9 all-MiniLM-L6-v2| 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 152--152
+Underfull \hbox (badness 10000) in paragraph at lines 153--153
 []\OT1/cmr/m/n/9 Embeddings for
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 153--153
+Underfull \hbox (badness 10000) in paragraph at lines 154--154
 []\OT1/cmr/m/n/9 OpenAI
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 153--153
+Underfull \hbox (badness 10000) in paragraph at lines 154--154
 \OT1/cmtt/m/n/9 text-embedding-3\OT1/cmr/m/n/9 ,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 158--158
+Underfull \hbox (badness 10000) in paragraph at lines 159--159
 []\OT1/cmr/m/n/9 Chroma, Pinecone,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 159--161
+Underfull \hbox (badness 10000) in paragraph at lines 160--162
 \OT1/cmr/m/n/9 work; ex-act inner-product
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 162--162
+Underfull \hbox (badness 10000) in paragraph at lines 163--163
 []\OT1/cmr/m/n/9 PDF/DOCX/PPTX
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 167--167
+Underfull \hbox (badness 10000) in paragraph at lines 168--168
 []\OT1/cmr/m/n/9 Backend API and
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 168--168
+Underfull \hbox (badness 10000) in paragraph at lines 169--169
 []\OT1/cmr/m/n/9 FastAPI, Gra-dio,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 173--173
+Underfull \hbox (badness 10000) in paragraph at lines 174--174
 []\OT1/cmr/m/n/9 Hand-computed an-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 174--176
+Underfull \hbox (badness 10000) in paragraph at lines 175--177
 []\OT1/cmr/m/n/9 Answers are \OT1/cmr/m/it/9 machine-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 174--176
+Underfull \hbox (badness 10000) in paragraph at lines 175--177
 \OT1/cmr/m/it/9 computed\OT1/cmr/m/n/9 , not hand-typed,
  []
 
 
-Underfull \hbox (badness 3701) in paragraph at lines 174--176
+Underfull \hbox (badness 3701) in paragraph at lines 175--177
 \OT1/cmr/m/n/9 in-herit a hu-man arith-metic
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 177--177
+Underfull \hbox (badness 10000) in paragraph at lines 178--178
 []\OT1/cmr/m/n/9 Google Co-lab
  []
 
@@ -1402,9 +1430,9 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 
 [22]
 LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <10> not available
-(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 242.
+(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 243.
 
-Overfull \hbox (9.75575pt too wide) in paragraph at lines 264--273
+Overfull \hbox (9.75575pt too wide) in paragraph at lines 265--274
  [][] 
  []
 
@@ -1416,57 +1444,57 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [23]
-Underfull \hbox (badness 5924) in paragraph at lines 306--307
+Underfull \hbox (badness 5924) in paragraph at lines 307--308
 []\OT1/cmr/m/n/9 Run con-tin-ues on au-dio
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 308--308
+Underfull \hbox (badness 10000) in paragraph at lines 309--309
 []\OT1/cmr/m/n/9 Transcript seg-ments
  []
 
 
-Underfull \hbox (badness 1406) in paragraph at lines 317--317
+Underfull \hbox (badness 1406) in paragraph at lines 318--318
 []\OT1/cmr/m/n/9 Summary and fused
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 317--317
+Underfull \hbox (badness 10000) in paragraph at lines 318--318
 []\OT1/cmr/m/n/9 FAISS in-dex over
  []
 
 
-Underfull \hbox (badness 1292) in paragraph at lines 320--320
+Underfull \hbox (badness 1292) in paragraph at lines 321--321
 []\OT1/cmr/m/n/9 Summary and time-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 320--320
+Underfull \hbox (badness 10000) in paragraph at lines 321--321
 []\OT1/cmr/m/n/9 Ranked exam-focus
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 326--326
+Underfull \hbox (badness 10000) in paragraph at lines 327--327
 []\OT1/cmr/m/n/9 Quiz gen-er-a-tor
  []
 
 
-Underfull \hbox (badness 5345) in paragraph at lines 326--326
+Underfull \hbox (badness 5345) in paragraph at lines 327--327
 []\OT1/cmr/m/n/9 One slot, re-trieved
  []
 
 
-Underfull \hbox (badness 4341) in paragraph at lines 330--330
+Underfull \hbox (badness 4341) in paragraph at lines 331--331
 []\OT1/cmr/m/n/9 Draft ques-tion, ac-
  []
 
 
-Underfull \hbox (badness 1052) in paragraph at lines 333--333
+Underfull \hbox (badness 1052) in paragraph at lines 334--334
 []\OT1/cmr/m/n/9 Failed draft and its
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 336--337
+Underfull \hbox (badness 10000) in paragraph at lines 337--338
 []\OT1/cmr/m/n/9 Independently de-
  []
 
@@ -1494,6 +1522,9 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [26]
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
+nput line 443.
+
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1510,40 +1541,35 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [28]
-<ui.jpg, id=813, 1633.10126pt x 851.18pt>
+<ui.jpg, id=837, 1633.10126pt x 851.18pt>
 File: ui.jpg Graphic file (type jpg)
 <use ui.jpg>
-Package pdftex.def Info: ui.jpg  used on input line 560.
+Package pdftex.def Info: ui.jpg  used on input line 545.
 (pdftex.def)             Requested size: 426.79135pt x 222.4445pt.
-<ui2.jpg, id=814, 1651.16875pt x 604.2575pt>
+<ui2.jpg, id=838, 1651.16875pt x 604.2575pt>
 File: ui2.jpg Graphic file (type jpg)
 <use ui2.jpg>
-Package pdftex.def Info: ui2.jpg  used on input line 574.
+Package pdftex.def Info: ui2.jpg  used on input line 559.
 (pdftex.def)             Requested size: 426.79135pt x 156.18121pt.
-<ui-upload-live.png, id=817, 1863.96375pt x 850.17625pt>
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[29 <./ui.jpg>]
+<ui-upload-live.png, id=845, 1863.96375pt x 850.17625pt>
 File: ui-upload-live.png Graphic file (type png)
 <use ui-upload-live.png>
-Package pdftex.def Info: ui-upload-live.png  used on input line 586.
+Package pdftex.def Info: ui-upload-live.png  used on input line 571.
 (pdftex.def)             Requested size: 426.79135pt x 194.65428pt.
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
-
-[29 <./ui.jpg> <./ui2.jpg>]
-<ui-agentlog.png, id=823, 1884.03876pt x 858.20625pt>
+<ui-agentlog.png, id=847, 1884.03876pt x 858.20625pt>
 File: ui-agentlog.png Graphic file (type png)
 <use ui-agentlog.png>
-Package pdftex.def Info: ui-agentlog.png  used on input line 598.
+Package pdftex.def Info: ui-agentlog.png  used on input line 583.
 (pdftex.def)             Requested size: 426.79135pt x 194.39758pt.
-<ui-quiz-run.png, id=824, 1903.11pt x 830.10126pt>
-File: ui-quiz-run.png Graphic file (type png)
-<use ui-quiz-run.png>
-Package pdftex.def Info: ui-quiz-run.png  used on input line 611.
-(pdftex.def)             Requested size: 426.79135pt x 186.15674pt.
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1552,11 +1578,16 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[30 <./ui-upload-live.png> <./ui-agentlog.png>]
-<ui-graded.png, id=833, 1924.18875pt x 784.9325pt>
+[30 <./ui2.jpg> <./ui-upload-live.png>]
+<ui-quiz-run.png, id=853, 1903.11pt x 830.10126pt>
+File: ui-quiz-run.png Graphic file (type png)
+<use ui-quiz-run.png>
+Package pdftex.def Info: ui-quiz-run.png  used on input line 596.
+(pdftex.def)             Requested size: 426.79135pt x 186.15674pt.
+<ui-graded.png, id=856, 1924.18875pt x 784.9325pt>
 File: ui-graded.png Graphic file (type png)
 <use ui-graded.png>
-Package pdftex.def Info: ui-graded.png  used on input line 622.
+Package pdftex.def Info: ui-graded.png  used on input line 607.
 (pdftex.def)             Requested size: 426.79135pt x 174.09897pt.
 
 
@@ -1566,7 +1597,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[31 <./ui-quiz-run.png> <./ui-graded.png>]) (4.results.tex
+[31 <./ui-agentlog.png> <./ui-quiz-run.png>]) (4.results.tex
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1574,7 +1605,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[32]
+[32 <./ui-graded.png>]
 Chapter 4.
 [33
 
@@ -1602,7 +1633,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 
 pdfTeX warning: pdflatex.exe (file ./pipeline-merge-illustrated.pdf): PDF inclu
 sion: found PDF version <1.7>, but at most version <1.5> allowed
-<pipeline-merge-illustrated.pdf, id=876, 832.06856pt x 453.61469pt>
+<pipeline-merge-illustrated.pdf, id=900, 832.06856pt x 453.61469pt>
 File: pipeline-merge-illustrated.pdf Graphic file (type pdf)
 <use pipeline-merge-illustrated.pdf>
 Package pdftex.def Info: pipeline-merge-illustrated.pdf  used on input line 219
@@ -1753,7 +1784,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [52]
-<gantt_chart.jpg, id=1059, 1257.498pt x 685.8423pt>
+<gantt_chart.jpg, id=1083, 1257.498pt x 685.8423pt>
 File: gantt_chart.jpg Graphic file (type jpg)
 <use gantt_chart.jpg>
 Package pdftex.def Info: gantt_chart.jpg  used on input line 126.
@@ -1813,7 +1844,7 @@ Underfull \hbox (badness 1163) in paragraph at lines 303--304
 \OT1/cmr/m/n/9 Validate--Refine loop were de-ferred un-less
  []
 
-<budget_table.jpg, id=1076, 865.43324pt x 509.86485pt>
+<budget_table.jpg, id=1100, 865.43324pt x 509.86485pt>
 File: budget_table.jpg Graphic file (type jpg)
 <use budget_table.jpg>
 Package pdftex.def Info: budget_table.jpg  used on input line 318.
@@ -1982,16 +2013,16 @@ LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
  ***********
 Package rerunfilecheck Info: File `sdp.out' has not changed.
-(rerunfilecheck)             Checksum: ACFA4A79457A23A61C7899EFC7DF96B3;15070.
+(rerunfilecheck)             Checksum: 8652184B4B21138EB9148F269E8FCEEF;15070.
  ) 
 Here is how much of TeX's memory you used:
- 25591 strings out of 467871
- 491474 string characters out of 5417892
- 942297 words of memory out of 5000000
- 53656 multiletter control sequences out of 15000+600000
+ 27323 strings out of 467871
+ 514572 string characters out of 5417892
+ 1203790 words of memory out of 5000000
+ 55354 multiletter control sequences out of 15000+600000
  642914 words of font info for 97 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 94i,12n,94p,1209b,855s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 94i,12n,94p,1209b,2085s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\I-Bros\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcr
 m1095.pk><C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsf
 onts/cm/cmbx10.pfb><C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/fonts/type1/p
@@ -2021,9 +2052,9 @@ MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb><C:/Users/I-Bros/AppData/Local
 ata/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt9.pfb><C:/Users/I-
 Bros/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.p
 fb>
-Output written on sdp.pdf (82 pages, 3463515 bytes).
+Output written on sdp.pdf (82 pages, 3469530 bytes).
 PDF statistics:
- 1394 PDF objects out of 1440 (max. 8388607)
- 313 named destinations out of 1000 (max. 500000)
+ 1422 PDF objects out of 1440 (max. 8388607)
+ 335 named destinations out of 1000 (max. 500000)
  684 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -42,78 +42,78 @@
 \contentsline {paragraph}{The artifact trail.}{26}{section*.17}%
 \contentsline {subsection}{\numberline {3.3.4}The four generation pipelines}{26}{subsection.3.3.4}%
 \contentsline {subsection}{\numberline {3.3.5}Answer correctness: two agents that must agree}{28}{subsection.3.3.5}%
-\contentsline {subsection}{\numberline {3.3.6}System snapshot}{28}{subsection.3.3.6}%
+\contentsline {subsection}{\numberline {3.3.6}System snapshot}{29}{subsection.3.3.6}%
 \contentsline {subsection}{\numberline {3.3.7}Multi-tier grading and adaptation}{32}{subsection.3.3.7}%
 \contentsline {chapter}{\numberline {4}Investigation/Experiment, Result, Analysis and Discussion}{33}{chapter.4}%
 \contentsline {section}{\numberline {4.1}Environment Setup}{34}{section.4.1}%
 \contentsline {subsection}{\numberline {4.1.1}Configurations under test}{34}{subsection.4.1.1}%
-\contentsline {paragraph}{Source data.}{35}{section*.20}%
-\contentsline {paragraph}{Question count.}{35}{section*.21}%
+\contentsline {paragraph}{Source data.}{35}{section*.18}%
+\contentsline {paragraph}{Question count.}{35}{section*.19}%
 \contentsline {section}{\numberline {4.2}Evaluation Protocols}{35}{section.4.2}%
 \contentsline {subsection}{\numberline {4.2.1}Native metrics, and why a cost column is mandatory}{35}{subsection.4.2.1}%
 \contentsline {section}{\numberline {4.3}Ablation Design}{36}{section.4.3}%
 \contentsline {subsection}{\numberline {4.3.1}Leave-one-agent-out}{36}{subsection.4.3.1}%
 \contentsline {subsection}{\numberline {4.3.2}Agent merging}{36}{subsection.4.3.2}%
-\contentsline {paragraph}{\texttt {merge\_vr}, Validator $+$ Refiner.}{37}{section*.22}%
-\contentsline {paragraph}{\texttt {merge\_pg}, Planner $+$ Generator.}{37}{section*.23}%
+\contentsline {paragraph}{\texttt {merge\_vr}, Validator $+$ Refiner.}{37}{section*.20}%
+\contentsline {paragraph}{\texttt {merge\_pg}, Planner $+$ Generator.}{37}{section*.21}%
 \contentsline {subsection}{\numberline {4.3.3}What these ablations cannot show}{38}{subsection.4.3.3}%
 \contentsline {section}{\numberline {4.4}Results and Discussion}{38}{section.4.4}%
 \contentsline {subsection}{\numberline {4.4.1}Native metrics, agentic versus non-agentic}{38}{subsection.4.4.1}%
-\contentsline {paragraph}{A declared correction to the pipeline labelling.}{39}{section*.24}%
-\contentsline {paragraph}{Reading these results honestly.}{39}{section*.25}%
+\contentsline {paragraph}{A declared correction to the pipeline labelling.}{39}{section*.22}%
+\contentsline {paragraph}{Reading these results honestly.}{39}{section*.23}%
 \contentsline {section}{\numberline {4.5}System Interpretation}{40}{section.4.5}%
 \contentsline {subsection}{\numberline {4.5.1}Where in the pipeline the advantage can live}{40}{subsection.4.5.1}%
 \contentsline {subsection}{\numberline {4.5.2}Why the margin widens with difficulty}{41}{subsection.4.5.2}%
 \contentsline {subsection}{\numberline {4.5.3}What the saturation implies for system design}{41}{subsection.4.5.3}%
 \contentsline {subsection}{\numberline {4.5.4}What the system does not establish}{42}{subsection.4.5.4}%
 \contentsline {section}{\numberline {4.6}Summary}{42}{section.4.6}%
-\contentsline {paragraph}{What was established.}{42}{section*.26}%
-\contentsline {paragraph}{What the instruments revealed about themselves.}{43}{section*.27}%
-\contentsline {paragraph}{What remains open.}{43}{section*.28}%
-\contentsline {paragraph}{Two caveats carried forward.}{43}{section*.29}%
+\contentsline {paragraph}{What was established.}{42}{section*.24}%
+\contentsline {paragraph}{What the instruments revealed about themselves.}{43}{section*.25}%
+\contentsline {paragraph}{What remains open.}{43}{section*.26}%
+\contentsline {paragraph}{Two caveats carried forward.}{43}{section*.27}%
 \contentsline {chapter}{\numberline {5}Impacts and Design Constraints of the Project}{44}{chapter.5}%
 \contentsline {section}{\numberline {5.1}Economic Impact}{44}{section.5.1}%
-\contentsline {paragraph}{The constraint that drove the architecture.}{44}{section*.30}%
-\contentsline {paragraph}{Where the cost actually goes.}{44}{section*.31}%
-\contentsline {paragraph}{The compute cost of the agentic loop.}{45}{section*.32}%
-\contentsline {paragraph}{Institutional adoption.}{45}{section*.33}%
+\contentsline {paragraph}{The constraint that drove the architecture.}{44}{section*.28}%
+\contentsline {paragraph}{Where the cost actually goes.}{44}{section*.29}%
+\contentsline {paragraph}{The compute cost of the agentic loop.}{45}{section*.30}%
+\contentsline {paragraph}{Institutional adoption.}{45}{section*.31}%
 \contentsline {section}{\numberline {5.2}Impact on Societal, Health, Safety, Legal and Cultural Issues}{45}{section.5.2}%
-\contentsline {paragraph}{Educational and societal impact.}{45}{section*.34}%
-\contentsline {paragraph}{Safety: the risk of confidently teaching the wrong thing.}{46}{section*.35}%
-\contentsline {paragraph}{Legal and privacy considerations.}{46}{section*.36}%
-\contentsline {paragraph}{Cultural and linguistic considerations.}{47}{section*.37}%
+\contentsline {paragraph}{Educational and societal impact.}{45}{section*.32}%
+\contentsline {paragraph}{Safety: the risk of confidently teaching the wrong thing.}{46}{section*.33}%
+\contentsline {paragraph}{Legal and privacy considerations.}{46}{section*.34}%
+\contentsline {paragraph}{Cultural and linguistic considerations.}{47}{section*.35}%
 \contentsline {section}{\numberline {5.3}Ethical Considerations}{47}{section.5.3}%
 \contentsline {subsection}{\numberline {5.3.1}Research Ethics}{47}{subsection.5.3.1}%
-\contentsline {paragraph}{No fabricated results.}{47}{section*.38}%
-\contentsline {paragraph}{No misrepresentation of the system's capability.}{47}{section*.39}%
+\contentsline {paragraph}{No fabricated results.}{47}{section*.36}%
+\contentsline {paragraph}{No misrepresentation of the system's capability.}{47}{section*.37}%
 \contentsline {subsection}{\numberline {5.3.2}Ethics of Deployment}{48}{subsection.5.3.2}%
-\contentsline {paragraph}{Academic integrity.}{48}{section*.40}%
-\contentsline {paragraph}{The obligation created by confident error.}{48}{section*.41}%
-\contentsline {paragraph}{Data, consent and ownership.}{48}{section*.42}%
-\contentsline {paragraph}{Bias, coverage and who the system serves.}{48}{section*.43}%
-\contentsline {paragraph}{Boundaries of responsible use.}{49}{section*.44}%
+\contentsline {paragraph}{Academic integrity.}{48}{section*.38}%
+\contentsline {paragraph}{The obligation created by confident error.}{48}{section*.39}%
+\contentsline {paragraph}{Data, consent and ownership.}{48}{section*.40}%
+\contentsline {paragraph}{Bias, coverage and who the system serves.}{48}{section*.41}%
+\contentsline {paragraph}{Boundaries of responsible use.}{49}{section*.42}%
 \contentsline {section}{\numberline {5.4}Impact on Environment and Sustainability}{49}{section.5.4}%
-\contentsline {paragraph}{Small models, local inference.}{49}{section*.45}%
-\contentsline {paragraph}{Caching and resumability as energy savings.}{49}{section*.46}%
-\contentsline {paragraph}{The honest counterweight: the agentic loop is not free.}{49}{section*.47}%
-\contentsline {paragraph}{Sustainability of access.}{50}{section*.48}%
+\contentsline {paragraph}{Small models, local inference.}{49}{section*.43}%
+\contentsline {paragraph}{Caching and resumability as energy savings.}{49}{section*.44}%
+\contentsline {paragraph}{The honest counterweight: the agentic loop is not free.}{49}{section*.45}%
+\contentsline {paragraph}{Sustainability of access.}{50}{section*.46}%
 \contentsline {chapter}{\numberline {6}Project Planning and Budget}{51}{chapter.6}%
 \contentsline {section}{\numberline {6.1}Development Methodology}{51}{section.6.1}%
-\contentsline {paragraph}{Stages could be developed and debugged independently.}{51}{section*.49}%
-\contentsline {paragraph}{Expensive work became resumable.}{51}{section*.50}%
-\contentsline {paragraph}{Measurement was decoupled from generation.}{52}{section*.51}%
+\contentsline {paragraph}{Stages could be developed and debugged independently.}{51}{section*.47}%
+\contentsline {paragraph}{Expensive work became resumable.}{51}{section*.48}%
+\contentsline {paragraph}{Measurement was decoupled from generation.}{52}{section*.49}%
 \contentsline {section}{\numberline {6.2}Work Breakdown Structure}{52}{section.6.2}%
 \contentsline {section}{\numberline {6.3}Project Schedule}{53}{section.6.3}%
-\contentsline {paragraph}{Extraction and retrieval overlap.}{53}{section*.52}%
-\contentsline {paragraph}{The interface was built early and in parallel.}{53}{section*.53}%
-\contentsline {paragraph}{Evaluation was given eight weeks, and needed them.}{54}{section*.54}%
+\contentsline {paragraph}{Extraction and retrieval overlap.}{53}{section*.50}%
+\contentsline {paragraph}{The interface was built early and in parallel.}{53}{section*.51}%
+\contentsline {paragraph}{Evaluation was given eight weeks, and needed them.}{54}{section*.52}%
 \contentsline {section}{\numberline {6.4}Team Roles and Responsibilities}{54}{section.6.4}%
 \contentsline {section}{\numberline {6.5}Risk Management}{55}{section.6.5}%
 \contentsline {section}{\numberline {6.6}Budget}{55}{section.6.6}%
-\contentsline {paragraph}{The system itself costs nothing to run.}{56}{section*.55}%
-\contentsline {paragraph}{The one paid line is a measurement cost, not a product cost.}{56}{section*.56}%
-\contentsline {paragraph}{The dominant real cost is human time, which does not appear in the table.}{57}{section*.57}%
-\contentsline {paragraph}{Cost avoided.}{57}{section*.58}%
+\contentsline {paragraph}{The system itself costs nothing to run.}{56}{section*.53}%
+\contentsline {paragraph}{The one paid line is a measurement cost, not a product cost.}{56}{section*.54}%
+\contentsline {paragraph}{The dominant real cost is human time, which does not appear in the table.}{57}{section*.55}%
+\contentsline {paragraph}{Cost avoided.}{57}{section*.56}%
 \contentsline {chapter}{\numberline {7}Complex Engineering Problems and Activities}{58}{chapter.7}%
 \contentsline {section}{\numberline {7.1}Complex Engineering Problems (CEP)}{58}{section.7.1}%
 \contentsline {section}{\numberline {7.2}Complex Engineering Activities (CEA)}{60}{section.7.2}%
@@ -121,23 +121,23 @@
 \contentsline {chapter}{\numberline {8}Conclusion}{63}{chapter.8}%
 \contentsline {section}{\numberline {8.1}Summary}{63}{section.8.1}%
 \contentsline {section}{\numberline {8.2}Findings}{64}{section.8.2}%
-\contentsline {paragraph}{The agentic pipeline beats single-shot prompting on every metric that discriminates.}{64}{section*.59}%
-\contentsline {paragraph}{The most instructive finding is that the obvious metrics do not work.}{64}{section*.60}%
-\contentsline {paragraph}{Winning as a whole is not the same as knowing why.}{64}{section*.61}%
+\contentsline {paragraph}{The agentic pipeline beats single-shot prompting on every metric that discriminates.}{64}{section*.57}%
+\contentsline {paragraph}{The most instructive finding is that the obvious metrics do not work.}{64}{section*.58}%
+\contentsline {paragraph}{Winning as a whole is not the same as knowing why.}{64}{section*.59}%
 \contentsline {section}{\numberline {8.3}Limitations}{64}{section.8.3}%
-\contentsline {paragraph}{The pipeline labelling rests on generation records, not on the artifacts.}{64}{section*.62}%
-\contentsline {paragraph}{The judge and the Answer Generator are language models, not humans.}{65}{section*.63}%
-\contentsline {paragraph}{Generator--solver agreement is not the same as correctness.}{65}{section*.64}%
-\contentsline {paragraph}{The result is a comparison of two pipelines, not an attribution.}{65}{section*.65}%
-\contentsline {paragraph}{Single domain, single document.}{65}{section*.66}%
-\contentsline {paragraph}{The extraction layer bounds everything above it.}{65}{section*.67}%
-\contentsline {paragraph}{Deployment is not production-grade.}{66}{section*.68}%
+\contentsline {paragraph}{The pipeline labelling rests on generation records, not on the artifacts.}{64}{section*.60}%
+\contentsline {paragraph}{The judge and the Answer Generator are language models, not humans.}{65}{section*.61}%
+\contentsline {paragraph}{Generator--solver agreement is not the same as correctness.}{65}{section*.62}%
+\contentsline {paragraph}{The result is a comparison of two pipelines, not an attribution.}{65}{section*.63}%
+\contentsline {paragraph}{Single domain, single document.}{65}{section*.64}%
+\contentsline {paragraph}{The extraction layer bounds everything above it.}{65}{section*.65}%
+\contentsline {paragraph}{Deployment is not production-grade.}{66}{section*.66}%
 \contentsline {section}{\numberline {8.4}Future Improvement}{66}{section.8.4}%
-\contentsline {paragraph}{Confirm the arm labelling before anything else.}{66}{section*.69}%
-\contentsline {paragraph}{Run the ablations, and read them against cost.}{66}{section*.70}%
-\contentsline {paragraph}{Evaluate under a published benchmark.}{66}{section*.71}%
-\contentsline {paragraph}{Strengthen answer verification.}{66}{section*.72}%
-\contentsline {paragraph}{Human evaluation.}{67}{section*.73}%
-\contentsline {paragraph}{Broaden the domain.}{67}{section*.74}%
-\contentsline {paragraph}{Close the loop on diversity.}{67}{section*.75}%
-\contentsline {chapter}{References}{67}{section*.75}%
+\contentsline {paragraph}{Confirm the arm labelling before anything else.}{66}{section*.67}%
+\contentsline {paragraph}{Run the ablations, and read them against cost.}{66}{section*.68}%
+\contentsline {paragraph}{Evaluate under a published benchmark.}{66}{section*.69}%
+\contentsline {paragraph}{Strengthen answer verification.}{66}{section*.70}%
+\contentsline {paragraph}{Human evaluation.}{67}{section*.71}%
+\contentsline {paragraph}{Broaden the domain.}{67}{section*.72}%
+\contentsline {paragraph}{Close the loop on diversity.}{67}{section*.73}%
+\contentsline {chapter}{References}{67}{section*.73}%
