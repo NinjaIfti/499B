@@ -73,17 +73,36 @@ it accordingly. Frames are routed by brightness and edge statistics into four
 classes --- \texttt{slide}, \texttt{blackboard}, \texttt{whiteboard} and generic
 \texttt{scene} (on-screen text) --- and each class gets its own contrast
 enhancement, thresholding and, where appropriate, polarity inversion before being
-passed to EasyOCR. Consecutive frames whose extracted text is more than $78\%$
+passed to EasyOCR~\cite{easyocr}. Consecutive frames whose extracted text is more than $78\%$
 similar are treated as the same board state and deduplicated, so that a slide left
 on screen for two minutes contributes one block rather than sixty.
 
 \subsection{Retrieval}
 \label{sec:meth-rag}
 
+Every generated artifact is grounded by retrieval-augmented
+generation~\cite{lewis2020rag,gao2023ragsurvey}: the model is never asked to
+recall the lecture from its weights, only to work from passages retrieved out of
+the lecture itself.
+
 The fused timeline is chunked, embedded with the Sentence-BERT model
-\texttt{all-MiniLM-L6-v2}~\cite{reimers2019sbert}, $L_2$-normalised, and indexed in
+\texttt{all-MiniLM-L6-v2}~\cite{reimers2019sbert,wang2020minilm}, $L_2$-normalised, and indexed in
 FAISS~\cite{johnson2019faiss} with an inner-product index, so that inner product
-equals cosine similarity (Eq.~\ref{eq:cosine}). Retrieval returns the top
+equals cosine similarity (Eq.~\ref{eq:cosine}):
+\begin{equation}
+\label{eq:cosine}
+\mathrm{sim}(q, c) \;=\;
+  \frac{\mathbf{e}_q \cdot \mathbf{e}_c}
+       {\lVert \mathbf{e}_q \rVert \, \lVert \mathbf{e}_c \rVert}
+  \;=\; \hat{\mathbf{e}}_q \cdot \hat{\mathbf{e}}_c ,
+  \qquad
+  \hat{\mathbf{e}} = \frac{\mathbf{e}}{\lVert \mathbf{e} \rVert},
+\end{equation}
+where $\mathbf{e}_q, \mathbf{e}_c \in \mathbb{R}^{384}$ are the embeddings of the
+query and of a candidate chunk. Because every vector is $L_2$-normalised before
+insertion, the denominator is unity and a plain inner-product search returns exactly
+the cosine ranking, which is why no separate normalisation step is needed at query
+time. Retrieval returns the top
 $k = 5$ chunks together with their timestamps, which is what allows both the chat
 interface and a generated question to be traced back to the moment in the lecture
 they came from. Crucially, retrieval is exposed to the generator agent as a
@@ -93,9 +112,9 @@ the agent decides for itself whether it needs more evidence.
 \section{Hardware and/or Software Components}
 \label{sec:meth-components}
 
-The system is written in Python and served as a Flask API, with a single-page
-HTML/JavaScript front end that talks to it over an ngrok tunnel; this split lets the
-heavy models run on a Colab GPU while the interface runs in the student's own
+The system is written in Python and served as a Flask~\cite{flask} API, with a single-page
+HTML/JavaScript front end that talks to it over an ngrok~\cite{ngrok} tunnel; this split lets the
+heavy models run on a Colab~\cite{colab} GPU while the interface runs in the student's own
 browser. Table~\ref{tab:tools} lists the components, the alternatives considered,
 and the reason for each choice. The overriding constraint throughout was that
 \emph{nothing may require a paid API key}, since the target users are precisely
@@ -140,7 +159,7 @@ Chroma, Pinecone, pgvector &
 In-process, no server, no network; exact inner-product search is more than
 sufficient at lecture scale. \\
 \hline
-PyMuPDF & PDF/DOCX/PPTX parsing &
+PyMuPDF~\cite{pymupdf} & PDF/DOCX/PPTX parsing &
 pdfplumber, PyPDF2 &
 Fastest reliable text-layer extraction; preserves page structure used for
 per-page source attribution. \\
@@ -203,6 +222,57 @@ The stages are:
         recorded as a clean pass --- otherwise the pipeline's own accept rate would
         be a fiction.
 \end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=1cm, y=1cm]
+
+  % --- main chain -----------------------------------------------------------
+  \node[laproc, text width=20mm] (plan) at (0,0)
+       {Planner\\{\normalfont\scriptsize topic $+$ difficulty slots}};
+  \node[lallm, text width=22mm]  (gen)  at (3.9,0)
+       {Generator\\{\normalfont\scriptsize drafts ONE question}};
+  \node[laval, text width=24mm]  (val)  at (8.1,0)
+       {Validator\\{\normalfont\scriptsize grounding, difficulty, compliance}};
+  \node[laout, text width=18mm]  (acc)  at (12.1,0)
+       {Accept\\{\normalfont\scriptsize next slot}};
+
+  % --- retrieval tool -------------------------------------------------------
+  \node[latool, text width=34mm] (tool) at (3.9,2.15)
+       {\texttt{search\_lecture}\\{\normalfont\scriptsize model-directed retrieval}};
+
+  % --- remediation ----------------------------------------------------------
+  \node[lallm, text width=53mm] (ref) at (8.3,-2.85)
+       {Refiner\\{\normalfont\small the validator picks the fix}\\[1pt]
+        {\normalfont\scriptsize \texttt{regenerate} $\;\cdot\;$
+         \texttt{fetch\_context} $\;\cdot\;$ \texttt{replan\_topic}}};
+
+  % --- edges ----------------------------------------------------------------
+  \draw[laarr]  (plan) -- (gen);
+  \draw[laarr]  (gen)  -- (val);
+  \draw[laarrg] (val)  -- (acc) node[lalbl, midway, above]{PASS};
+  \draw[laarrc] (tool) -- (gen)
+        node[lalbl, midway, right]{evidence};
+  \draw[laloop] (val.south) -- (ref.north)
+        node[lalbl, midway, right]{FAIL};
+  \draw[laloop] (ref.west) -| (gen.south)
+        node[lalbl, pos=0.28, below]{retry $\leq 3$};
+  \draw[laarr, draw=LAslate] (ref.south) -- ++(0,-0.75) -| (acc.south)
+        node[lalbl, pos=0.30, below]
+        {budget exhausted: keep best attempt, mark as override};
+
+\end{tikzpicture}
+\caption{The agentic question-generation loop. Questions are produced one at a time
+and must pass validation before the next slot begins. The dashed edge is genuine
+tool use: the generator decides for itself whether it has enough grounding and issues
+its own retrieval query if not. On \texttt{FAIL} the validator does not merely
+reject --- it selects the remediation, and only \texttt{regenerate} returns to the
+generator directly, while \texttt{fetch\_context} and \texttt{replan\_topic} require
+work outside the model first. When the retry budget is exhausted the best attempt is
+kept but is explicitly labelled an override, so that a failure is never recorded as a
+clean pass.}
+\label{fig:agentic-loop}
+\end{figure}
 
 \subsection{The four generation pipelines}
 \label{sec:meth-pipelines}
@@ -349,6 +419,48 @@ The calibration set is used for evaluation only. It is never placed on the
 generation path, since a generator that had seen the answer key would be scored on
 questions it had effectively been given, and the resulting numbers would be
 contaminated.
+
+\subsection{System snapshot}
+\label{sec:meth-snapshot}
+
+Figures~\ref{fig:ui-workspace} and~\ref{fig:ui-quiz} show the deployed system in
+use. They are included because the agentic loop described in
+Section~\ref{sec:meth-agentic} is not only an internal mechanism: it is surfaced
+directly to the user, and one of the design commitments of this project is that a
+student should be able to see how a question was produced rather than being handed
+an opaque result.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{ui.jpg}
+\caption{The Quiz Engine and its live Agent Workspace. The four stage indicators
+across the top track the pipeline in real time as it runs. Beneath them, the counters
+report questions completed, questions validated and agents active, and each generated
+question appears as its own row recording the topic, the target difficulty, the
+verdict, the attempt on which it was accepted and the time taken. The row shown here
+was accepted on the first attempt in $8.7$ seconds. The raw event log at the bottom
+names the agent responsible for every step, so a run can be audited after the fact
+rather than inferred from its output.}
+\label{fig:ui-workspace}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{ui2.jpg}
+\caption{The quiz-taking view. Each item carries its target difficulty, its Bloom
+level and the topic it was planned against, together with the source timestamp of
+the lecture material it was grounded in. That timestamp is what allows a student who
+doubts an answer to return to the exact moment in the lecture the question came
+from, which is the practical safeguard against the failure mode discussed in
+Chapter~\ref{ch:impacts}.}
+\label{fig:ui-quiz}
+\end{figure}
+
+The counters in Figure~\ref{fig:ui-workspace} distinguish questions that passed
+validation from those kept as overrides. This distinction is shown rather than hidden
+for the reason given in Section~\ref{sec:meth-agentic}: a pipeline that silently
+recorded an exhausted retry budget as a clean pass would report an acceptance rate
+that was a fiction, and the interface is built to make that impossible.
 
 \subsection{Multi-tier grading and adaptation}
 \label{sec:meth-grading}
