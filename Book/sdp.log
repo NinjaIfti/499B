@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.6.18)  28 AUG 2026 21:08
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.6.18)  28 AUG 2026 21:15
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1541,15 +1541,15 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [28]
-<ui.jpg, id=837, 1633.10126pt x 851.18pt>
+<ui.jpg, id=836, 1633.10126pt x 851.18pt>
 File: ui.jpg Graphic file (type jpg)
 <use ui.jpg>
-Package pdftex.def Info: ui.jpg  used on input line 545.
+Package pdftex.def Info: ui.jpg  used on input line 548.
 (pdftex.def)             Requested size: 426.79135pt x 222.4445pt.
-<ui2.jpg, id=838, 1651.16875pt x 604.2575pt>
+<ui2.jpg, id=837, 1651.16875pt x 604.2575pt>
 File: ui2.jpg Graphic file (type jpg)
 <use ui2.jpg>
-Package pdftex.def Info: ui2.jpg  used on input line 559.
+Package pdftex.def Info: ui2.jpg  used on input line 562.
 (pdftex.def)             Requested size: 426.79135pt x 156.18121pt.
 
 
@@ -1563,12 +1563,12 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 <ui-upload-live.png, id=845, 1863.96375pt x 850.17625pt>
 File: ui-upload-live.png Graphic file (type png)
 <use ui-upload-live.png>
-Package pdftex.def Info: ui-upload-live.png  used on input line 571.
+Package pdftex.def Info: ui-upload-live.png  used on input line 574.
 (pdftex.def)             Requested size: 426.79135pt x 194.65428pt.
 <ui-agentlog.png, id=847, 1884.03876pt x 858.20625pt>
 File: ui-agentlog.png Graphic file (type png)
 <use ui-agentlog.png>
-Package pdftex.def Info: ui-agentlog.png  used on input line 583.
+Package pdftex.def Info: ui-agentlog.png  used on input line 586.
 (pdftex.def)             Requested size: 426.79135pt x 194.39758pt.
 
 
@@ -1582,12 +1582,12 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 <ui-quiz-run.png, id=853, 1903.11pt x 830.10126pt>
 File: ui-quiz-run.png Graphic file (type png)
 <use ui-quiz-run.png>
-Package pdftex.def Info: ui-quiz-run.png  used on input line 596.
+Package pdftex.def Info: ui-quiz-run.png  used on input line 599.
 (pdftex.def)             Requested size: 426.79135pt x 186.15674pt.
 <ui-graded.png, id=856, 1924.18875pt x 784.9325pt>
 File: ui-graded.png Graphic file (type png)
 <use ui-graded.png>
-Package pdftex.def Info: ui-graded.png  used on input line 607.
+Package pdftex.def Info: ui-graded.png  used on input line 610.
 (pdftex.def)             Requested size: 426.79135pt x 174.09897pt.
 
 
@@ -2018,11 +2018,11 @@ Package rerunfilecheck Info: File `sdp.out' has not changed.
 Here is how much of TeX's memory you used:
  27323 strings out of 467871
  514572 string characters out of 5417892
- 1203790 words of memory out of 5000000
+ 1093766 words of memory out of 5000000
  55354 multiletter control sequences out of 15000+600000
  642914 words of font info for 97 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 94i,12n,94p,1209b,2085s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 94i,12n,94p,1209b,1271s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\I-Bros\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcr
 m1095.pk><C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsf
 onts/cm/cmbx10.pfb><C:/Users/I-Bros/AppData/Local/Programs/MiKTeX/fonts/type1/p
@@ -2052,7 +2052,7 @@ MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb><C:/Users/I-Bros/AppData/Local
 ata/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt9.pfb><C:/Users/I-
 Bros/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.p
 fb>
-Output written on sdp.pdf (82 pages, 3469530 bytes).
+Output written on sdp.pdf (82 pages, 3469736 bytes).
 PDF statistics:
  1422 PDF objects out of 1440 (max. 8388607)
  335 named destinations out of 1000 (max. 500000)
