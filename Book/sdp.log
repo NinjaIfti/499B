@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.6.18)  6 SEP 2026 19:59
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.6.18)  6 SEP 2026 20:03
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1016,7 +1016,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.i}) has
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.69 \end{titlepage}
+l.70 \end{titlepage}
                      [1
 
 ]) (0.2.declaration.tex
@@ -2063,7 +2063,7 @@ MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb><C:/Users/I-Bros/AppData/Local
 ata/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt9.pfb><C:/Users/I-
 Bros/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.p
 fb>
-Output written on sdp.pdf (83 pages, 3475012 bytes).
+Output written on sdp.pdf (83 pages, 3475024 bytes).
 PDF statistics:
  1425 PDF objects out of 1440 (max. 8388607)
  335 named destinations out of 1000 (max. 500000)
